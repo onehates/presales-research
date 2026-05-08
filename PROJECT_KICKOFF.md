@@ -158,21 +158,62 @@ disqualifiers:
 
 ---
 
-## Data Sources (Replace Generic WebSearch)
+## Data Sources
 
-| Source | What it gives | Implementation |
+### V1 — Building Now
+
+| Source | What it gives | Status |
 |---|---|---|
-| SEC EDGAR | 10-K risk factors, 10-Q forward statements, 8-K material events | Free API. Public companies only. Gold for pain signals. |
-| Indeed Jobs | Hiring intensity, role specifics, tech stack signals | Free search. Scrape with rate limiting. |
-| LinkedIn Jobs | Same as Indeed but richer | Phantombuster / Bright Data, or accept API limits |
-| GitHub | Engineering culture, stack signals, scale | Free API. Org-level + recent activity. |
-| Glassdoor | Employee pain signals (IT pain, security pain) | Scraping required. Sentiment + specific complaints. |
-| crt.sh | SSL certs → subdomain enum → tech footprint | Free. Reveals SaaS, security tools, vendors. |
-| PR Newswire / BusinessWire RSS | Press releases, cleaner than news | Free RSS. |
-| Seeking Alpha | Earnings call transcripts | Public co's only. Scraping. |
-| Google News | Backstop for general news | Free, generic results. |
+| SEC EDGAR | 10-K risk factors, 10-Q forward statements, 8-K material events | ✅ Built (`clients/sec.py`) |
+| Indeed Jobs | Hiring intensity, role specifics, tech stack signals from JDs. Implemented via SerpAPI Google Jobs engine (aggregates Indeed + LinkedIn + ZipRecruiter + Glassdoor). Direct Indeed scraping rejected due to anti-bot defenses. | ✅ Built (`clients/indeed.py`) |
+| GitHub | Engineering culture, stack signals, scale | TODO |
+| crt.sh | SSL certs → subdomain enum → tech footprint | TODO |
+| Google News (or Tavily MCP) | Backstop for general news | TODO |
 
-**V1 minimum viable:** SEC EDGAR + Indeed + GitHub + crt.sh + Google News. Glassdoor and earnings transcripts are V2.
+### V1 — High-Signal Additions (Recommended, Verkada-Specific)
+
+| Source | What it gives | Why it matters for Verkada SE |
+|---|---|---|
+| Shodan | Internet-exposed devices, firmware versions, vendor fingerprinting | Surfaces actual installed cameras/NVRs by vendor — direct displacement intel. "You have 47 Hikvision cameras at 192.168.x.x running EOL firmware" beats "we think you have legacy infrastructure." |
+| HHS OCR Breach Portal | HIPAA breach disclosures (500+ patients) | Decisive for healthcare accounts — public, government-mandated disclosure of physical/data security breaches |
+| Reddit search (r/sysadmin, r/k12sysadmin, r/healthIT, r/CCTV, company subs) | Practitioner sentiment about real systems | Unfiltered descriptions of actual deployed systems and real pain — no other source provides this |
+
+### Demo-Account Conditional (Add If Vertical Matches)
+
+| Source | When | What it gives |
+|---|---|---|
+| NCES / CCD | K-12 demo account | Federal funding, enrollment, Title I status (NDAA trigger anchor) |
+| Clery Act data | Higher-ed demo account | Federally required campus crime statistics |
+| Joint Commission | Healthcare demo account | Accreditation survey results, often surface security gaps |
+| State/local procurement portals (SAM.gov, BidNet, AEPA, TIPS-USA) | Public sector demo account | Active RFPs — strongest buying signal that exists |
+
+### V2 — Nice-to-Have Roadmap (Mention in Pitch, Don't Build for Demo)
+
+| Source | Signal | Why V2 |
+|---|---|---|
+| Glassdoor | Insider IT/security pain | Scraping fragility |
+| Quartr MCP / Seeking Alpha | Earnings call transcripts | Paid product preferred over scraping |
+| LinkedIn Jobs | Richer hiring signal than Indeed | Anti-scraping severe |
+| Aura MCP | Workforce analytics, headcount trends | Paid B2B product |
+| CB Insights MCP | Private company funding/competitors | Paid B2B product |
+| BuiltWith / Wappalyzer | Web tech stack inference | Adds value but lower priority than Shodan |
+| Building permits APIs (NYC, Chicago, LA, etc.) | Capital project ground truth | Per-city fragmentation |
+| Vendor case studies (Avigilon, Genetec, Milestone, IPVM articles) | Direct displacement intel | Hard to automate cleanly |
+| Conference attendee lists (GSX, ISC West, ISC East) | Active buyer signal | Often paywalled |
+| OSHA enforcement data | Manufacturing/healthcare workplace safety | Niche, additive |
+| State UCC filings | Equipment lease detection | Manual workflow |
+| Wayback Machine | Historical infra change tracking | Slow, batch-only |
+| FOIA requests | Public sector contract details | Manual, weeks-long workflow |
+
+### MCPs Available Now (Connect On Demand)
+
+| MCP | Replaces / Augments |
+|---|---|
+| Tavily | Google News scraping (cleaner search + extract + crawl) |
+| Aura | Indeed (paid workforce analytics) |
+| Quartr | Earnings transcripts (unlocks V2 capability) |
+| HubSpot | CRM export (V2 demo moment: "brief auto-attaches to account record") |
+| CB Insights | Crunchbase substitute for private companies |
 
 ---
 
