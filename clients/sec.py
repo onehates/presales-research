@@ -301,7 +301,55 @@ def extract_material_events_section(text: str) -> str:
 # Step 4: LLM extraction via Haiku
 # ---------------------------------------------------------------------------
 
-def extract_with_haiku(text: str, extraction_type: str, company_name: str, filing_date: str) -> dict:
+def _load_persona_context() -> str:
+    """Load Verkada product lines and differentiators from persona file for Haiku context."""
+    persona_path = PROJECT_ROOT / "persona" / "verkada-se.yml"
+    if not persona_path.exists():
+        return ""
+    try:
+        import yaml
+        persona = yaml.safe_load(persona_path.read_text())
+    except ImportError:
+        # Fallback: extract key lines without PyYAML
+        raw = persona_path.read_text()
+        lines = []
+        capture = False
+        for line in raw.split("\n"):
+            if line.strip().startswith("product:") or line.strip().startswith("lines:") or line.strip().startswith("key_differentiators:") or line.strip().startswith("displacement_targets:"):
+                capture = True
+            if capture:
+                lines.append(line)
+            if capture and line.strip() == "" and len(lines) > 3:
+                capture = False
+        return "\n".join(lines)
+    except Exception:
+        return ""
+
+    product = persona.get("product", {})
+    displace = persona.get("displacement_targets", [])
+
+    lines = [f"Verkada product lines: {', '.join(product.get('lines', []))}"]
+    lines.append(f"Unified under: {product.get('unified_under', 'Command platform')}")
+    lines.append(f"Positioning: {product.get('positioning', '')}")
+
+    diffs = product.get("key_differentiators", [])
+    if diffs:
+        lines.append("Key differentiators:")
+        for d in diffs:
+            if isinstance(d, dict):
+                for k, v in d.items():
+                    lines.append(f"  - {k}: {v}")
+            else:
+                lines.append(f"  - {d}")
+
+    if displace:
+        vendors = [d.get("vendor", "") for d in displace if isinstance(d, dict)]
+        lines.append(f"Displacement targets (incumbent vendors): {', '.join(vendors)}")
+
+    return "\n".join(lines)
+
+
+def extract_with_haiku(text: str, extraction_type: str, company_name: str, filing_date: str, source_url: str = "") -> dict:
     """
     Use Claude Haiku to extract structured data from filing text.
     extraction_type: "risk_factors" or "material_events"
@@ -310,38 +358,75 @@ def extract_with_haiku(text: str, extraction_type: str, company_name: str, filin
         return {"status": "insufficient_data", "reason": "Section text too short or missing from filing"}
 
     client = anthropic.Anthropic()
+    persona_ctx = _load_persona_context()
 
     if extraction_type == "risk_factors":
         system_prompt = (
-            "You are a financial document parser. Extract risk factors from this SEC filing section. "
+            "You are a financial document parser extracting risk factors from SEC filings "
+            "for a Verkada Solutions Engineer's pre-sales research tool.\n\n"
+            "## Verkada Context (use this to judge relevance)\n"
+            f"{persona_ctx}\n\n"
+            "## Output Schema\n"
             "Output ONLY valid JSON with no markdown formatting. Use this exact schema:\n"
-            '{"risks": [{"title": "short label", "summary": "2-3 sentence summary of the specific risk", '
+            '{"risks": [{"title": "short label", '
+            '"summary": "2-3 sentence summary of the SPECIFIC risk — must reference company-specific details (names, dollar amounts, geographies, systems)", '
             '"category": "one of: operational|financial|regulatory|competitive|cybersecurity|legal|market|supply_chain|environmental", '
-            '"verkada_relevant": true/false — true if the risk relates to physical security, access control, surveillance, '
-            'workplace safety, facility management, or IT infrastructure}]}\n\n'
-            "Rules:\n"
-            "- Extract the TOP 15 most material risks, not all of them\n"
-            "- Keep summaries specific to this company — no generic language\n"
-            "- Flag verkada_relevant=true for anything a physical security vendor could address\n"
-            "- If the section is boilerplate/unreadable, return {\"risks\": [], \"status\": \"insufficient_data\"}"
+            '"confidence": "one of: high|medium|inference — high = explicitly stated in filing language, medium = clearly implied by context, inference = your interpretation of vague language", '
+            '"source_section": "the Item 1A sub-heading or paragraph topic this risk was extracted from", '
+            '"verkada_relevant": true/false}]}\n\n'
+            "## verkada_relevant Criteria\n"
+            "Flag true ONLY if the risk directly relates to one of these Verkada-addressable domains:\n"
+            "- Physical security (cameras, surveillance, monitoring)\n"
+            "- Access control (badge, door, visitor management)\n"
+            "- Workplace safety, environmental sensors, alarms\n"
+            "- IT infrastructure burden from on-prem security systems (NVR/DVR/VMS servers)\n"
+            "- NDAA compliance, supply chain security for hardware\n"
+            "- Facility expansion, new construction, multi-site management\n"
+            "- Any mention of incumbent vendors: Avigilon, Genetec, Milestone, Lenel, Hikvision, Dahua\n"
+            "Do NOT flag generic IT/cyber risks as verkada_relevant unless they specifically mention physical security.\n\n"
+            "## Anti-Genericness Rules (MANDATORY)\n"
+            "- Every summary must be specific to THIS company. If a sentence could appear unchanged in a "
+            "different company's brief, rewrite it with company-specific details or drop it.\n"
+            "- If a risk factor is pure legal boilerplate with no company-specific substance, skip it entirely.\n"
+            "- Do NOT use hedging words (likely, potentially, may) unless paired with confidence: inference.\n"
+            "- If fewer than 3 non-boilerplate risks are extractable, return:\n"
+            '  {"risks": [], "status": "insufficient_data", "reason": "Filing risk factors are predominantly boilerplate"}\n'
+            "- Extract the TOP 15 most material risks, not all of them.\n"
         )
     else:
         system_prompt = (
-            "You are a financial document parser. Extract material events and forward-looking statements. "
+            "You are a financial document parser extracting material events from SEC filings "
+            "for a Verkada Solutions Engineer's pre-sales research tool.\n\n"
+            "## Verkada Context (use this to judge relevance)\n"
+            f"{persona_ctx}\n\n"
+            "## Output Schema\n"
             "Output ONLY valid JSON with no markdown formatting. Use this exact schema:\n"
-            '{"events": [{"description": "what happened or is planned", "date": "date if mentioned or null", '
+            '{"events": [{"description": "what happened or is planned — MUST include specific details: dollar amounts, names, locations, dates", '
+            '"date": "YYYY-MM-DD if mentioned, otherwise null", '
             '"category": "one of: acquisition|divestiture|leadership|restructuring|expansion|litigation|regulatory|capital_project|other", '
-            '"verkada_relevant": true/false — true if the event relates to physical security, facilities, '
-            'new buildings, safety incidents, or infrastructure changes}]}\n\n'
-            "Rules:\n"
-            "- Extract up to 10 most material events\n"
-            "- Keep descriptions specific — include dollar amounts, names, locations when present\n"
-            "- If the section is boilerplate/unreadable, return {\"events\": [], \"status\": \"insufficient_data\"}"
+            '"confidence": "one of: high|medium|inference — high = explicitly stated with date/amount, medium = stated but vague on details, inference = implied from context", '
+            '"source_section": "the sub-heading or paragraph topic this event was extracted from", '
+            '"verkada_relevant": true/false}]}\n\n'
+            "## verkada_relevant Criteria\n"
+            "Flag true ONLY if the event directly relates to:\n"
+            "- New facilities, buildings, campuses, renovations (capital projects = greenfield security)\n"
+            "- Safety incidents, workplace violence, theft, security breaches\n"
+            "- Physical security system changes, vendor switches, infrastructure upgrades\n"
+            "- Regulatory actions related to physical security, NDAA, facility compliance\n"
+            "- Acquisitions that add new sites requiring security integration\n"
+            "Do NOT flag generic M&A or financial events as verkada_relevant unless they involve facilities.\n\n"
+            "## Anti-Genericness Rules (MANDATORY)\n"
+            "- Every description must include company-specific details. No generic event descriptions.\n"
+            "- Do NOT use hedging words (likely, potentially, may) unless paired with confidence: inference.\n"
+            "- If no material events are extractable with specifics, return:\n"
+            '  {"events": [], "status": "insufficient_data", "reason": "describe what is missing"}\n'
+            "- Extract up to 10 most material events.\n"
         )
 
     user_msg = (
         f"Company: {company_name}\n"
         f"Filing date: {filing_date}\n"
+        f"Source URL: {source_url}\n"
         f"Section text:\n\n{text}"
     )
 
@@ -484,15 +569,15 @@ def fetch_sec_data(company_name: str, *, force_refresh: bool = False) -> dict:
             file=sys.stderr,
         )
 
-        risk_data = extract_with_haiku(risk_text, "risk_factors", cik_info["name"], filing["filing_date"])
-        events_data = extract_with_haiku(events_text, "material_events", cik_info["name"], filing["filing_date"])
-
         accession_no_dashes = filing["accession"].replace("-", "")
         source_url = FILING_URL.format(
             cik_raw=cik_info["cik_raw"],
             accession_no_dashes=accession_no_dashes,
             primary_doc=filing["primary_doc"],
         )
+
+        risk_data = extract_with_haiku(risk_text, "risk_factors", cik_info["name"], filing["filing_date"], source_url)
+        events_data = extract_with_haiku(events_text, "material_events", cik_info["name"], filing["filing_date"], source_url)
 
         filing_results.append({
             "form_type": form_type,
