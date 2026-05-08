@@ -1,0 +1,588 @@
+# =============================================================================
+# verkada-se.yml — Structured Rule Engine for Verkada SE Pre-Sales Research
+# =============================================================================
+# This file is THE leverage file. Every synthesis task loads it as ground truth.
+# Do not invent triggers, personas, or templates outside this file.
+# If you find a gap, surface it as a comment — do not fill it silently.
+# =============================================================================
+
+product:
+  name: Verkada
+  lines:
+    - Cameras
+    - Access Control
+    - Alarms
+    - Sensors
+    - Intercoms
+    - Guest
+    - Mailroom
+    - Workplace
+  unified_under: Command platform
+  positioning: >
+    Cloud-managed physical security platform; replaces on-prem NVR/DVR
+    and legacy access control with a single pane of glass. No local
+    servers, no on-prem VMS licensing. Managed via browser or mobile.
+  key_differentiators:
+    - cloud_native: No NVR/DVR, no on-prem servers. Edge storage on cameras + cloud management.
+    - single_platform: Video, access, alarms, sensors, intercoms, workplace — one Command login.
+    - zero_appliance: No dedicated server hardware to rack, patch, or replace.
+    - ai_at_edge: On-camera analytics (people, vehicles, license plates, PPE) without GPU servers.
+    - open_api: REST API for integrations; no proprietary middleware.
+    - ndaa_compliant: All hardware manufactured in NDAA-compliant facilities.
+    - automatic_updates: Firmware and software pushed OTA, no truck rolls for patching.
+
+# =============================================================================
+# ICP — Ideal Customer Profile by Vertical
+# =============================================================================
+
+icp:
+  verticals:
+    - name: K-12
+      key_drivers:
+        - school_safety
+        - weapon_detection
+        - FERPA
+        - federal_funding_NDAA
+        - Alyssa_s_Law_compliance
+        - parent_communication_during_incidents
+      typical_pain:
+        - aging_analog_cameras_with_no_remote_view
+        - fragmented_systems_across_school_sites
+        - no_centralized_security_operations
+        - manual_door_propping_detection
+
+    - name: Healthcare
+      key_drivers:
+        - HIPAA
+        - infant_abduction
+        - ED_security
+        - patient_elopement
+        - workplace_violence
+      typical_pain:
+        - legacy_NVR_at_each_facility
+        - access_control_not_integrated_with_video
+        - no_real_time_alerting_for_elopement
+        - badge_management_across_campuses
+
+    - name: Retail
+      key_drivers:
+        - ORC
+        - shrink
+        - ELM_integration
+        - safe_transaction_zones
+      typical_pain:
+        - high_camera_count_low_usability
+        - no_POS_video_correlation
+        - LP_team_cant_review_footage_remotely
+        - inconsistent_systems_across_stores
+
+    - name: Manufacturing
+      key_drivers:
+        - worker_safety
+        - plant_security
+        - IT_OT_convergence
+        - environmental_monitoring
+      typical_pain:
+        - air_gapped_DVR_systems_no_remote_access
+        - no_environmental_sensors_tied_to_video
+        - badge_access_not_unified_with_video
+        - compliance_audit_footage_retrieval_slow
+
+    - name: HigherEd
+      key_drivers:
+        - campus_safety
+        - NDAA
+        - dorm_access
+        - Clery_Act_reporting
+      typical_pain:
+        - dozens_of_buildings_different_systems
+        - residential_access_cards_not_linked_to_video
+        - manual_Clery_compliance_evidence_gathering
+        - public_safety_office_lacks_live_view
+
+    - name: CRE_Hospitality
+      key_drivers:
+        - tenant_experience
+        - multi_tenant_access
+        - common_area_security
+        - amenity_analytics
+      typical_pain:
+        - separate_access_per_tenant_floor
+        - no_centralized_view_for_property_management
+        - visitor_management_is_pen_and_paper
+        - elevator_camera_footage_inaccessible
+
+# =============================================================================
+# Displacement Targets — Incumbents Verkada Commonly Replaces
+# =============================================================================
+
+displacement_targets:
+  - vendor: Avigilon
+    parent: Motorola
+    common_pain:
+      - licensing_cost
+      - on_prem_burden
+      - server_hardware_refresh_cycles
+      - ACC_software_complexity
+    verkada_counter: >
+      No VMS server, no per-camera license. Command is included.
+      Compare ACC7 server rack cost vs zero-appliance Verkada deployment.
+
+  - vendor: Genetec
+    common_pain:
+      - on_prem_complexity
+      - IT_burden
+      - Security_Center_requires_dedicated_infrastructure
+      - Federation_complexity_at_scale
+    verkada_counter: >
+      Genetec Federation across sites requires server at each site.
+      Verkada Command federates natively — no per-site server.
+
+  - vendor: Milestone
+    common_pain:
+      - on_prem_burden
+      - integration_cost
+      - XProtect_licensing_tiers_confusing
+    verkada_counter: >
+      Milestone sells software; customer still buys servers, storage, and IT labor.
+      Verkada includes compute, storage, and management in one subscription.
+
+  - vendor: Lenel
+    parent: Carrier
+    common_pain:
+      - legacy_access_control
+      - support_responsiveness
+      - OnGuard_aging_architecture
+      - requires_trained_integrator_for_changes
+    verkada_counter: >
+      Lenel OnGuard changes require integrator truck rolls.
+      Verkada access policy changes are self-serve in Command, real-time.
+
+  - vendor: Hikvision
+    common_pain:
+      - NDAA_non_compliance
+      - federal_ban
+      - FCC_covered_list
+      - supply_chain_risk
+    verkada_counter: >
+      Hikvision is on the FCC Covered List. Any org receiving federal
+      funding or pursuing federal contracts must rip and replace.
+      Verkada is NDAA-compliant, manufactured outside China.
+
+  - vendor: Dahua
+    common_pain:
+      - NDAA_non_compliance
+      - federal_ban
+      - FCC_covered_list
+      - supply_chain_risk
+    verkada_counter: >
+      Same NDAA/FCC exposure as Hikvision. Dahua OEMs under many brand
+      names (Amcrest, Lorex consumer) — check hardware MAC addresses.
+
+  - vendor: March_Networks
+    common_pain:
+      - banking_vertical_lock_in
+      - aging_platform
+      - limited_analytics
+    verkada_counter: >
+      March Networks is entrenched in banking but stagnating on AI analytics.
+      Verkada's edge analytics and open API offer a modernization path.
+
+  - vendor: Brivo
+    common_pain:
+      - access_only_no_video
+      - limited_platform_breadth
+    verkada_counter: >
+      Brivo is cloud access but no video. Verkada offers access + video
+      + sensors in one platform — eliminates a vendor.
+
+# =============================================================================
+# Triggers — Detection Signals → Discovery Questions
+# =============================================================================
+# Each trigger defines:
+#   id:                 Unique identifier, referenced by synthesizer
+#   detect_signals:     What the research subagents look for
+#   weight:             Priority score (0.0–1.0); higher = surface first
+#   discovery_templates: Question templates filled with brief-specific data
+#
+# The synthesizer matches detected signals → trigger IDs → templates → fills
+# with company-specific details. Free-form question generation is prohibited.
+# =============================================================================
+
+triggers:
+  # --- Triggers from kickoff spec ---
+
+  - id: ndaa_compliance_pressure
+    detect_signals:
+      keywords:
+        - "federal funding"
+        - "DoD contract"
+        - "Hikvision"
+        - "Dahua"
+        - "NDAA"
+        - "FCC Covered List"
+        - "government contract"
+        - "GSA schedule"
+      source_hints:
+        - sec_filings
+        - news
+        - job_postings
+    weight: 0.9
+    discovery_templates:
+      - "I noticed {company} receives federal funding through {program}. Are existing cameras NDAA-compliant, or has that come up in audits?"
+      - "Hikvision/Dahua replacements are 2025–2026 budget items for many {vertical} orgs. Where are you in that conversation?"
+      - "Has your procurement team flagged the FCC Covered List when reviewing physical security vendors?"
+
+  - id: incident_recent_12mo
+    detect_signals:
+      keywords:
+        - "breach"
+        - "incident"
+        - "lawsuit"
+        - "shooting"
+        - "violence"
+        - "theft"
+        - "workplace violence"
+        - "security incident"
+        - "break-in"
+      source_hints:
+        - news
+        - sec_filings
+    weight: 1.0
+    discovery_templates:
+      - "I saw the {incident_type} coverage from {month}. How has that shifted security investment posture internally?"
+      - "What did the post-incident review surface as the primary gap — detection, response time, or footage retrieval?"
+      - "After {incident_type}, did leadership set a timeline for remediation, or is it still in planning?"
+
+  - id: hiring_security_intensity
+    detect_signals:
+      job_titles:
+        - "Director of Security"
+        - "Security Operations"
+        - "Physical Security Manager"
+        - "VP of Safety"
+        - "Global Security"
+        - "Security Systems Engineer"
+        - "Loss Prevention"
+      source_hints:
+        - job_postings
+    weight: 0.8
+    discovery_templates:
+      - "I see you're building out the security team — {specific_role} posted {timeframe}. What's driving that investment?"
+      - "When a new {specific_role} comes in, they typically audit existing infrastructure in the first 90 days. Is that happening?"
+      - "Is the {specific_role} hire reporting into security, facilities, or IT? That usually signals where budget sits."
+
+  - id: capital_project_signal
+    detect_signals:
+      keywords:
+        - "new building"
+        - "expansion"
+        - "lease signed"
+        - "groundbreaking"
+        - "new campus"
+        - "renovation"
+        - "construction"
+        - "new facility"
+        - "headquarters relocation"
+      source_hints:
+        - news
+        - sec_filings
+        - press_releases
+    weight: 0.7
+    discovery_templates:
+      - "When does {project_name} come online? Are security infrastructure decisions for that site already locked in, or still in design?"
+      - "New builds are a clean-sheet opportunity — is the security spec for {project_name} being written by facilities, IT, or an integrator?"
+      - "Are you standardizing the new site on the same security platform as existing locations, or evaluating fresh?"
+
+  # --- Additional triggers (expanded taxonomy) ---
+
+  - id: legacy_nvr_dvr_refresh
+    detect_signals:
+      keywords:
+        - "NVR"
+        - "DVR"
+        - "video management system"
+        - "VMS"
+        - "server refresh"
+        - "end of life"
+        - "end of support"
+        - "camera upgrade"
+        - "surveillance upgrade"
+        - "analog cameras"
+        - "storage capacity"
+      job_titles:
+        - "Security Systems Integrator"
+        - "CCTV Technician"
+      source_hints:
+        - job_postings
+        - news
+        - crt_sh
+    weight: 0.85
+    discovery_templates:
+      - "How old is the current NVR/DVR infrastructure at {company}? Are you hitting storage or performance limits that are forcing a refresh conversation?"
+      - "When your VMS servers hit end-of-life, who owns that refresh — IT or physical security? That budget conversation usually reveals a lot."
+      - "Are you factoring in the ongoing server maintenance and patching costs, or just the upfront hardware replacement when you budget for the NVR refresh?"
+
+  - id: multi_site_sprawl
+    detect_signals:
+      keywords:
+        - "locations across"
+        - "multi-site"
+        - "nationwide"
+        - "regional offices"
+        - "branch offices"
+        - "distributed"
+        - "franchise"
+        - "portfolio"
+        - "campuses"
+      numeric_signals:
+        site_count_above: 10
+      source_hints:
+        - sec_filings
+        - news
+        - company_website
+    weight: 0.75
+    discovery_templates:
+      - "{company} operates {site_count} locations. Are those running the same security platform, or did each site choose its own over the years?"
+      - "When there's an incident at a remote site, can your security team pull footage without calling someone on-site or VPN-ing into a local NVR?"
+      - "Standardizing {site_count} locations on one platform is a big project. What would need to be true for that to land on next year's budget?"
+
+  - id: cloud_transformation_initiative
+    detect_signals:
+      keywords:
+        - "cloud migration"
+        - "digital transformation"
+        - "cloud-first"
+        - "SaaS consolidation"
+        - "zero trust"
+        - "hybrid cloud"
+        - "AWS"
+        - "Azure"
+        - "data center decommission"
+      job_titles:
+        - "Cloud Architect"
+        - "VP of Digital Transformation"
+        - "Director of IT Modernization"
+      source_hints:
+        - job_postings
+        - sec_filings
+        - crt_sh
+        - github
+    weight: 0.7
+    discovery_templates:
+      - "I see {company} is investing heavily in cloud — {specific_signal}. Has physical security been included in that cloud-first conversation, or is it still the last on-prem holdout?"
+      - "If IT is decommissioning on-prem servers for everything else, how do they feel about maintaining NVR servers just for cameras?"
+      - "Your {cloud_initiative} suggests a preference for SaaS-managed infrastructure. Is physical security on the roadmap for that migration, or has no one raised it yet?"
+
+  - id: vendor_consolidation_signal
+    detect_signals:
+      keywords:
+        - "vendor consolidation"
+        - "reduce vendors"
+        - "single pane of glass"
+        - "platform consolidation"
+        - "simplify"
+        - "too many tools"
+        - "integration fatigue"
+        - "total cost of ownership"
+        - "TCO review"
+      source_hints:
+        - sec_filings
+        - news
+        - job_postings
+    weight: 0.7
+    discovery_templates:
+      - "I saw references to vendor consolidation at {company}. How many separate physical security vendors are you managing today — video, access, alarms, intercoms?"
+      - "When you add up licensing, maintenance contracts, and IT time across {vendor_count} security vendors, has anyone calculated the total cost of ownership?"
+      - "If you could manage video, access control, and environmental sensors from one login, what would that free up for your team?"
+
+  - id: regulatory_compliance_expansion
+    detect_signals:
+      keywords:
+        - "HIPAA audit"
+        - "FERPA compliance"
+        - "SOX"
+        - "PCI DSS"
+        - "Joint Commission"
+        - "CMS survey"
+        - "accreditation"
+        - "audit findings"
+        - "compliance remediation"
+        - "Clery Act"
+      source_hints:
+        - sec_filings
+        - news
+    weight: 0.8
+    discovery_templates:
+      - "I noticed {company} is navigating {regulation} requirements. Does your current security infrastructure produce the audit trail and footage retention that compliance needs?"
+      - "When {regulation} auditors ask for video evidence of physical access controls, how long does it take your team to pull that footage today?"
+      - "Are compliance requirements driving any of your physical security investment decisions this cycle, or is it still siloed from the security budget?"
+
+  - id: executive_leadership_change
+    detect_signals:
+      keywords:
+        - "new CEO"
+        - "new CTO"
+        - "new CFO"
+        - "new CSO"
+        - "new CISO"
+        - "new VP"
+        - "leadership change"
+        - "appointed"
+        - "joined as"
+        - "hired as"
+      source_hints:
+        - news
+        - press_releases
+        - sec_filings
+    weight: 0.65
+    discovery_templates:
+      - "I saw {executive_name} joined as {title} in {month}. New leaders often audit existing vendor relationships in their first quarter — has that process started for physical security?"
+      - "When a new {title} comes in, they usually inherit legacy contracts. Has {executive_name} signaled any priorities around infrastructure modernization?"
+
+  - id: insurance_or_risk_pressure
+    detect_signals:
+      keywords:
+        - "insurance premium"
+        - "risk management"
+        - "underwriting"
+        - "loss ratio"
+        - "claims"
+        - "property insurance"
+        - "liability"
+        - "risk mitigation"
+      source_hints:
+        - sec_filings
+        - news
+    weight: 0.65
+    discovery_templates:
+      - "Some {vertical} organizations are seeing insurance carriers require specific security controls — cameras, access logs — for renewal. Is that coming up at {company}?"
+      - "Has your risk management team quantified how upgraded physical security infrastructure could impact insurance premiums or claims costs?"
+
+# =============================================================================
+# Personas — Buyer Profiles with Relevance Filters
+# =============================================================================
+# care_about:  Topics to emphasize when generating output for this persona
+# skip_topics: Topics to suppress — they annoy or confuse this persona
+# =============================================================================
+
+personas:
+  IT_Director:
+    care_about:
+      - integration
+      - IT_burden
+      - cloud_strategy
+      - vendor_consolidation
+      - network_architecture
+      - SSO_and_directory_sync
+      - automatic_firmware_updates
+      - API_availability
+    skip_topics:
+      - door_hardware_specs
+      - plant_floor_ops
+      - guard_tour_workflows
+      - insurance_premiums
+
+  Director_of_Facilities:
+    care_about:
+      - capital_projects
+      - vendor_management
+      - ops_cost
+      - ease_of_use
+      - multi_site_management
+      - visitor_management
+      - maintenance_reduction
+    skip_topics:
+      - SSO
+      - API_integration
+      - network_architecture
+      - developer_documentation
+
+  CSO:
+    care_about:
+      - risk_posture
+      - incident_response
+      - regulatory
+      - audit_trail
+      - real_time_alerting
+      - forensic_search
+      - enterprise_reporting
+    skip_topics:
+      - implementation_timeline_details
+      - network_port_configs
+      - pricing_per_unit
+
+  Superintendent_K12:
+    care_about:
+      - student_safety
+      - parent_communication
+      - board_optics
+      - budget_justification
+      - federal_funding_alignment
+      - ease_of_adoption_for_staff
+    skip_topics:
+      - API_integration
+      - SSO_federation
+      - enterprise_analytics
+      - developer_documentation
+
+  VP_of_Operations:
+    care_about:
+      - operational_efficiency
+      - multi_site_visibility
+      - vendor_consolidation
+      - total_cost_of_ownership
+      - scalability
+      - reporting_dashboards
+    skip_topics:
+      - door_hardware_wiring
+      - camera_lens_specifications
+      - network_topology_details
+
+  Loss_Prevention_Director:
+    care_about:
+      - shrink_reduction
+      - POS_integration
+      - remote_investigation
+      - organized_retail_crime
+      - exception_based_reporting
+      - video_search_speed
+    skip_topics:
+      - access_control_policies
+      - environmental_sensors
+      - cloud_migration_strategy
+      - SSO
+
+# =============================================================================
+# Disqualifiers — Flags That Should Kill an Opportunity
+# =============================================================================
+# If any of these are detected, the brief must flag them prominently.
+# They don't mean "stop research" — they mean "SE needs to know immediately."
+# =============================================================================
+
+disqualifiers:
+  - id: on_prem_only_mandate
+    description: >
+      Organization has a documented policy or regulatory requirement
+      prohibiting cloud-managed security infrastructure. No path to Verkada
+      without a policy exception.
+
+  - id: existing_3yr_contract_just_signed
+    description: >
+      Recently signed a 3+ year contract with a competing vendor.
+      Displacement timeline is 2–3 years out minimum. Park, don't pursue.
+
+  - id: sub_50_employee_org
+    description: >
+      Organization is below Verkada's typical deal floor. May be viable
+      for SMB motion but not SE-led enterprise sales.
+
+  - id: chinese_gov_affiliated
+    description: >
+      Entity is affiliated with Chinese government or military.
+      Verkada will not sell. Hard disqualifier.
+
+  - id: active_verkada_customer
+    description: >
+      Already a Verkada customer. Route to CSM/expansion team, not
+      net-new pipeline. Research brief should pivot to expansion signals.
