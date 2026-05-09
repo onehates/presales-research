@@ -1,0 +1,27 @@
+# =============================================================================
+# seller-profile.yml — SE Background for Warm Intro Path Cross-Referencing
+# =============================================================================
+# Copy this file to seller-profile.yml and fill in your actual background.
+# seller-profile.yml is gitignored (sensitive personal data).
+#
+# The synthesizer cross-references this against champion candidates to surface
+# warm intro paths: shared prior employers, mutual networks, geographic overlap.
+# =============================================================================
+
+seller:
+  name: "Your Name"
+  current_role: "Solutions Engineer, Verkada"
+  prior_employers:
+    - "Previous Company 1"
+    - "Previous Company 2"
+  key_accounts_history:
+    - "Named past customer 1"
+    - "Named past customer 2"
+  networks:
+    - "Industry group or community"
+    - "Local professional network"
+  certifications:
+    - "Relevant certification"
+  geographic_focus:
+    - "City"
+    - "Region"

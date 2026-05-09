@@ -79,6 +79,38 @@ def _crtsh_args(company, slug):
     return {"company_name": company}
 
 
+def _leadership_args(company, slug):
+    """Detect entity_type from cached NCES/SEC data for leadership client."""
+    entity_type = "unknown"
+    nces_path = SOURCES_DIR / slug / "nces.json"
+    if nces_path.exists():
+        try:
+            nces = json.loads(nces_path.read_text())
+            if nces.get("district_metadata"):
+                entity_type = "k12_district"
+        except (json.JSONDecodeError, OSError):
+            pass
+    if entity_type == "unknown":
+        clery_path = SOURCES_DIR / slug / "clery.json"
+        if clery_path.exists():
+            try:
+                clery = json.loads(clery_path.read_text())
+                if clery.get("status") != "insufficient_data":
+                    entity_type = "higher_ed"
+            except (json.JSONDecodeError, OSError):
+                pass
+    if entity_type == "unknown":
+        sec_path = SOURCES_DIR / slug / "sec.json"
+        if sec_path.exists():
+            try:
+                sec = json.loads(sec_path.read_text())
+                if sec.get("status") != "insufficient_data" and sec.get("company"):
+                    entity_type = "public_corporation"
+            except (json.JSONDecodeError, OSError):
+                pass
+    return {"company_name": company, "entity_type": entity_type}
+
+
 CLIENT_REGISTRY = {
     # (module_name, fetch_fn_name, args_factory, cache_filename)
     "sec":                  ("clients.sec",               "fetch_sec_data",                _company_args,  "sec.json"),
@@ -99,6 +131,7 @@ CLIENT_REGISTRY = {
     "omnia":                ("clients.omnia",             "fetch_omnia_data",              _category_args, "omnia.json"),
     "costars":              ("clients.costars",           "fetch_costars_data",            _category_args, "costars.json"),
     "hgac":                 ("clients.hgac",              "fetch_hgac_data",               _category_args, "hgac.json"),
+    "leadership":           ("clients.leadership",        "fetch_leadership_data",         _leadership_args,  "leadership.json"),
 }
 
 
@@ -478,11 +511,29 @@ def run_phase3(slug: str, subagent_outputs: dict) -> dict:
             except (json.JSONDecodeError, OSError):
                 pass
 
+    # Include leadership data for champion identification
+    leadership_path = SOURCES_DIR / slug / "leadership.json"
+    if leadership_path.exists():
+        try:
+            leadership_data = json.loads(leadership_path.read_text())
+            user_parts.append(f"=== leadership.json ===\n{json.dumps(leadership_data, indent=2, default=str)}")
+        except (json.JSONDecodeError, OSError):
+            pass
+
     # Include persona file (needed for trigger templates, leverage_references, persona filtering)
     if PERSONA_PATH.exists():
         try:
             persona_text = PERSONA_PATH.read_text()
             user_parts.append(f"=== persona/verkada-se.yml ===\n{persona_text}")
+        except OSError:
+            pass
+
+    # Include seller profile for warm intro cross-referencing
+    seller_path = PROJECT_ROOT / "persona" / "seller-profile.yml"
+    if seller_path.exists():
+        try:
+            seller_text = seller_path.read_text()
+            user_parts.append(f"=== persona/seller-profile.yml ===\n{seller_text}")
         except OSError:
             pass
 
