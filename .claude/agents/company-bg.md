@@ -20,7 +20,9 @@ You receive a company slug (e.g., `target-corporation`) via the user message. Re
 5. `sources/{company}/news.json` — Tavily news search results (articles, trigger matches)
 6. `persona/verkada-se.yml` — The persona rule engine (product lines, ICP verticals, triggers)
 
-**Use the Read tool to load each file. Use Glob to verify file existence first if needed.**
+**The source data is injected into the user message below, prefixed with `=== sources/{company}/{filename} ===` headers. Parse the data directly from the message — do NOT attempt to use Read or Glob tools.**
+
+**CRITICAL: Output ONLY valid JSON. No markdown fences, no prose, no preamble, no explanation. Your entire response must be a single JSON object matching the Output Schema below.**
 
 ## Entity Type Detection
 
@@ -39,7 +41,7 @@ Not all target accounts are SEC-registered corporations. The subagent MUST suppo
 
 ## No-Fetch Rule
 
-You read from cache ONLY. You do NOT make web requests, API calls, or trigger data collection. If `/research` hasn't been run for this company, the cache files won't exist. That is the correct behavior — output `insufficient_data` and stop.
+You read from the injected source data ONLY. You do NOT make web requests, API calls, or trigger data collection. If a required source file shows `[FILE NOT FOUND]` in the injected data, check other entity type sources before concluding insufficient_data.
 
 ## Output Schema
 
@@ -269,13 +271,13 @@ These are non-negotiable. Violating any one of them makes the output worthless.
 
 ## Execution Flow
 
-1. Read `sources/{slug}/sec.json`. Note if present and valid.
-2. Read `sources/{slug}/nces.json`. Note if present and valid.
-3. Read `sources/{slug}/clery.json`. Note if present and valid.
-4. Read `sources/{slug}/sam.json`. Note if present and valid.
-5. Read `sources/{slug}/news.json`. Note if present and valid.
+1. Parse `sources/{slug}/sec.json` from injected data. Note if present (not `[FILE NOT FOUND]`) and valid.
+2. Parse `sources/{slug}/nces.json` from injected data. Note if present and valid.
+3. Parse `sources/{slug}/clery.json` from injected data. Note if present and valid.
+4. Parse `sources/{slug}/sam.json` from injected data. Note if present and valid.
+5. Parse `sources/{slug}/news.json` from injected data. Note if present and valid.
 6. **Determine entity_type** using the detection order above. If NO primary source produces valid data → output `insufficient_data` and stop.
-7. Read `persona/verkada-se.yml`.
+7. Parse `persona/verkada-se.yml` from injected data.
 8. Based on entity_type, extract entity metadata → populate `snapshot` using entity-type-specific rules.
 9. If entity_type is `k12_district` or `higher_ed` or `government_entity`, populate `federal_funding_profile` from NCES/Clery/SAM data. For `public_corporation`, set to `null` unless SEC filings mention government contracts.
 10. Scan all available sources for leadership mentions → populate `leadership` (or `"insufficient_data"` if fewer than 2 sources mention any leader).
