@@ -316,6 +316,38 @@ def _load_source_data_for_agent(agent_name: str, slug: str) -> str:
     return "\n\n".join(parts)
 
 
+RETRY_DELAYS = [5, 15, 45]
+
+
+def _call_anthropic_with_retry(client, *, model: str, max_tokens: int,
+                                system: str, messages: list,
+                                label: str) -> "anthropic.types.Message":
+    """Call the Anthropic API with exponential backoff on 429/529."""
+    for attempt in range(len(RETRY_DELAYS) + 1):
+        try:
+            return client.messages.create(
+                model=model,
+                max_tokens=max_tokens,
+                system=system,
+                messages=messages,
+            )
+        except anthropic.RateLimitError:
+            if attempt >= len(RETRY_DELAYS):
+                raise
+            delay = RETRY_DELAYS[attempt]
+            print(f"    ⏳ {label}: rate limited (429), retrying in {delay}s... (attempt {attempt + 2}/{len(RETRY_DELAYS) + 1})",
+                  file=sys.stderr, flush=True)
+            time.sleep(delay)
+        except anthropic.APIStatusError as e:
+            if e.status_code == 529 and attempt < len(RETRY_DELAYS):
+                delay = RETRY_DELAYS[attempt]
+                print(f"    ⏳ {label}: API overloaded (529), retrying in {delay}s... (attempt {attempt + 2}/{len(RETRY_DELAYS) + 1})",
+                      file=sys.stderr, flush=True)
+                time.sleep(delay)
+            else:
+                raise
+
+
 def run_subagent(agent_name: str, slug: str) -> dict:
     """Run a Sonnet subagent. Returns the parsed JSON output."""
     if not anthropic or not os.environ.get("ANTHROPIC_API_KEY"):
@@ -330,12 +362,14 @@ def run_subagent(agent_name: str, slug: str) -> dict:
     )
 
     client = anthropic.Anthropic()
-    msg = client.messages.create(
-        model=SONNET_MODEL,
-        max_tokens=8000,
-        system=system_prompt,
-        messages=[{"role": "user", "content": user_msg}],
-    )
+    try:
+        msg = _call_anthropic_with_retry(
+            client, model=SONNET_MODEL, max_tokens=8000,
+            system=system_prompt, messages=[{"role": "user", "content": user_msg}],
+            label=agent_name,
+        )
+    except (anthropic.RateLimitError, anthropic.APIStatusError):
+        return {"status": "insufficient_data", "reason": "rate_limited_after_3_retries"}
 
     text = msg.content[0].text
 
@@ -358,32 +392,32 @@ def run_subagent(agent_name: str, slug: str) -> dict:
 
 
 def run_phase2(slug: str) -> dict:
-    """Run 3 subagents in parallel. Returns {agent_name: parsed_json}."""
+    """Run 3 subagents sequentially with 2s pause between each.
+
+    Sequential execution avoids rate-limit (429) errors that occur when
+    3 Sonnet calls fire simultaneously. Total runtime ~120s vs ~60s
+    parallel, but near-zero failure rate — critical for live demo runs.
+    """
     print("\n  Phase 2 — Subagent Synthesis (Sonnet)")
     print("  " + "─" * 50)
 
     agents = ["company-bg", "tech-and-pain", "hiring-signals"]
     results = {}
 
-    with ThreadPoolExecutor(max_workers=3) as pool:
-        futures = {
-            pool.submit(run_subagent, name, slug): name
-            for name in agents
-        }
-
-        for future in as_completed(futures):
-            name = futures[future]
-            try:
-                result = future.result()
-                status = result.get("status", "ok")
-                if status in ("insufficient_data", "parse_error"):
-                    print(f"    {SYM_INSUF} {name:<22} {status}: {result.get('reason', result.get('raw', '')[:60])}", flush=True)
-                else:
-                    print(f"    {SYM_OK} {name:<22} ok", flush=True)
-                results[name] = result
-            except Exception as e:
-                print(f"    {SYM_ERROR} {name:<22} {str(e)[:60]}", flush=True)
-                results[name] = {"status": "error", "reason": str(e)[:200]}
+    for i, name in enumerate(agents):
+        if i > 0:
+            time.sleep(2)
+        try:
+            result = run_subagent(name, slug)
+            status = result.get("status", "ok")
+            if status in ("insufficient_data", "parse_error"):
+                print(f"    {SYM_INSUF} {name:<22} {status}: {result.get('reason', result.get('raw', '')[:60])}", flush=True)
+            else:
+                print(f"    {SYM_OK} {name:<22} ok", flush=True)
+            results[name] = result
+        except Exception as e:
+            print(f"    {SYM_ERROR} {name:<22} {str(e)[:60]}", flush=True)
+            results[name] = {"status": "error", "reason": str(e)[:200]}
 
     # Write subagent outputs to sources/{slug}/
     sources_dir = SOURCES_DIR / slug
@@ -443,12 +477,16 @@ def run_phase3(slug: str, subagent_outputs: dict) -> dict:
 
     try:
         client = anthropic.Anthropic()
-        msg = client.messages.create(
-            model=OPUS_MODEL,
-            max_tokens=12000,
-            system=system_prompt,
-            messages=[{"role": "user", "content": user_msg}],
-        )
+        try:
+            msg = _call_anthropic_with_retry(
+                client, model=OPUS_MODEL, max_tokens=12000,
+                system=system_prompt, messages=[{"role": "user", "content": user_msg}],
+                label="synthesizer",
+            )
+        except (anthropic.RateLimitError, anthropic.APIStatusError):
+            print(f"    {SYM_ERROR} synthesizer rate limited after 3 retries", flush=True)
+            return {"status": "insufficient_data", "reason": "rate_limited_after_3_retries",
+                    "subagent_outputs": subagent_outputs}
 
         text = msg.content[0].text
         text = re.sub(r'^```(?:json)?\s*\n?', '', text.strip())
