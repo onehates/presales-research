@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ data.snapshot.name }} — Pre-Sales Brief</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .source-chip { font-size: 0.65rem; }
+    .badge { font-size: 0.6rem; letter-spacing: 0.05em; }
+    .section-card { border-left: 3px solid #e5e7eb; }
+    .section-card:hover { border-left-color: #3b82f6; }
+    @media print {
+      .no-print { display: none; }
+      .section-card { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900 antialiased">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-10 no-print">
+    <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div>
+        <h1 class="text-xl font-bold text-gray-900">{{ data.snapshot.name }}</h1>
+        <p class="text-sm text-gray-500">{{ data.snapshot.vertical }} · {{ data.snapshot.ticker or 'Private' }} · {{ data.snapshot.headquarters_state }}</p>
+      </div>
+      <div class="text-right text-xs text-gray-400">
+        <div>Generated {{ data.metadata.generated_at[:10] }}</div>
+        <div>Agents: {{ data.metadata.agents_used | join(', ') }}</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-6 py-8 space-y-8">
+
+    <!-- TL;DR Card -->
+    <section class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+      <div class="flex items-center gap-2 mb-3">
+        <h2 class="text-sm font-semibold text-blue-800 uppercase tracking-wide">TL;DR — 30-Second Skim</h2>
+        {% if data.tldr.confidence %}
+        {{ confidence_badge(data.tldr.confidence) }}
+        {% endif %}
+      </div>
+      <ul class="space-y-3">
+        {% for bullet in data.tldr.bullets %}
+        <li class="text-sm text-blue-900 leading-relaxed pl-4 border-l-2 border-blue-300">{{ bullet }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    <!-- Disqualifier Flags -->
+    {% if data.disqualifier_flags %}
+    <section class="bg-red-50 border border-red-300 rounded-lg p-6">
+      <h2 class="text-sm font-semibold text-red-800 uppercase tracking-wide mb-3">Disqualifier Flags</h2>
+      {% for flag in data.disqualifier_flags %}
+      <div class="flex items-start gap-2 mb-2">
+        <span class="text-red-600 font-bold text-lg leading-none mt-0.5">!</span>
+        <div>
+          <span class="text-sm font-medium text-red-900">{{ flag.id }}</span>
+          <p class="text-sm text-red-800">{{ flag.evidence }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    <!-- Company Snapshot -->
+    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Company Snapshot</h2>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+        <div>
+          <dt class="text-gray-500 text-xs uppercase">Legal Name</dt>
+          <dd class="font-medium">{{ data.snapshot.name }}</dd>
+        </div>
+        <div>
+          <dt class="text-gray-500 text-xs uppercase">Ticker</dt>
+          <dd class="font-medium">{{ data.snapshot.ticker or '—' }}</dd>
+        </div>
+        <div>
+          <dt class="text-gray-500 text-xs uppercase">SIC</dt>
+          <dd class="font-medium">{{ data.snapshot.sic_code }} — {{ data.snapshot.sic_description }}</dd>
+        </div>
+        <div>
+          <dt class="text-gray-500 text-xs uppercase">HQ</dt>
+          <dd class="font-medium">{{ data.snapshot.headquarters_state }}</dd>
+        </div>
+        <div class="col-span-2">
+          <dt class="text-gray-500 text-xs uppercase">Size</dt>
+          <dd class="font-medium">{{ data.snapshot.size_indicator }}</dd>
+        </div>
+      </div>
+      <div class="mt-3 flex flex-wrap gap-1">
+        {{ confidence_badge(data.snapshot.confidence) }}
+        {{ quality_badge(data.snapshot.source_quality) }}
+        {% for src in data.snapshot.sources %}
+        {{ source_chip(src) }}
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Vertical Match -->
+    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Vertical Match</h2>
+      <div class="flex items-center gap-3 mb-3">
+        <span class="text-lg font-bold text-gray-900">{{ data.vertical_match.matched_vertical }}</span>
+        {{ confidence_badge(data.vertical_match.match_confidence) }}
+      </div>
+      <p class="text-sm text-gray-700 mb-3">{{ data.vertical_match.match_reasoning }}</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        <div>
+          <dt class="text-gray-500 text-xs uppercase mb-1">Key Drivers Present</dt>
+          <div class="flex flex-wrap gap-1">
+            {% for d in data.vertical_match.key_drivers_present %}
+            <span class="inline-block bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs font-medium">{{ d }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        <div>
+          <dt class="text-gray-500 text-xs uppercase mb-1">Typical Pain Present</dt>
+          <div class="flex flex-wrap gap-1">
+            {% for p in data.vertical_match.typical_pain_present %}
+            <span class="inline-block bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-xs font-medium">{{ p }}</span>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Leadership -->
+    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Leadership</h2>
+      {% if data.leadership is string %}
+      <p class="text-sm text-gray-500 italic">{{ data.leadership }}</p>
+      {% elif data.leadership == "insufficient_data" %}
+      <p class="text-sm text-gray-500 italic">Insufficient data</p>
+      {% else %}
+      <div class="space-y-3">
+        {% for person in data.leadership %}
+        <div class="flex items-start justify-between">
+          <div>
+            <span class="font-medium text-sm">{{ person.name }}</span>
+            <span class="text-gray-500 text-sm"> — {{ person.title }}</span>
+            {% if person.joined %}<span class="text-gray-400 text-xs ml-2">since {{ person.joined }}</span>{% endif %}
+          </div>
+          <div class="flex gap-1">
+            {{ confidence_badge(person.confidence) }}
+            {{ quality_badge(person.source_quality) }}
+            {{ source_chip(person.source) }}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </section>
+
+    <!-- Recent Material Events -->
+    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Recent Material Events</h2>
+      {% if data.recent_material_events is string %}
+      <p class="text-sm text-gray-500 italic">{{ data.recent_material_events }}</p>
+      {% else %}
+      <div class="space-y-4">
+        {% for event in data.recent_material_events %}
+        <div class="border-l-2 {{ 'border-blue-400' if event.verkada_relevant else 'border-gray-200' }} pl-4">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs text-gray-400">{{ event.date or 'Date unknown' }}</span>
+            <span class="inline-block bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs">{{ event.category }}</span>
+            {% if event.verkada_relevant %}
+            <span class="inline-block bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-medium">Verkada-relevant</span>
+            {% endif %}
+            {{ confidence_badge(event.confidence) }}
+            {{ quality_badge(event.source_quality) }}
+          </div>
+          <p class="text-sm text-gray-800 leading-relaxed">{{ event.description }}</p>
+          {% if event.source_caveat %}
+          <p class="text-xs text-amber-600 mt-1">{{ event.source_caveat }}</p>
+          {% endif %}
+          <div class="mt-1">{{ source_chip(event.source) }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </section>
+
+    <!-- Technical Footprint -->
+    {% if data.technical_footprint %}
+    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Technical Footprint</h2>
+
+      <!-- Scale bar -->
+      {% if data.technical_footprint.scale_indicators %}
+      <div class="flex gap-6 mb-5 text-sm">
+        {% set si = data.technical_footprint.scale_indicators %}
+        <div><span class="text-gray-500 text-xs uppercase">Subdomains</span><br><span class="font-bold text-lg">{{ si.subdomain_count }}</span></div>
+        <div><span class="text-gray-500 text-xs uppercase">Public Repos</span><br><span class="font-bold text-lg">{{ si.public_repos }}</span></div>
+        <div><span class="text-gray-500 text-xs uppercase">Languages</span><br><span class="font-bold text-lg">{{ si.language_diversity }}</span></div>
+      </div>
+      {% endif %}
+
+      <!-- Sub-sections in a 2-col grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Cloud Native -->
+        {% if data.technical_footprint.cloud_native_indicators %}
+        <div>
+          <h3 class="text-xs font-semibold text-gray-500 uppercase mb-2">Cloud Native Indicators</h3>
+          {% for item in data.technical_footprint.cloud_native_indicators %}
+          <div class="mb-3">
+            <div class="flex items-center gap-1 mb-0.5">
+              <span class="text-sm font-medium">{{ item.signal }}</span>
+              {{ confidence_badge(item.confidence) }}
+            </div>
+            <p class="text-xs text-gray-600">{{ item.evidence }}</p>
+            <div class="mt-0.5">{{ source_chip(item.source) }}</div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- SaaS Stack -->
+        {% if data.technical_footprint.saas_stack_inferred %}
+        <div>
+          <h3 class="text-xs font-semibold text-gray-500 uppercase mb-2">SaaS Stack (Inferred)</h3>
+          {% for item in data.technical_footprint.saas_stack_inferred %}
+          <div class="mb-3">
+            <div class="flex items-center gap-1 mb-0.5">
+              <span class="text-sm font-medium">{{ item.vendor }}</span>
+              {{ confidence_badge(item.confidence) }}
+            </div>
+            <p class="text-xs text-gray-600">{{ item.evidence }}</p>
+            <div class="mt-0.5">{{ source_chip(item.source) }}</div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Security Engineering -->
+        {% if data.technical_footprint.security_engineering_signals %}
+        <div>
+          <h3 class="text-xs font-semibold text-gray-500 uppercase mb-2">Security Engineering</h3>
+          {% for item in data.technical_footprint.security_engineering_signals %}
+          <div class="mb-3">
+            <div class="flex items-center gap-1 mb-0.5">
+              <span class="text-sm font-medium">{{ item.signal }}</span>
+              {{ confidence_badge(item.confidence) }}
+            </div>
+            <p class="text-xs text-gray-600">{{ item.evidence }}</p>
+            <div class="mt-0.5">{{ source_chip(item.source) }}</div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Physical Security -->
+        {% if data.technical_footprint.physical_security_indicators %}
+        <div>
+          <h3 class="text-xs font-semibold text-gray-500 uppercase mb-2">Physical Security Indicators</h3>
+          {% for item in data.technical_footprint.physical_security_indicators %}
+          <div class="mb-3">
+            <div class="flex items-center gap-1 mb-0.5">
+              <span class="text-sm font-medium">{{ item.signal }}</span>
+              {{ confidence_badge(item.confidence) }}
+            </div>
+            <p class="text-xs text-gray-600">{{ item.evidence }}</p>
+            <div class="mt-0.5">{{ source_chip(item.source) }}</div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- Pain Hypotheses -->
+    {% if data.pain_hypotheses %}
+    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Pain Hypotheses</h2>
+      <div class="space-y-5">
+        {% for pain in data.pain_hypotheses %}
+        <div class="border-l-2 border-amber-400 pl-4">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="inline-block bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-xs font-medium">{{ pain.linked_persona_pain }}</span>
+            {{ confidence_badge(pain.confidence) }}
+            {{ quality_badge(pain.source_quality) }}
+          </div>
+          <p class="text-sm text-gray-800 leading-relaxed mb-2">{{ pain.hypothesis }}</p>
+          <div class="text-xs text-gray-500 space-y-1">
+            {% for eb in pain.evidence_basis %}
+            <div class="pl-3 border-l border-gray-200">{{ eb }}</div>
+            {% endfor %}
+          </div>
+          <div class="mt-1 flex flex-wrap gap-1">
+            {% for src in pain.sources %}
+            {{ source_chip(src) }}
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- Displacement Intel -->
+    {% if data.displacement_intel %}
+    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Displacement Intel</h2>
+      {% if data.displacement_intel.vendor_hits %}
+      <div class="space-y-3 mb-4">
+        {% for hit in data.displacement_intel.vendor_hits %}
+        <div class="flex items-start gap-3">
+          <span class="font-medium text-sm">{{ hit.vendor }}</span>
+          <p class="text-sm text-gray-700">{{ hit.evidence }}</p>
+          {{ confidence_badge(hit.confidence) }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% if data.displacement_intel.vendor_absence_finding %}
+      <div class="bg-gray-50 rounded p-3">
+        <span class="text-xs font-semibold text-gray-500 uppercase">Vendor Absence Finding</span>
+        <p class="text-sm text-gray-700 mt-1">{{ data.displacement_intel.vendor_absence_finding }}</p>
+      </div>
+      {% endif %}
+      {% if data.displacement_intel.tech_stack_mentions %}
+      <div class="mt-3">
+        <span class="text-xs font-semibold text-gray-500 uppercase">Tech Stack Mentions from JDs</span>
+        {% for m in data.displacement_intel.tech_stack_mentions %}
+        <div class="text-sm text-gray-700">{{ m }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    <!-- Hiring Signals -->
+    {% if data.hiring_signals %}
+    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Hiring Signals</h2>
+
+      <!-- Intensity -->
+      {% set hi = data.hiring_signals.hiring_intensity %}
+      <div class="flex items-center gap-3 mb-4">
+        <span class="text-xs font-semibold text-gray-500 uppercase">Intensity</span>
+        {% set intensity_colors = {'aggressive': 'bg-red-100 text-red-800', 'steady': 'bg-green-100 text-green-800', 'thin': 'bg-amber-100 text-amber-800', 'minimal': 'bg-gray-100 text-gray-600'} %}
+        <span class="inline-block px-2 py-0.5 rounded text-xs font-bold {{ intensity_colors.get(hi.intensity_signal, 'bg-gray-100 text-gray-600') }}">{{ hi.intensity_signal | upper }}</span>
+        <span class="text-sm text-gray-600">{{ hi.total_active_reqs }} postings captured</span>
+        {{ confidence_badge(hi.confidence) }}
+      </div>
+      {% if hi.intensity_caveat %}
+      <p class="text-xs text-amber-600 mb-4">{{ hi.intensity_caveat }}</p>
+      {% endif %}
+
+      <!-- Category distribution -->
+      <div class="grid grid-cols-4 gap-2 mb-5 text-xs">
+        {% for cat, count in hi.category_distribution.items() %}
+        {% if count > 0 %}
+        <div class="bg-gray-50 rounded p-2 text-center">
+          <div class="font-bold text-lg text-gray-800">{{ count }}</div>
+          <div class="text-gray-500">{{ cat | replace('_', ' ') }}</div>
+        </div>
+        {% endif %}
+        {% endfor %}
+      </div>
+
+      <!-- Security team signals -->
+      {% if data.hiring_signals.security_team_signals %}
+      <h3 class="text-xs font-semibold text-gray-500 uppercase mb-2">Security Team Signals</h3>
+      <div class="space-y-3 mb-4">
+        {% for role in data.hiring_signals.security_team_signals %}
+        <div class="border-l-2 border-gray-200 pl-3">
+          <div class="flex items-center flex-wrap gap-2 mb-0.5">
+            <span class="text-sm font-medium">{{ role.role_title }}</span>
+            {% set cat_colors = {'physical': 'bg-blue-100 text-blue-800', 'cyber': 'bg-purple-100 text-purple-800', 'both': 'bg-indigo-100 text-indigo-800', 'loss_prevention': 'bg-orange-100 text-orange-800'} %}
+            <span class="inline-block px-2 py-0.5 rounded text-xs font-medium {{ cat_colors.get(role.category, 'bg-gray-100 text-gray-600') }}">{{ role.category }}</span>
+            <span class="text-xs text-gray-500">{{ role.seniority }}</span>
+            {{ confidence_badge(role.confidence) }}
+            {{ quality_badge(role.source_quality) }}
+          </div>
+          <div class="text-xs text-gray-600">
+            {{ role.location }}{% if role.salary_range %} · {{ role.salary_range }}{% endif %}
+          </div>
+          {% if role.source_caveat %}
+          <p class="text-xs text-amber-600 mt-0.5">{{ role.source_caveat }}</p>
+          {% endif %}
+          <div class="mt-0.5">{{ source_chip(role.source) }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Trigger evidence -->
+      {% if data.hiring_signals.trigger_evidence is string %}
+      <div class="bg-gray-50 rounded p-3 mb-4">
+        <span class="text-xs font-semibold text-gray-500 uppercase">Trigger Evidence</span>
+        <p class="text-sm text-gray-600 mt-1">{{ data.hiring_signals.trigger_evidence }}</p>
+      </div>
+      {% endif %}
+
+      <!-- Geographic expansion -->
+      {% if data.hiring_signals.geographic_expansion_signal %}
+      <h3 class="text-xs font-semibold text-gray-500 uppercase mb-2">Geographic Signals</h3>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+        {% for geo in data.hiring_signals.geographic_expansion_signal %}
+        <div class="bg-gray-50 rounded p-2">
+          <div class="font-medium">{{ geo.location }}</div>
+          <div class="text-xs text-gray-500">{{ geo.role_count }} role{{ 's' if geo.role_count != 1 else '' }} · {{ geo.interpretation }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    <!-- Discovery Questions by Persona -->
+    {% if data.discovery_questions_by_persona %}
+    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Discovery Questions by Persona</h2>
+      <div class="space-y-6">
+        {% for persona, questions in data.discovery_questions_by_persona.items() %}
+        <div>
+          <h3 class="text-sm font-semibold text-gray-800 mb-2 flex items-center gap-2">
+            <span class="inline-block w-2 h-2 rounded-full {{ 'bg-blue-500' if questions else 'bg-gray-300' }}"></span>
+            {{ persona | replace('_', ' ') }}
+            <span class="text-xs text-gray-400 font-normal">{{ questions | length }} question{{ 's' if questions | length != 1 else '' }}</span>
+          </h3>
+          {% if questions %}
+          <div class="space-y-3 pl-4">
+            {% for q in questions %}
+            <div class="border-l-2 border-blue-200 pl-3">
+              <p class="text-sm text-gray-800">{{ q.question }}</p>
+              <div class="flex items-center gap-2 mt-1">
+                <span class="inline-block bg-gray-100 text-gray-500 px-2 py-0.5 rounded text-xs">{{ q.source_trigger }}</span>
+                {{ confidence_badge(q.confidence) }}
+              </div>
+              <p class="text-xs text-gray-400 mt-0.5">{{ q.evidence }}</p>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-xs text-gray-400 italic pl-4">No questions — persona not applicable to {{ data.snapshot.vertical }} vertical</p>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- Open Questions -->
+    {% if data.open_questions %}
+    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Open Questions</h2>
+      <div class="space-y-4">
+        {% for oq in data.open_questions %}
+        <div class="border-l-2 {{ 'border-red-300' if oq.priority == 'high' else 'border-amber-300' if oq.priority == 'medium' else 'border-gray-200' }} pl-4">
+          <div class="flex items-center gap-2 mb-1">
+            {% set pri_colors = {'high': 'bg-red-100 text-red-700', 'medium': 'bg-amber-100 text-amber-700', 'low': 'bg-gray-100 text-gray-600'} %}
+            <span class="inline-block px-2 py-0.5 rounded text-xs font-medium {{ pri_colors.get(oq.priority, 'bg-gray-100 text-gray-600') }}">{{ oq.priority }}</span>
+          </div>
+          <p class="text-sm text-gray-800 mb-1">{{ oq.question }}</p>
+          <p class="text-xs text-gray-500">{{ oq.would_resolve }}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="max-w-5xl mx-auto px-6 py-6 text-xs text-gray-400 border-t border-gray-200">
+    <div class="flex justify-between">
+      <span>Pre-Sales Research Brief · {{ data.metadata.company_slug }}</span>
+      <span>
+        <span class="inline-block w-2 h-2 rounded-full bg-green-400"></span> Sourced
+        <span class="inline-block w-2 h-2 rounded-full bg-amber-400 ml-2"></span> Inferred
+        <span class="inline-block w-2 h-2 rounded-full bg-red-400 ml-2"></span> Weak
+      </span>
+    </div>
+  </footer>
+
+</body>
+</html>
