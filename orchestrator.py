@@ -378,6 +378,16 @@ def run_phase3(slug: str, subagent_outputs: dict) -> dict:
         data = subagent_outputs.get(name, {"status": "insufficient_data"})
         user_parts.append(f"=== {name} OUTPUT ===\n{json.dumps(data, indent=2, default=str)}")
 
+    # Include cooperative purchasing data if available
+    for coop_file in ["sourcewell.json", "tips.json"]:
+        coop_path = SOURCES_DIR / slug / coop_file
+        if coop_path.exists():
+            try:
+                coop_data = json.loads(coop_path.read_text())
+                user_parts.append(f"=== {coop_file} ===\n{json.dumps(coop_data, indent=2, default=str)}")
+            except (json.JSONDecodeError, OSError):
+                pass
+
     user_msg = "\n\n".join(user_parts) + f"\n\nCompany slug: {slug}"
 
     print(f"    {SYM_RUN} running synthesizer...", flush=True)

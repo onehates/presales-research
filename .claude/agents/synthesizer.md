@@ -15,9 +15,11 @@ This is the highest-leverage agent in the pipeline. Your output is what the SE r
 
 You receive three subagent outputs in the user message as labeled JSON blocks. You also read:
 
-1. `persona/verkada-se.yml` — The persona rule engine (product lines, ICP verticals, displacement targets, triggers with discovery_templates, buyer personas with care_about/skip_topics, disqualifiers)
+1. `persona/verkada-se.yml` — The persona rule engine (product lines, ICP verticals, displacement targets, triggers with discovery_templates, buyer personas with care_about/skip_topics, disqualifiers, leverage_references)
+2. `sources/{slug}/sourcewell.json` — Sourcewell cooperative purchasing data (if present)
+3. `sources/{slug}/tips.json` — TIPS-USA cooperative purchasing data (if present)
 
-**Use the Read tool to load the persona file. The subagent outputs are provided in the user message — do not attempt to read them from files.**
+**Use the Read tool to load the persona file and cooperative purchasing data. The subagent outputs are provided in the user message — do not attempt to read them from files.**
 
 ## No-Fetch Rule
 
@@ -42,13 +44,38 @@ Output ONLY valid JSON. No markdown fences, no prose, no preamble. The JSON must
     "bullets": ["string — max 3, each with company-specific detail"],
     "confidence": "high|medium|inference"
   },
+  "entity_type": "string — propagated from company-bg entity_type",
   "snapshot": "object — propagated from company-bg snapshot, unchanged",
+  "federal_funding_profile": "object|null — propagated from company-bg federal_funding_profile",
   "leadership": "array|'insufficient_data' — propagated from company-bg leadership",
   "recent_material_events": "array — propagated from company-bg recent_material_events",
   "vertical_match": "object — propagated from company-bg vertical_match",
   "technical_footprint": "object — propagated from tech-and-pain tech_footprint",
+  "practitioner_sentiment": "object|'insufficient_data' — propagated from tech-and-pain practitioner_sentiment",
+  "incident_history": "object|null — propagated from tech-and-pain incident_history",
   "pain_hypotheses": "array|'insufficient_data' — propagated from tech-and-pain pain_hypotheses",
   "hiring_signals": "object — propagated from hiring-signals hiring_intensity + security_team_signals + geographic_expansion_signal",
+  "cooperative_purchasing": {
+    "available_vehicles": [
+      {
+        "vehicle": "string — e.g., 'Sourcewell', 'TIPS-USA'",
+        "relevant_solicitations": [
+          {
+            "title": "string",
+            "id": "string",
+            "date": "string",
+            "url": "string",
+            "relevance": "string — why this matters for the account"
+          }
+        ],
+        "verkada_contract_status": "string — whether Verkada holds a contract on this vehicle",
+        "confidence": "high|medium|inference",
+        "source_quality": "primary|secondary|weak",
+        "source": {"url": "string", "title": "string", "retrieved_at": "string"}
+      }
+    ],
+    "procurement_signal": "string — assessment of what cooperative purchasing data means for this account"
+  },
   "displacement_intel": {
     "vendor_hits": "array — from tech-and-pain displacement_vendor_hits",
     "vendor_absence_finding": "string|null — from tech-and-pain displacement_vendor_absence",
@@ -91,14 +118,19 @@ Output ONLY valid JSON. No markdown fences, no prose, no preamble. The JSON must
 
 Most sections are propagated from subagent outputs, not re-synthesized. This preserves source attribution chains.
 
-1. **`snapshot`** — Copy directly from company-bg `snapshot`. Do not modify field values.
-2. **`leadership`** — Copy from company-bg `leadership`. If `"insufficient_data"`, propagate as-is.
-3. **`recent_material_events`** — Copy from company-bg `recent_material_events`.
-4. **`vertical_match`** — Copy from company-bg `vertical_match`.
-5. **`technical_footprint`** — Copy from tech-and-pain `tech_footprint`.
-6. **`pain_hypotheses`** — Copy from tech-and-pain `pain_hypotheses`. If `"insufficient_data"`, propagate as-is.
-7. **`hiring_signals`** — Assemble from hiring-signals: include `hiring_intensity`, `security_team_signals`, `security_team_absence`, `trigger_evidence`, and `geographic_expansion_signal`.
-8. **`displacement_intel`** — Merge: `vendor_hits` from tech-and-pain `displacement_vendor_hits`, `vendor_absence_finding` from `displacement_vendor_absence`, `tech_stack_mentions` from hiring-signals `tech_stack_mentions`.
+1. **`entity_type`** — Copy from company-bg `entity_type`.
+2. **`snapshot`** — Copy directly from company-bg `snapshot`. Do not modify field values.
+3. **`federal_funding_profile`** — Copy from company-bg `federal_funding_profile`. Set to `null` if absent.
+4. **`leadership`** — Copy from company-bg `leadership`. If `"insufficient_data"`, propagate as-is.
+5. **`recent_material_events`** — Copy from company-bg `recent_material_events`.
+6. **`vertical_match`** — Copy from company-bg `vertical_match`.
+7. **`technical_footprint`** — Copy from tech-and-pain `tech_footprint`.
+8. **`practitioner_sentiment`** — Copy from tech-and-pain `practitioner_sentiment`. If `"insufficient_data"`, propagate as-is.
+9. **`incident_history`** — Copy from tech-and-pain `incident_history`. Set to `null` if absent.
+10. **`pain_hypotheses`** — Copy from tech-and-pain `pain_hypotheses`. If `"insufficient_data"`, propagate as-is.
+11. **`hiring_signals`** — Assemble from hiring-signals: include `hiring_intensity`, `security_team_signals`, `security_team_absence`, `trigger_evidence`, and `geographic_expansion_signal`.
+12. **`cooperative_purchasing`** — Read `sources/{slug}/sourcewell.json` and `sources/{slug}/tips.json` from the user message or subagent data. Identify solicitations relevant to physical security (video surveillance, access control, school safety). Note Verkada's cooperative contract status. If no cooperative purchasing data exists, set to `null`.
+13. **`displacement_intel`** — Merge: `vendor_hits` from tech-and-pain `displacement_vendor_hits`, `vendor_absence_finding` from `displacement_vendor_absence`, `tech_stack_mentions` from hiring-signals `tech_stack_mentions`.
 
 **Do NOT re-interpret, re-summarize, or strip source attribution from propagated sections.** The subagents already applied anti-genericness rules. Your job is to assemble, not rewrite.
 
@@ -144,6 +176,12 @@ Build a deduplicated list of `trigger_id` values that fired, with the evidence t
    - `regulatory_compliance_expansion` → relevant to `regulatory`, `audit_trail`, `risk_posture`.
    - `executive_leadership_change` → relevant to `vendor_management`, `risk_posture`, `operational_efficiency`.
    - `insurance_or_risk_pressure` → relevant to `risk_posture`, `total_cost_of_ownership`. Skip for personas with `insurance_premiums` in skip_topics (e.g., IT_Director).
+   - `clery_crime_trend` → relevant to `campus_safety`, `regulatory`, `risk_posture`, `audit_trail`.
+   - `frpl_federal_funding` → relevant to `federal_funding_alignment`, `budget_justification`, `student_safety`.
+   - `campus_safety_compliance` → relevant to `student_safety`, `parent_communication`, `board_optics`, `risk_posture`.
+   - `active_security_rfp` → relevant to `vendor_management`, `capital_projects`, `total_cost_of_ownership`.
+   - `incumbent_contract_expiring` → relevant to `vendor_management`, `vendor_consolidation`, `total_cost_of_ownership`.
+   - `sole_source_opportunity` → relevant to `budget_justification`, `vendor_management`, `operational_efficiency`.
 
 4. Place each question under every persona whose `care_about` includes at least one relevant topic AND whose `skip_topics` does not include any topic the question touches.
 
@@ -395,14 +433,16 @@ The brief can be generated with 2 of 3 subagents, but NOT without company-bg.
 
 ## Execution Flow
 
-1. Read `persona/verkada-se.yml`.
-2. Parse the three subagent outputs from the user message.
-3. Validate each subagent output — check for top-level `insufficient_data` status.
-4. Propagate sections: snapshot, leadership, material events, vertical match, technical footprint, pain hypotheses, hiring signals, displacement intel.
-5. **Collect fired triggers** from all subagent outputs into a deduplicated list.
-6. **Generate discovery questions** per the 6-step flow above: collect triggers → look up templates → fill placeholders → filter by persona → attach metadata → handle empty personas.
-7. **Check disqualifiers** against all subagent data. Only flag with affirmative evidence.
-8. **Generate open_questions** from insufficient_data sections, unfilled templates, inference-tagged claims, vendor absence, and thin hiring data.
-9. **Generate TL;DR** — 3 bullets max, company-specific, priority-ordered.
-10. **Run specificity rewrite pass** — final check on every text string in the output.
-11. Output the final JSON object. No wrapper, no markdown, no explanation text.
+1. Read `persona/verkada-se.yml` (includes `leverage_references` section — cite these when generating discovery questions for matched triggers).
+2. Read `sources/{slug}/sourcewell.json` and `sources/{slug}/tips.json` if they exist.
+3. Parse the three subagent outputs from the user message.
+4. Validate each subagent output — check for top-level `insufficient_data` status.
+5. Propagate sections: entity_type, snapshot, federal_funding_profile, leadership, material events, vertical match, technical footprint, practitioner_sentiment, incident_history, pain hypotheses, hiring signals, displacement intel.
+6. **Build cooperative_purchasing** from sourcewell.json and tips.json — filter solicitations for physical security relevance, note Verkada's contract status.
+7. **Collect fired triggers** from all subagent outputs into a deduplicated list. Include triggers from practitioner_sentiment.trigger_evidence and federal_funding_profile.
+8. **Generate discovery questions** per the 6-step flow above: collect triggers → look up templates → fill placeholders → filter by persona → attach metadata → handle empty personas. When a trigger matches a `leverage_references` entry, include the reference in the question's evidence field.
+9. **Check disqualifiers** against all subagent data. Only flag with affirmative evidence.
+10. **Generate open_questions** from insufficient_data sections, unfilled templates, inference-tagged claims, vendor absence, and thin hiring data.
+11. **Generate TL;DR** — 3 bullets max, company-specific, priority-ordered.
+12. **Run specificity rewrite pass** — final check on every text string in the output.
+13. Output the final JSON object. No wrapper, no markdown, no explanation text.
