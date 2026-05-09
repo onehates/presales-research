@@ -5,12 +5,14 @@ import json
 import sys
 from pathlib import Path
 
+import yaml
 from jinja2 import Environment, FileSystemLoader, Undefined
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE_DIR = PROJECT_ROOT / "templates"
 BRIEFS_DIR = PROJECT_ROOT / "briefs"
+PERSONA_PATH = PROJECT_ROOT / "persona" / "verkada-se.yml"
 
 
 def confidence_badge(confidence: str) -> str:
@@ -84,8 +86,15 @@ def render_brief(json_path: Path) -> Path:
     env.globals["quality_badge"] = quality_badge
     env.globals["source_chip"] = source_chip
 
+    # Load chat starter prompts from persona file
+    chat_starter_prompts = []
+    if PERSONA_PATH.exists():
+        with open(PERSONA_PATH) as pf:
+            persona = yaml.safe_load(pf)
+            chat_starter_prompts = persona.get("chat_starter_prompts", [])
+
     template = env.get_template("brief.html")
-    html = template.render(data=data)
+    html = template.render(data=data, chat_starter_prompts=chat_starter_prompts)
 
     out_path = json_path.with_suffix(".html")
     out_path.write_text(html)

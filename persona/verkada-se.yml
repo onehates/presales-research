@@ -824,6 +824,22 @@ champion_criteria:
     - "any org publicly known for cloud transformation"
 
 # =============================================================================
+# Chat Starter Prompts — Suggested Questions for Interactive Brief Chat
+# =============================================================================
+# These appear as clickable chips in the brief's chat panel.
+# They are generic templates — the chat system will ground answers in brief data.
+# =============================================================================
+
+chat_starter_prompts:
+  - "Who's the strongest champion candidate and why?"
+  - "What's my best opening question for the first call?"
+  - "Simulate the CTO pushing back on cloud-managed security."
+  - "What cooperative purchasing vehicle should I lead with?"
+  - "Summarize the MEDDIC qualification in two sentences."
+  - "What's the competitive displacement angle here?"
+  - "What are the top 3 things I need to know before this call?"
+
+# =============================================================================
 # Disqualifiers — Flags That Should Kill an Opportunity
 # =============================================================================
 # If any of these are detected, the brief must flag them prominently.

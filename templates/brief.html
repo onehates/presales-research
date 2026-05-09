@@ -914,5 +914,193 @@
     </div>
   </footer>
 
+  <!-- Chat Panel -->
+  <div id="chat-toggle" onclick="toggleChat()" style="position:fixed;bottom:24px;right:24px;width:56px;height:56px;background:#2563eb;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(37,99,235,0.4);z-index:50;transition:transform 0.15s;" onmouseenter="this.style.transform='scale(1.1)'" onmouseleave="this.style.transform='scale(1)'">
+    <svg width="24" height="24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+  </div>
+
+  <div id="chat-panel" style="display:none;position:fixed;bottom:24px;right:24px;width:420px;height:600px;background:white;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.15);z-index:50;flex-direction:column;overflow:hidden;">
+    <!-- Chat Header -->
+    <div style="padding:16px 20px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;background:#f8fafc;">
+      <div>
+        <div style="font-weight:700;font-size:14px;color:#0f172a;">Brief Chat</div>
+        <div style="font-size:11px;color:#64748b;">Grounded in {{ data.snapshot.name }} brief data</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="clearChat()" style="background:none;border:1px solid #e2e8f0;border-radius:6px;padding:4px 10px;font-size:11px;color:#64748b;cursor:pointer;" title="Clear conversation">Clear</button>
+        <button onclick="toggleChat()" style="background:none;border:none;cursor:pointer;font-size:18px;color:#94a3b8;line-height:1;">&times;</button>
+      </div>
+    </div>
+
+    <!-- Chat Messages -->
+    <div id="chat-messages" style="flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:12px;">
+      <!-- Starter prompts -->
+      <div id="chat-starters" style="display:flex;flex-direction:column;gap:8px;margin-top:auto;">
+        <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Suggested questions</div>
+        {% raw %}
+        {% endraw %}
+        {% for prompt in chat_starter_prompts %}
+        <button class="starter-chip" onclick="sendStarter(this.textContent)" style="text-align:left;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:12px;color:#334155;cursor:pointer;transition:background 0.15s;line-height:1.4;" onmouseenter="this.style.background='#e2e8f0'" onmouseleave="this.style.background='#f1f5f9'">{{ prompt }}</button>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Chat Input -->
+    <div style="padding:12px 16px;border-top:1px solid #e2e8f0;background:#f8fafc;">
+      <div style="display:flex;gap:8px;">
+        <input id="chat-input" type="text" placeholder="Ask about this brief..." style="flex:1;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:13px;outline:none;font-family:Inter,sans-serif;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}" />
+        <button onclick="sendMessage()" style="background:#2563eb;color:white;border:none;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    const SLUG = "{{ data.metadata.company_slug }}";
+    const DATE = "{{ data.metadata.generated_date }}";
+    const CHAT_URL = "http://localhost:8000/chat";
+    const STORAGE_KEY = `chat_${SLUG}_${DATE}`;
+
+    // Restore history from localStorage
+    let history = [];
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        history = JSON.parse(saved);
+        const starters = document.getElementById('chat-starters');
+        if (history.length > 0 && starters) starters.style.display = 'none';
+        history.forEach(m => appendMessage(m.role, m.content));
+      }
+    } catch(e) {}
+
+    window.toggleChat = function() {
+      const panel = document.getElementById('chat-panel');
+      const toggle = document.getElementById('chat-toggle');
+      if (panel.style.display === 'none') {
+        panel.style.display = 'flex';
+        toggle.style.display = 'none';
+        document.getElementById('chat-input').focus();
+        scrollToBottom();
+      } else {
+        panel.style.display = 'none';
+        toggle.style.display = 'flex';
+      }
+    };
+
+    window.clearChat = function() {
+      history = [];
+      localStorage.removeItem(STORAGE_KEY);
+      const msgs = document.getElementById('chat-messages');
+      msgs.innerHTML = '';
+      // Re-add starters
+      const startersHtml = document.createElement('div');
+      startersHtml.id = 'chat-starters';
+      startersHtml.style.cssText = 'display:flex;flex-direction:column;gap:8px;margin-top:auto;';
+      startersHtml.innerHTML = '<div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Suggested questions</div>';
+      const prompts = {{ chat_starter_prompts | tojson }};
+      prompts.forEach(p => {
+        const btn = document.createElement('button');
+        btn.className = 'starter-chip';
+        btn.textContent = p;
+        btn.style.cssText = 'text-align:left;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:12px;color:#334155;cursor:pointer;transition:background 0.15s;line-height:1.4;';
+        btn.onmouseenter = () => btn.style.background='#e2e8f0';
+        btn.onmouseleave = () => btn.style.background='#f1f5f9';
+        btn.onclick = () => sendStarter(p);
+        startersHtml.appendChild(btn);
+      });
+      msgs.appendChild(startersHtml);
+    };
+
+    window.sendStarter = function(text) {
+      const starters = document.getElementById('chat-starters');
+      if (starters) starters.style.display = 'none';
+      doSend(text);
+    };
+
+    window.sendMessage = function() {
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      const starters = document.getElementById('chat-starters');
+      if (starters) starters.style.display = 'none';
+      doSend(text);
+    };
+
+    function doSend(text) {
+      appendMessage('user', text);
+      history.push({role: 'user', content: text});
+      saveHistory();
+
+      const assistantEl = appendMessage('assistant', '');
+      let fullText = '';
+
+      fetch(CHAT_URL, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({slug: SLUG, date: DATE, message: text, history: history.slice(0, -1)})
+      }).then(response => {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        function read() {
+          reader.read().then(({done, value}) => {
+            if (done) {
+              history.push({role: 'assistant', content: fullText});
+              saveHistory();
+              return;
+            }
+            const chunk = decoder.decode(value, {stream: true});
+            const lines = chunk.split('\n');
+            for (const line of lines) {
+              if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+                try {
+                  const data = JSON.parse(line.slice(6));
+                  fullText += data.text;
+                  assistantEl.innerHTML = formatMarkdown(fullText);
+                  scrollToBottom();
+                } catch(e) {}
+              }
+            }
+            read();
+          });
+        }
+        read();
+      }).catch(err => {
+        assistantEl.innerHTML = '<span style="color:#ef4444;">Connection error — is chat_server.py running on port 8000?</span>';
+      });
+    }
+
+    function appendMessage(role, content) {
+      const msgs = document.getElementById('chat-messages');
+      const div = document.createElement('div');
+      div.style.cssText = role === 'user'
+        ? 'align-self:flex-end;background:#2563eb;color:white;border-radius:12px 12px 2px 12px;padding:10px 14px;max-width:85%;font-size:13px;line-height:1.5;'
+        : 'align-self:flex-start;background:#f1f5f9;color:#1e293b;border-radius:12px 12px 12px 2px;padding:10px 14px;max-width:85%;font-size:13px;line-height:1.5;';
+      div.innerHTML = content ? formatMarkdown(content) : '<span style="color:#94a3b8;">Thinking...</span>';
+      msgs.appendChild(div);
+      scrollToBottom();
+      return div;
+    }
+
+    function formatMarkdown(text) {
+      return text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/`(.*?)`/g, '<code style="background:#e2e8f0;padding:1px 4px;border-radius:3px;font-size:12px;">$1</code>')
+        .replace(/\n/g, '<br>');
+    }
+
+    function scrollToBottom() {
+      const msgs = document.getElementById('chat-messages');
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    function saveHistory() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(history)); } catch(e) {}
+    }
+  })();
+  </script>
+
 </body>
 </html>
