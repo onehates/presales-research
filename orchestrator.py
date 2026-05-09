@@ -2,7 +2,7 @@
 """
 Orchestrator — /research pipeline entry point.
 
-Phase 1: Run all 17 source clients in parallel (ThreadPoolExecutor).
+Phase 1: Run all 18 source clients in parallel (ThreadPoolExecutor).
 Phase 2: Run 3 subagents (company-bg, tech-and-pain, hiring-signals) in parallel.
 Phase 3: Run synthesizer (Opus) reading all 3 subagent outputs + persona.
 Phase 4: Render brief JSON → HTML via render/render.py.
@@ -98,6 +98,7 @@ CLIENT_REGISTRY = {
     "sled_procurement":     ("clients.sled_procurement",  "fetch_sled_procurement_data",   _company_args,  "sled_procurement.json"),
     "omnia":                ("clients.omnia",             "fetch_omnia_data",              _category_args, "omnia.json"),
     "costars":              ("clients.costars",           "fetch_costars_data",            _category_args, "costars.json"),
+    "hgac":                 ("clients.hgac",              "fetch_hgac_data",               _category_args, "hgac.json"),
 }
 
 
@@ -119,7 +120,7 @@ SYM_ERROR = "\033[31m✗\033[0m"    # red X
 SYM_RUN = "\033[90m…\033[0m"      # gray dots (running)
 
 
-COOPERATIVE_CLIENTS = {"sourcewell", "tips", "ga_procurement", "atlanta_procurement", "omnia", "costars"}
+COOPERATIVE_CLIENTS = {"sourcewell", "tips", "ga_procurement", "atlanta_procurement", "omnia", "costars", "hgac"}
 
 
 def run_client(client_name: str, company: str, slug: str, force: bool) -> tuple[str, str, str]:

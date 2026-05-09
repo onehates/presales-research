@@ -2,19 +2,20 @@
 COSTARS Client — Pennsylvania cooperative purchasing contract search.
 
 Data source: PA Department of General Services COSTARS Program
-  - URL: https://www.costars.state.pa.us/
-  - Access method: HTML scraping (ASP.NET WebForms)
-  - The main portal at costars.state.pa.us returns 200 (207KB).
-  - DGS contract search at dgs.pa.gov/COSTARS/Pages/ContractSearch.aspx
-    also returns 200 (214KB, ASP.NET).
-  - Both pages are server-rendered HTML. No public API found.
-  - Note: COSTARS is PA-specific but commonly referenced as a cooperative
-    purchasing vehicle that other states can piggyback on.
+  - Contract search requires Keystone Login (PA Commonwealth shared auth).
+  - costars.state.pa.us redirects to pa.gov/agencies/dgs/programs-and-services/costars
+    (static informational page, no searchable listings).
+  - PA eMarketplace (emarketplace.state.pa.us/Search.aspx) is publicly accessible
+    and has a "COSTARS" filter in ddlTypes dropdown, but requires ASP.NET
+    ViewState/EventValidation tokens for POST search.
+  - Overall: contract search is behind auth wall. We can only confirm COSTARS
+    program exists and scrape the info page for category/contact details.
 
 Reachability (2026-05-09):
-  costars.state.pa.us → 200, 207KB, ASP.NET WebForms
-  dgs.pa.gov/COSTARS/Pages/ContractSearch.aspx → 200, 214KB, ASP.NET
-  No API endpoints found.
+  costars.state.pa.us → 302 chain → pa.gov static info page (200)
+  costars.state.pa.us/Login.aspx → 200 (Keystone Login wall)
+  emarketplace.state.pa.us/Search.aspx → 200, 138KB (ASP.NET, public)
+  dgs.pa.gov/COSTARS/ → 302 chain → pa.gov static info page
 
 Cache TTL: 14 days
 """

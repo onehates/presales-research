@@ -1,23 +1,26 @@
 """
-OMNIA Partners Client — Cooperative purchasing contract listings.
+OMNIA Partners Client — Cooperative purchasing contract search.
 
 Data source: OMNIA Partners (formerly US Communities / National IPA)
-  - URL: https://www.omniapartners.com/contracts
-  - Access method: HTML scraping (server-rendered)
-  - The /contracts page returns 200 with a contract portfolio overview.
-  - /public-sector/contracts and /public-sector/solicitations both 404.
-  - No public API found. The contracts page is a marketing catalog, not a
-    searchable solicitation listing.
+  - Search URL: https://www.omniapartners.com/solutions/contract-offerings
+    ?contracts[search][keyword]=<term>&contracts[search][industry]=3
+  - Access method: HTML scraping (TYPO3 CMS, server-rendered with HTMX pagination)
+  - Results include structured data-* attributes on <a> tags:
+    data-supplier, data-contract, data-contract_number, data-contract_id, data-industry
+  - Industry filter: 3 = Government/Public Sector
+  - No authentication required.
 
-Verkada relevance: Verkada holds an OMNIA Partners cooperative contract
-for video surveillance and physical security. This allows public-sector
-buyers to purchase Verkada without a full RFP process.
+Verkada relevance: Verkada holds OMNIA contract R250206 — "Weapons and Threat
+Detection Equipment, Services, and Other Solutions" (April 2025 – March 2028,
+two 1-year renewal options through March 2030).
+
+Competitors visible: Genetec (R250204), Siemens (2023003490), Everon (R220701),
+AVI-SPL (2019.001535).
 
 Reachability (2026-05-09):
-  omniapartners.com/contracts → 200, 71KB, server-rendered HTML
-  omniapartners.com/public-sector/contracts → 404
-  omniapartners.com/public-sector/solicitations → 404
-  omniapartners.com/api/* → no API endpoints found
+  Search endpoint → 200, server-rendered HTML with data attributes
+  Supplier detail: /suppliers/verkada/public-sector → 200, 113KB
+  Excel download available via contracts[action]=download parameter
 
 Cache TTL: 14 days
 """
@@ -27,6 +30,7 @@ import re
 import sys
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
+from urllib.parse import urlencode
 
 import requests
 
@@ -35,12 +39,14 @@ SOURCES_DIR = PROJECT_ROOT / "sources"
 
 CACHE_TTL_DAYS = 14
 
-OMNIA_CONTRACTS_URL = "https://www.omniapartners.com/contracts"
+OMNIA_SEARCH_URL = "https://www.omniapartners.com/solutions/contract-offerings"
+OMNIA_INDUSTRY_PUBLIC_SECTOR = "3"
 
 SECURITY_KEYWORDS = [
     "security", "surveillance", "camera", "video", "access control",
     "intrusion", "alarm", "monitoring", "cctv", "physical security",
     "public safety", "law enforcement", "safety", "sensor", "detection",
+    "weapon", "threat", "emergency",
 ]
 
 HEADERS = {
@@ -91,10 +97,15 @@ def write_cache(query_slug: str, data: dict) -> Path:
     return path
 
 
-def fetch_contracts_page() -> tuple[bool, str]:
-    """Fetch the OMNIA Partners contracts page."""
+def fetch_search_page(keyword: str) -> tuple[bool, str]:
+    """Fetch the OMNIA contract search results for a keyword."""
+    params = {
+        "contracts[search][keyword]": keyword,
+        "contracts[search][industry]": OMNIA_INDUSTRY_PUBLIC_SECTOR,
+    }
+    url = f"{OMNIA_SEARCH_URL}?{urlencode(params)}"
     try:
-        resp = requests.get(OMNIA_CONTRACTS_URL, headers=HEADERS, timeout=15)
+        resp = requests.get(url, headers=HEADERS, timeout=15)
         if resp.status_code != 200:
             return False, f"HTTP {resp.status_code}"
         if len(resp.text.strip()) < 500:
@@ -104,45 +115,71 @@ def fetch_contracts_page() -> tuple[bool, str]:
         return False, str(e)[:200]
 
 
-def parse_contracts(html: str) -> dict:
-    """Parse the OMNIA contracts page for security-relevant contract categories."""
+def parse_search_results(html: str) -> list[dict]:
+    """Parse OMNIA search results using structured data-* attributes on <a> tags."""
     contracts = []
-    security_relevant = []
+    seen = set()
 
-    # Extract contract/category links and text blocks
+    # Look for <a> tags with data-supplier, data-contract, data-contract_number
     for m in re.finditer(
-        r'<a\s+href="([^"]*)"[^>]*>(.*?)</a>', html, re.S
+        r'<a\s+([^>]*data-(?:supplier|contract|contract_number)[^>]*)>(.*?)</a>',
+        html, re.S | re.I,
     ):
-        url, text = m.group(1), re.sub(r'<[^>]+>', '', m.group(2)).strip()
-        if not text or len(text) < 3:
+        attrs_str = m.group(1)
+        link_text = re.sub(r'<[^>]+>', '', m.group(2)).strip()
+
+        # Extract data attributes
+        supplier = _attr(attrs_str, "data-supplier")
+        contract_name = _attr(attrs_str, "data-contract")
+        contract_number = _attr(attrs_str, "data-contract_number")
+        contract_id = _attr(attrs_str, "data-contract_id")
+        industry = _attr(attrs_str, "data-industry")
+        href = _attr(attrs_str, "href")
+
+        if not contract_number and not contract_name:
             continue
+
+        key = contract_number or contract_name
+        if key in seen:
+            continue
+        seen.add(key)
+
         entry = {
-            "title": text,
-            "url": url if url.startswith("http") else f"https://www.omniapartners.com{url}",
+            "supplier": supplier,
+            "contract_name": contract_name or link_text,
+            "contract_number": contract_number,
+            "contract_id": contract_id,
+            "industry": industry,
+            "url": href if href and href.startswith("http") else (
+                f"https://www.omniapartners.com{href}" if href else None
+            ),
         }
         contracts.append(entry)
 
-        text_lower = text.lower()
-        if any(kw in text_lower for kw in SECURITY_KEYWORDS):
-            entry["relevance"] = "security"
-            security_relevant.append(entry)
+    # Fallback: parse links if no data attributes found
+    if not contracts:
+        for m in re.finditer(
+            r'<a\s+href="([^"]*)"[^>]*>(.*?)</a>', html, re.S
+        ):
+            url, text = m.group(1), re.sub(r'<[^>]+>', '', m.group(2)).strip()
+            if not text or len(text) < 3:
+                continue
+            entry = {
+                "contract_name": text,
+                "url": url if url.startswith("http") else f"https://www.omniapartners.com{url}",
+            }
+            text_lower = text.lower()
+            if any(kw in text_lower for kw in SECURITY_KEYWORDS):
+                entry["relevance"] = "security"
+                contracts.append(entry)
 
-    # Also look for contract category cards/sections
-    categories = []
-    for m in re.finditer(
-        r'<(?:h[23456]|div|span)[^>]*class="[^"]*(?:card|category|contract)[^"]*"[^>]*>'
-        r'(.*?)</(?:h[23456]|div|span)>',
-        html, re.S | re.I,
-    ):
-        text = re.sub(r'<[^>]+>', '', m.group(1)).strip()
-        if text and len(text) > 3:
-            categories.append(text)
+    return contracts
 
-    return {
-        "all_contracts": contracts,
-        "security_relevant": security_relevant,
-        "categories_found": list(set(categories))[:20],
-    }
+
+def _attr(attrs_str: str, attr_name: str) -> str | None:
+    """Extract an attribute value from an attribute string."""
+    m = re.search(rf'{attr_name}="([^"]*)"', attrs_str)
+    return m.group(1) if m else None
 
 
 def fetch_omnia_data(query: str, *, force_refresh: bool = False) -> dict:
@@ -154,21 +191,20 @@ def fetch_omnia_data(query: str, *, force_refresh: bool = False) -> dict:
         if cached is not None:
             return cached
 
-    print(f"  [omnia] fetching contracts page...", file=sys.stderr)
-    success, content = fetch_contracts_page()
+    print(f"  [omnia] searching contracts: '{query}'...", file=sys.stderr)
+    success, content = fetch_search_page(query)
 
     if not success:
         print(f"  [omnia] failed: {content}", file=sys.stderr)
         result = {
             "retrieved_at": datetime.now(timezone.utc).isoformat(),
             "source": "omnia_partners",
-            "source_url": OMNIA_CONTRACTS_URL,
+            "source_url": OMNIA_SEARCH_URL,
             "access_method": "blocked",
             "status": "insufficient_data",
-            "reason": f"Failed to fetch OMNIA contracts page: {content}",
+            "reason": f"Failed to fetch OMNIA search results: {content}",
             "query": query,
             "contracts": [],
-            "security_relevant": [],
             "summary": {
                 "total_contracts": 0,
                 "security_relevant_count": 0,
@@ -180,50 +216,59 @@ def fetch_omnia_data(query: str, *, force_refresh: bool = False) -> dict:
         write_cache(query_slug, result)
         return result
 
-    parsed = parse_contracts(content)
+    contracts = parse_search_results(content)
 
-    # Additional query-specific filtering
-    query_lower = query.lower()
-    query_matches = [
-        c for c in parsed["all_contracts"]
-        if query_lower in c["title"].lower()
-        and c not in parsed["security_relevant"]
+    # Tag security-relevant contracts
+    security_relevant = []
+    for c in contracts:
+        name_lower = (c.get("contract_name") or "").lower()
+        supplier_lower = (c.get("supplier") or "").lower()
+        combined = f"{name_lower} {supplier_lower}"
+        if any(kw in combined for kw in SECURITY_KEYWORDS):
+            c["relevance"] = "security"
+            security_relevant.append(c)
+
+    # Check for Verkada specifically
+    verkada_contracts = [
+        c for c in contracts
+        if "verkada" in (c.get("supplier") or "").lower()
     ]
 
     print(
-        f"  [omnia] parsed {len(parsed['all_contracts'])} contract links, "
-        f"security-relevant: {len(parsed['security_relevant'])}",
+        f"  [omnia] found {len(contracts)} contracts, "
+        f"security-relevant: {len(security_relevant)}, "
+        f"verkada: {len(verkada_contracts)}",
         file=sys.stderr,
     )
 
     result = {
         "retrieved_at": datetime.now(timezone.utc).isoformat(),
         "source": "omnia_partners",
-        "source_url": OMNIA_CONTRACTS_URL,
+        "source_url": OMNIA_SEARCH_URL,
         "access_method": "html_scraping",
         "api_available": False,
         "api_notes": (
-            "OMNIA Partners has no public API for contract/solicitation search. "
-            "The /contracts page is a marketing overview, not a searchable database. "
-            "Contract details require navigating to individual vendor pages."
+            "OMNIA Partners search at /solutions/contract-offerings accepts "
+            "keyword and industry filter params. Results are server-rendered HTML "
+            "with structured data-* attributes. Industry 3 = Public Sector."
         ),
         "query": query,
-        "contracts": parsed["security_relevant"],
-        "query_matches": query_matches,
-        "categories_found": parsed["categories_found"],
+        "contracts": contracts,
+        "security_relevant": security_relevant,
+        "verkada_contracts": verkada_contracts,
         "verkada_contract_note": (
-            "Verkada holds an OMNIA Partners cooperative purchasing contract "
-            "for video surveillance and physical security. Public-sector buyers "
+            "Verkada holds OMNIA contract R250206 — 'Weapons and Threat Detection "
+            "Equipment, Services, and Other Solutions' (April 2025 – March 2028, "
+            "two 1-year renewal options through March 2030). Public-sector buyers "
             "can purchase through this vehicle without a full RFP process."
         ),
         "summary": {
-            "total_contract_links": len(parsed["all_contracts"]),
-            "security_relevant_count": len(parsed["security_relevant"]),
-            "query_match_count": len(query_matches),
-            "categories_count": len(parsed["categories_found"]),
+            "total_contracts": len(contracts),
+            "security_relevant_count": len(security_relevant),
+            "verkada_count": len(verkada_contracts),
             "access_blocked": False,
-            "source_quality": "secondary",
-            "confidence": "medium",
+            "source_quality": "primary",
+            "confidence": "high",
         },
     }
 
@@ -245,8 +290,9 @@ def main():
     print(
         f"\n  OMNIA Partners: query '{query}'\n"
         f"  Status: {result.get('status', 'ok')}\n"
-        f"  Contract links: {summary.get('total_contract_links', 0)}\n"
-        f"  Security-relevant: {summary.get('security_relevant_count', 0)}",
+        f"  Total contracts: {summary.get('total_contracts', 0)}\n"
+        f"  Security-relevant: {summary.get('security_relevant_count', 0)}\n"
+        f"  Verkada contracts: {summary.get('verkada_count', 0)}",
         file=sys.stderr,
     )
     print(json.dumps(result, indent=2, default=str))
