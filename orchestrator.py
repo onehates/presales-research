@@ -635,6 +635,19 @@ def research(company: str, *, force: bool = False, open_browser: bool = False):
     print(f"  slug: {slug}  date: {today}")
     print(f"  {'='*54}")
 
+    # Check for existing complete brief
+    brief_path = BRIEFS_DIR / f"{slug}-{today}.json"
+    if brief_path.exists() and not force:
+        try:
+            existing = json.loads(brief_path.read_text())
+            if existing.get("status") != "insufficient_data":
+                answer = input(f"\n  Brief already exists for {slug} on {today}. Re-run? [y/N] ").strip().lower()
+                if answer != "y":
+                    print("  Skipped.")
+                    return
+        except (json.JSONDecodeError, OSError):
+            pass
+
     t0 = time.time()
 
     # Phase 1 — Source data collection
@@ -670,7 +683,7 @@ def research(company: str, *, force: bool = False, open_browser: bool = False):
         print(f"\n  ⚠  Synthesizer failed: {brief.get('reason', brief.get('status'))}")
         print(f"  Subagent JSONs saved to sources/{slug}/ for debugging.")
 
-        # Save partial brief anyway
+        # Save partial brief — but preserve existing good brief if present
         BRIEFS_DIR.mkdir(parents=True, exist_ok=True)
         brief_path = BRIEFS_DIR / f"{slug}-{today}.json"
         brief["metadata"] = {
@@ -683,6 +696,20 @@ def research(company: str, *, force: bool = False, open_browser: bool = False):
             "runtime_seconds": round(time.time() - t0, 1),
             "phase1_status": {k: v[1] for k, v in phase1_results.items()},
         }
+
+        # Check if a complete brief already exists — don't overwrite it
+        if brief_path.exists():
+            try:
+                existing = json.loads(brief_path.read_text())
+                if existing.get("status") != "insufficient_data":
+                    failed_path = BRIEFS_DIR / f"{slug}-{today}.failed.json"
+                    failed_path.write_text(json.dumps(brief, indent=2, default=str))
+                    print(f"  ⚠  Previous brief preserved at {brief_path.relative_to(PROJECT_ROOT)}; "
+                          f"current attempt saved as {failed_path.relative_to(PROJECT_ROOT)} for debugging.")
+                    return
+            except (json.JSONDecodeError, OSError):
+                pass
+
         brief_path.write_text(json.dumps(brief, indent=2, default=str))
         print(f"  Partial brief saved: {brief_path.relative_to(PROJECT_ROOT)}")
 
