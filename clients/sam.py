@@ -2,7 +2,7 @@
 SAM.gov Contract Opportunities Client — Fetches federal RFPs and awards for government entities.
 
 Data source: SAM.gov Opportunities API v2
-  - Endpoint: https://api.sam.gov/opportunities/v2/search
+  - Endpoint: https://api.sam.gov/prod/opportunities/v2/search
   - Requires SAM_API_KEY env var (free — register at sam.gov, generate key on Account Details page)
   - Rate limits undocumented but role-based; we add 1s delay between requests
   - Returns: active solicitations, pre-solicitations, award notices
@@ -51,7 +51,7 @@ PERSONA_PATH = PROJECT_ROOT / "persona" / "verkada-se.yml"
 
 HAIKU_MODEL = "claude-haiku-4-5-20251001"
 
-SAM_API_URL = "https://api.sam.gov/opportunities/v2/search"
+SAM_API_URL = "https://api.sam.gov/prod/opportunities/v2/search"
 SAM_API_KEY = os.environ.get("SAM_API_KEY", "")
 
 CACHE_TTL_DAYS = 7
@@ -432,7 +432,7 @@ def fetch_sam_data(entity_name: str, *, state: str = "GA", force_refresh: bool =
         result = {
             "retrieved_at": datetime.now(timezone.utc).isoformat(),
             "source": "sam_gov",
-            "source_url": "https://api.sam.gov/opportunities/v2/search",
+            "source_url": "https://api.sam.gov/prod/opportunities/v2/search",
             "status": "insufficient_data",
             "reason": (
                 "SAM_API_KEY not set. Register free at sam.gov and generate an API key "
@@ -476,7 +476,7 @@ def fetch_sam_data(entity_name: str, *, state: str = "GA", force_refresh: bool =
     result = {
         "retrieved_at": datetime.now(timezone.utc).isoformat(),
         "source": "sam_gov",
-        "source_url": "https://api.sam.gov/opportunities/v2/search",
+        "source_url": "https://api.sam.gov/prod/opportunities/v2/search",
         "entity": {"name": entity_name, "state": state},
         "active_rfps": classified["active_rfps"],
         "recent_awards": classified["recent_awards"],
