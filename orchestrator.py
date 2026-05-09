@@ -8,9 +8,10 @@ Phase 3: Run synthesizer (Opus) reading all 3 subagent outputs + persona.
 Phase 4: Render brief JSON → HTML via render/render.py.
 
 Usage:
-    python orchestrator.py "Atlanta Public Schools" [--force] [--open]
+    python orchestrator.py "Atlanta Public Schools" [--force] [--open] [--no-cache]
 """
 
+import hashlib
 import json
 import os
 import re
@@ -40,6 +41,15 @@ RENDER_SCRIPT = PROJECT_ROOT / "render" / "render.py"
 
 SONNET_MODEL = "claude-sonnet-4-20250514"
 OPUS_MODEL = "claude-opus-4-20250514"
+
+# Prompt caching beta header
+PROMPT_CACHE_HEADERS = {"anthropic-beta": "prompt-caching-2024-07-31"}
+
+# Subagent cache TTL (24 hours)
+SUBAGENT_CACHE_TTL = 86400
+
+# Token usage accumulator (populated by _stream_anthropic_with_retry)
+_token_usage = {"input": 0, "output": 0, "cache_creation": 0, "cache_read": 0}
 
 # ---------------------------------------------------------------------------
 # Client registry — maps client name to (module_path, fetch_function, args_fn)
@@ -326,7 +336,11 @@ SUBAGENT_SOURCE_FILES = {
 
 
 def _load_source_data_for_agent(agent_name: str, slug: str) -> str:
-    """Load cached source files and persona, return as formatted text for injection."""
+    """Load cached source files, return as formatted text for injection.
+
+    Note: persona file is no longer included here — it's injected via the
+    cached system prompt in run_subagent() for prompt caching efficiency.
+    """
     parts = []
     source_files = SUBAGENT_SOURCE_FILES.get(agent_name, [])
     sources_dir = SOURCES_DIR / slug
@@ -345,31 +359,49 @@ def _load_source_data_for_agent(agent_name: str, slug: str) -> str:
         else:
             parts.append(f"=== sources/{slug}/{filename} ===\n[FILE NOT FOUND]")
 
-    # Always include persona
-    if PERSONA_PATH.exists():
-        try:
-            persona_text = PERSONA_PATH.read_text()
-            if len(persona_text) > 20000:
-                persona_text = persona_text[:20000] + "\n... [truncated]"
-            parts.append(f"=== persona/verkada-se.yml ===\n{persona_text}")
-        except OSError:
-            parts.append("=== persona/verkada-se.yml ===\n[ERROR: could not read file]")
-
     return "\n\n".join(parts)
 
 
 RETRY_DELAYS = [5, 15, 45]
 
 
+def _build_cached_system(agent_prompt: str, persona_text: str | None = None) -> list[dict]:
+    """Build a system prompt as structured content blocks with cache_control markers.
+
+    The persona file and agent system prompt are marked for ephemeral caching.
+    When reused across sequential calls within 5 min, cached reads cost 10% of
+    normal input tokens.
+    """
+    blocks = []
+    if persona_text:
+        blocks.append({
+            "type": "text",
+            "text": f"=== persona/verkada-se.yml ===\n{persona_text}",
+            "cache_control": {"type": "ephemeral"},
+        })
+    blocks.append({
+        "type": "text",
+        "text": agent_prompt,
+        "cache_control": {"type": "ephemeral"},
+    })
+    return blocks
+
+
 def _stream_anthropic_with_retry(client, *, model: str, max_tokens: int,
-                                  system: str, messages: list,
+                                  system: str | list, messages: list,
                                   label: str) -> str:
     """Stream an Anthropic API call with exponential backoff on 429/529.
 
     Uses client.messages.stream() to avoid the SDK's 10-minute timeout
     on non-streaming calls (Opus + large prompts + high max_tokens).
     Returns the accumulated response text.
+
+    system can be a plain string or a list of content blocks (for prompt caching).
+    When a list is passed, the prompt-caching beta header is included.
     """
+    use_cache = isinstance(system, list)
+    extra_headers = PROMPT_CACHE_HEADERS if use_cache else None
+
     for attempt in range(len(RETRY_DELAYS) + 1):
         try:
             with client.messages.stream(
@@ -377,10 +409,30 @@ def _stream_anthropic_with_retry(client, *, model: str, max_tokens: int,
                 max_tokens=max_tokens,
                 system=system,
                 messages=messages,
+                extra_headers=extra_headers,
             ) as stream:
                 chunks = []
                 for text in stream.text_stream:
                     chunks.append(text)
+
+                # Track token usage from final message
+                try:
+                    final = stream.get_final_message()
+                    usage = final.usage
+                    _token_usage["input"] += usage.input_tokens
+                    _token_usage["output"] += usage.output_tokens
+                    _token_usage["cache_creation"] += getattr(usage, "cache_creation_input_tokens", 0) or 0
+                    _token_usage["cache_read"] += getattr(usage, "cache_read_input_tokens", 0) or 0
+                    # Log cache hits for visibility
+                    cache_created = getattr(usage, "cache_creation_input_tokens", 0) or 0
+                    cache_read = getattr(usage, "cache_read_input_tokens", 0) or 0
+                    if cache_created:
+                        print(f"    💾 {label}: cached {cache_created} input tokens", flush=True)
+                    if cache_read:
+                        print(f"    ⚡ {label}: read {cache_read} cached tokens (90% savings)", flush=True)
+                except Exception:
+                    pass
+
                 return "".join(chunks)
         except anthropic.RateLimitError:
             if attempt >= len(RETRY_DELAYS):
@@ -399,28 +451,121 @@ def _stream_anthropic_with_retry(client, *, model: str, max_tokens: int,
                 raise
 
 
-def run_subagent(agent_name: str, slug: str) -> dict:
-    """Run a Sonnet subagent. Returns the parsed JSON output."""
+def _source_fingerprint(agent_name: str, slug: str) -> str:
+    """Compute a fingerprint hash from the source files a subagent reads.
+
+    Uses mtime + size of each input JSON to detect changes without reading content.
+    """
+    source_files = SUBAGENT_SOURCE_FILES.get(agent_name, [])
+    sources_dir = SOURCES_DIR / slug
+    parts = []
+    for filename in source_files:
+        path = sources_dir / filename
+        if path.exists():
+            stat = path.stat()
+            parts.append(f"{filename}:{stat.st_mtime_ns}:{stat.st_size}")
+        else:
+            parts.append(f"{filename}:missing")
+    # Include persona file in fingerprint (triggers/templates may change)
+    if PERSONA_PATH.exists():
+        stat = PERSONA_PATH.stat()
+        parts.append(f"persona:{stat.st_mtime_ns}:{stat.st_size}")
+    return hashlib.sha256("|".join(parts).encode()).hexdigest()[:16]
+
+
+def _check_subagent_cache(agent_name: str, slug: str) -> dict | None:
+    """Check for a cached subagent output matching the current source fingerprint.
+
+    Returns the cached result dict if found and fresh (< SUBAGENT_CACHE_TTL), else None.
+    """
+    fp = _source_fingerprint(agent_name, slug)
+    cache_path = SOURCES_DIR / slug / f"{agent_name.replace('-', '_')}_cache_{fp}.json"
+    if not cache_path.exists():
+        return None
+    # Check TTL
+    age = time.time() - cache_path.stat().st_mtime
+    if age > SUBAGENT_CACHE_TTL:
+        return None
+    try:
+        data = json.loads(cache_path.read_text())
+        if data.get("status") in ("insufficient_data", "error", "parse_error"):
+            return None  # Don't cache failures
+        return data
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
+def _write_subagent_cache(agent_name: str, slug: str, result: dict) -> None:
+    """Write subagent output to a fingerprinted cache file."""
+    if result.get("status") in ("insufficient_data", "error", "parse_error"):
+        return  # Don't cache failures
+    fp = _source_fingerprint(agent_name, slug)
+    cache_path = SOURCES_DIR / slug / f"{agent_name.replace('-', '_')}_cache_{fp}.json"
+    cache_path.write_text(json.dumps(result, indent=2, default=str))
+
+
+def run_subagent(agent_name: str, slug: str, *, use_cache: bool = True) -> tuple[dict, bool]:
+    """Run a Sonnet subagent. Returns (parsed JSON output, was_cached).
+
+    If use_cache=True, checks for a cached output matching the current source
+    fingerprint before making an API call.
+    """
+    # Check subagent cache first
+    if use_cache:
+        cached = _check_subagent_cache(agent_name, slug)
+        if cached is not None:
+            return cached, True
+
     if not anthropic or not os.environ.get("ANTHROPIC_API_KEY"):
-        return {"status": "insufficient_data", "reason": "ANTHROPIC_API_KEY not set"}
+        return {"status": "insufficient_data", "reason": "ANTHROPIC_API_KEY not set"}, False
 
     system_prompt = read_agent_prompt(agent_name)
     source_data = _load_source_data_for_agent(agent_name, slug)
+
+    # Load persona for prompt caching (separate from source_data injection)
+    persona_text = None
+    if PERSONA_PATH.exists():
+        try:
+            persona_text = PERSONA_PATH.read_text()
+        except OSError:
+            pass
+
+    # Remove persona from source_data user message (it's now in the cached system prompt)
+    # Build user message with only source files
+    user_parts = []
+    source_files = SUBAGENT_SOURCE_FILES.get(agent_name, [])
+    sources_dir = SOURCES_DIR / slug
+    for filename in source_files:
+        path = sources_dir / filename
+        if path.exists():
+            try:
+                data = path.read_text()
+                if len(data) > 50000:
+                    data = data[:50000] + "\n... [truncated]"
+                user_parts.append(f"=== sources/{slug}/{filename} ===\n{data}")
+            except OSError:
+                user_parts.append(f"=== sources/{slug}/{filename} ===\n[ERROR: could not read file]")
+        else:
+            user_parts.append(f"=== sources/{slug}/{filename} ===\n[FILE NOT FOUND]")
+
     user_msg = (
         f"Company slug: {slug}\n\n"
         f"Below is the cached source data. Analyze it and produce the structured JSON output per your instructions.\n\n"
-        f"{source_data}"
+        + "\n\n".join(user_parts)
     )
+
+    # Use structured system with cache_control for prompt caching
+    cached_system = _build_cached_system(system_prompt, persona_text)
 
     client = anthropic.Anthropic()
     try:
         text = _stream_anthropic_with_retry(
             client, model=SONNET_MODEL, max_tokens=8000,
-            system=system_prompt, messages=[{"role": "user", "content": user_msg}],
+            system=cached_system, messages=[{"role": "user", "content": user_msg}],
             label=agent_name,
         )
     except (anthropic.RateLimitError, anthropic.APIStatusError):
-        return {"status": "insufficient_data", "reason": "rate_limited_after_3_retries"}
+        return {"status": "insufficient_data", "reason": "rate_limited_after_3_retries"}, False
 
     # Try to parse JSON from response
     # Strip markdown fences if present
@@ -428,24 +573,35 @@ def run_subagent(agent_name: str, slug: str) -> dict:
     text = re.sub(r'\n?```\s*$', '', text.strip())
 
     try:
-        return json.loads(text)
+        result = json.loads(text)
     except json.JSONDecodeError:
         # Try to find JSON object in text
         match = re.search(r'\{.*\}', text, re.S)
         if match:
             try:
-                return json.loads(match.group(0))
+                result = json.loads(match.group(0))
             except json.JSONDecodeError:
-                pass
-        return {"status": "parse_error", "raw": text[:2000]}
+                result = None
+        else:
+            result = None
+
+    if result is None:
+        return {"status": "parse_error", "raw": text[:2000]}, False
+
+    # Cache successful result
+    _write_subagent_cache(agent_name, slug, result)
+    return result, False
 
 
-def run_phase2(slug: str) -> dict:
+def run_phase2(slug: str, *, use_cache: bool = True) -> dict:
     """Run 3 subagents sequentially with 2s pause between each.
 
     Sequential execution avoids rate-limit (429) errors that occur when
     3 Sonnet calls fire simultaneously. Total runtime ~120s vs ~60s
     parallel, but near-zero failure rate — critical for live demo runs.
+
+    If use_cache=True, checks for cached subagent outputs matching the current
+    source fingerprint before making API calls.
     """
     print("\n  Phase 2 — Subagent Synthesis (Sonnet)")
     print("  " + "─" * 50)
@@ -454,28 +610,33 @@ def run_phase2(slug: str) -> dict:
     results = {}
 
     for i, name in enumerate(agents):
-        if i > 0:
-            time.sleep(2)
+        if i > 0 and not results.get(agents[i-1], {}).get("_was_cached"):
+            time.sleep(2)  # Only pause after actual API calls
         try:
-            result = run_subagent(name, slug)
+            result, was_cached = run_subagent(name, slug, use_cache=use_cache)
             status = result.get("status", "ok")
-            if status in ("insufficient_data", "parse_error"):
+            if was_cached:
+                print(f"    {SYM_CACHED} {name:<22} [cached subagent]", flush=True)
+            elif status in ("insufficient_data", "parse_error"):
                 print(f"    {SYM_INSUF} {name:<22} {status}: {result.get('reason', result.get('raw', '')[:60])}", flush=True)
             else:
                 print(f"    {SYM_OK} {name:<22} ok", flush=True)
+            result["_was_cached"] = was_cached
             results[name] = result
         except Exception as e:
             print(f"    {SYM_ERROR} {name:<22} {str(e)[:60]}", flush=True)
             results[name] = {"status": "error", "reason": str(e)[:200]}
 
-    # Write subagent outputs to sources/{slug}/
+    # Write subagent outputs to sources/{slug}/ (strip internal _was_cached flag)
     sources_dir = SOURCES_DIR / slug
     sources_dir.mkdir(parents=True, exist_ok=True)
     for name, data in results.items():
+        clean = {k: v for k, v in data.items() if k != "_was_cached"}
         out_path = sources_dir / f"{name.replace('-', '_')}.json"
-        out_path.write_text(json.dumps(data, indent=2, default=str))
+        out_path.write_text(json.dumps(clean, indent=2, default=str))
 
-    return results
+    # Strip _was_cached before returning
+    return {name: {k: v for k, v in data.items() if k != "_was_cached"} for name, data in results.items()}
 
 
 # ---------------------------------------------------------------------------
@@ -510,15 +671,29 @@ def run_phase3(slug: str, subagent_outputs: dict) -> dict:
         data = subagent_outputs.get(name, {"status": "insufficient_data"})
         user_parts.append(f"=== {name} OUTPUT ===\n{json.dumps(data, indent=2, default=str)}")
 
-    # Include cooperative purchasing data if available
+    # Include cooperative purchasing data if available (skip empty/failed sources)
+    coop_skipped = 0
     for coop_file in ["sourcewell.json", "tips.json", "omnia.json", "hgac.json", "costars.json"]:
         coop_path = SOURCES_DIR / slug / coop_file
         if coop_path.exists():
             try:
                 coop_data = json.loads(coop_path.read_text())
+                # Skip empty or failed sources to save input tokens
+                if coop_data.get("status") in ("insufficient_data", "no_matches"):
+                    coop_skipped += 1
+                    continue
+                results = coop_data.get("results_by_keyword", {})
+                if not results or all(
+                    r.get("status") in ("insufficient_data", "no_matches")
+                    for r in results.values() if isinstance(r, dict)
+                ):
+                    coop_skipped += 1
+                    continue
                 user_parts.append(f"=== {coop_file} ===\n{json.dumps(coop_data, indent=2, default=str)}")
             except (json.JSONDecodeError, OSError):
                 pass
+    if coop_skipped:
+        print(f"    💨 skipped {coop_skipped} empty cooperative purchasing source(s)", flush=True)
 
     # Include leadership data for champion identification
     leadership_path = SOURCES_DIR / slug / "leadership.json"
@@ -538,15 +713,15 @@ def run_phase3(slug: str, subagent_outputs: dict) -> dict:
         except (json.JSONDecodeError, OSError):
             pass
 
-    # Include persona file (needed for trigger templates, leverage_references, persona filtering)
+    # Persona goes into cached system prompt (not user message) for prompt caching
+    persona_text = None
     if PERSONA_PATH.exists():
         try:
             persona_text = PERSONA_PATH.read_text()
-            user_parts.append(f"=== persona/verkada-se.yml ===\n{persona_text}")
         except OSError:
             pass
 
-    # Include seller profile for warm intro cross-referencing
+    # Include seller profile in user message (small, company-varying)
     seller_path = PROJECT_ROOT / "persona" / "seller-profile.yml"
     if seller_path.exists():
         try:
@@ -559,12 +734,15 @@ def run_phase3(slug: str, subagent_outputs: dict) -> dict:
 
     print(f"    {SYM_RUN} running synthesizer...", flush=True)
 
+    # Use structured system with cache_control for prompt caching
+    cached_system = _build_cached_system(system_prompt, persona_text)
+
     try:
         client = anthropic.Anthropic()
         try:
             text = _stream_anthropic_with_retry(
                 client, model=OPUS_MODEL, max_tokens=12000,
-                system=system_prompt, messages=[{"role": "user", "content": user_msg}],
+                system=cached_system, messages=[{"role": "user", "content": user_msg}],
                 label="synthesizer",
             )
         except (anthropic.RateLimitError, anthropic.APIStatusError):
@@ -625,8 +803,10 @@ def run_phase4(brief_json_path: Path, open_browser: bool) -> Path | None:
 # Main pipeline
 # ---------------------------------------------------------------------------
 
-def research(company: str, *, force: bool = False, open_browser: bool = False):
+def research(company: str, *, force: bool = False, open_browser: bool = False, use_cache: bool = True):
     """Full /research pipeline."""
+    # Reset token usage for this run
+    _token_usage.update({"input": 0, "output": 0, "cache_creation": 0, "cache_read": 0})
     slug = slugify(company)
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
@@ -668,7 +848,7 @@ def research(company: str, *, force: bool = False, open_browser: bool = False):
 
     # Phase 2 — Subagent synthesis
     t2 = time.time()
-    subagent_outputs = run_phase2(slug)
+    subagent_outputs = run_phase2(slug, use_cache=use_cache)
     t2_elapsed = time.time() - t2
     print(f"  Phase 2 elapsed: {t2_elapsed:.1f}s")
 
@@ -741,21 +921,32 @@ def research(company: str, *, force: bool = False, open_browser: bool = False):
     print(f"    Phase 3 (synthesizer): {t3_elapsed:>6.1f}s")
     if html_path:
         print(f"    HTML: {html_path.relative_to(PROJECT_ROOT)}")
+    # Token usage summary
+    if any(_token_usage.values()):
+        print(f"\n  Token Usage:")
+        print(f"    Input:          {_token_usage['input']:>8,}")
+        print(f"    Output:         {_token_usage['output']:>8,}")
+        if _token_usage["cache_creation"]:
+            print(f"    Cache created:  {_token_usage['cache_creation']:>8,}")
+        if _token_usage["cache_read"]:
+            print(f"    Cache read:     {_token_usage['cache_read']:>8,}  (90% savings)")
     print(f"  {'='*54}\n")
 
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python orchestrator.py <company_name> [--force] [--open]", file=sys.stderr)
+        print("Usage: python orchestrator.py <company_name> [--force] [--open] [--no-cache]", file=sys.stderr)
         print("  e.g.: python orchestrator.py 'Atlanta Public Schools'", file=sys.stderr)
         print("        python orchestrator.py 'Georgia Tech' --force --open", file=sys.stderr)
+        print("        python orchestrator.py 'City of Atlanta' --no-cache", file=sys.stderr)
         sys.exit(1)
 
     company = sys.argv[1]
     force = "--force" in sys.argv
     open_browser = "--open" in sys.argv
+    use_cache = "--no-cache" not in sys.argv
 
-    research(company, force=force, open_browser=open_browser)
+    research(company, force=force, open_browser=open_browser, use_cache=use_cache)
 
 
 if __name__ == "__main__":
