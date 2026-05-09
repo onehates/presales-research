@@ -16,7 +16,9 @@ You receive a company slug (e.g., `target-corporation`) via the user message. Re
 1. `sources/{company}/ssl.json` — crt.sh certificate transparency data (subdomains, vendor hits, infra categories)
 2. `sources/{company}/github.json` — GitHub org data (repos, languages, infra signals, trigger matches)
 3. `sources/{company}/news.json` — Tavily news search results (articles, trigger matches)
-4. `persona/verkada-se.yml` — The persona rule engine (product lines, ICP verticals, displacement targets, triggers)
+4. `sources/{company}/reddit.json` — Reddit posts from r/sysadmin, r/k12sysadmin, r/CCTV, r/healthIT (practitioner pain signals)
+5. `sources/{company}/hhs.json` — HHS OCR Breach Portal data (HIPAA breach history, regulatory exposure)
+6. `persona/verkada-se.yml` — The persona rule engine (product lines, ICP verticals, displacement targets, triggers)
 
 **Use the Read tool to load each file. Use Glob to verify file existence first if needed.**
 
@@ -108,6 +110,61 @@ Output ONLY valid JSON. No markdown fences, no prose, no preamble. The JSON must
       "sources": [{"url": "string", "title": "string", "retrieved_at": "string"}]
     }
   ],
+  "practitioner_sentiment": {
+    "source_subreddits": ["string — e.g. 'r/k12sysadmin', 'r/sysadmin'"],
+    "total_posts_analyzed": "int",
+    "top_pain_themes": [
+      {
+        "theme": "string — specific pain theme extracted from posts",
+        "post_count": "int — number of posts mentioning this theme",
+        "representative_quote": "string — exact quote from highest-scored post",
+        "linked_persona_pain": "string|null — maps to icp.typical_pain in persona if applicable",
+        "confidence": "high|medium|inference",
+        "source_quality": "weak",
+        "source_caveat": "Reddit posts from practitioner communities; reflects individual opinions not organizational policy",
+        "source": {"url": "string — URL of representative post", "title": "string", "retrieved_at": "string"}
+      }
+    ],
+    "vendor_mentions": [
+      {
+        "vendor": "string — vendor name mentioned in posts",
+        "sentiment": "positive|negative|neutral|mixed",
+        "mention_count": "int",
+        "representative_quote": "string — exact quote showing sentiment",
+        "is_displacement_target": "boolean — true if vendor is in persona displacement_targets",
+        "confidence": "medium|inference",
+        "source_quality": "weak",
+        "source_caveat": "Reddit practitioner sentiment; individual experience not verified",
+        "source": {"url": "string", "title": "string", "retrieved_at": "string"}
+      }
+    ],
+    "trigger_evidence": [
+      {
+        "trigger_id": "string — from persona triggers",
+        "evidence": "string — specific Reddit post content that evidences this trigger",
+        "confidence": "inference",
+        "source_quality": "weak",
+        "source_caveat": "Reddit practitioner post; cannot confirm organizational adoption",
+        "source": {"url": "string", "title": "string", "retrieved_at": "string"}
+      }
+    ]
+  },
+  "incident_history": {
+    "source": "hhs_ocr_breach|clery|news|null",
+    "total_breaches": "int",
+    "total_individuals_affected": "int",
+    "largest_breach": {
+      "date": "string|null",
+      "individuals_affected": "int",
+      "breach_type": "string",
+      "description": "string"
+    },
+    "type_distribution": {"Hacking/IT Incident": 0, "Unauthorized Access/Disclosure": 0, "Theft": 0, "Loss": 0, "Other": 0},
+    "regulatory_exposure": "string — assessment of compliance risk based on breach history",
+    "confidence": "high|medium|inference",
+    "source_quality": "primary|secondary|weak",
+    "source": {"url": "string", "title": "string", "retrieved_at": "string"}
+  },
   "triggers_fired": [
     {
       "trigger_id": "string — exact trigger id from persona/verkada-se.yml",
@@ -396,21 +453,34 @@ When inferring SaaS vendors from subdomain names:
 
 ## Execution Flow
 
-1. Read `sources/{slug}/ssl.json`. If missing → output `insufficient_data` and stop.
-2. Read `sources/{slug}/github.json`. If missing → note it but continue with ssl.json + news only (degrade gracefully for GitHub-dependent sections).
+1. Read `sources/{slug}/ssl.json`. If missing → note it but continue (ssl-dependent sections will be empty).
+2. Read `sources/{slug}/github.json`. If missing → note it but continue (degrade gracefully for GitHub-dependent sections).
 3. Read `sources/{slug}/news.json`. If missing → note it but continue (degrade gracefully for news-dependent sections).
-4. Read `persona/verkada-se.yml`.
-5. Extract infrastructure patterns from `ssl.json`:
+4. Read `sources/{slug}/reddit.json`. If missing → note it but continue (practitioner_sentiment will be `"insufficient_data"`).
+5. Read `sources/{slug}/hhs.json`. If missing → note it but continue (incident_history will be `null`).
+6. Read `persona/verkada-se.yml`.
+7. **At least one of ssl.json, github.json, news.json, reddit.json must exist with valid data.** If ALL are missing → output `insufficient_data` and stop.
+8. Extract infrastructure patterns from `ssl.json` (if present):
    - Map `classification.infra_categories.cloud_saas` → `cloud_native_indicators`
    - Map `classification.infra_categories.physical_security` and `classification.infra_categories.alarm_sensor` → `physical_security_indicators`
    - Infer SaaS vendors from subdomain names → `saas_stack_inferred`
    - Check `classification.vendor_hits` against `displacement_targets` in persona → `displacement_vendor_hits`
-6. Extract engineering signals from `github.json`:
+9. Extract engineering signals from `github.json` (if present):
    - Map `infra_signals.security_repos` → `security_engineering_signals`
    - Map `infra_signals.cloud_native` → additional `cloud_native_indicators`
    - Check `trigger_matches` → `triggers_fired`
-7. Cross-reference news articles for vendor mentions, incident signals, and infrastructure signals.
-8. Construct `pain_hypotheses` by combining ≥2 evidence facts and linking to persona `typical_pain`. Drop any hypothesis with <2 facts.
-9. If `displacement_vendor_hits` is empty AND `ssl.json` subdomains.total_unique > 100, populate `displacement_vendor_absence` with naming-hygiene observation naming the exact count and all vendors checked.
-10. Run the anti-genericness self-check: for each section, verify source attribution exists, evidence names specific subdomains/repos/articles, confidence is tagged, and `source_quality` is set. Fix or drop failing claims.
-11. Output the final JSON object. No wrapper, no markdown, no explanation text.
+10. Cross-reference news articles for vendor mentions, incident signals, and infrastructure signals.
+11. **Extract practitioner sentiment from `reddit.json`** (if present):
+    - Identify pain themes from post titles and selftext_snippets in r/k12sysadmin, r/sysadmin, r/CCTV, r/healthIT
+    - Extract vendor mentions and classify sentiment (positive/negative/neutral/mixed)
+    - Check if any posts evidence persona triggers → add to trigger_evidence
+    - **IMPORTANT:** Reddit source_quality is always `weak`. Confidence caps at `inference` for organizational claims. Reddit posts reflect individual practitioner experience, not confirmed organizational policy.
+    - Group posts by theme, cite the highest-scored post as representative
+12. **Extract incident history from `hhs.json`** (if present and has breaches):
+    - Populate `incident_history` with breach counts, affected individuals, type distribution
+    - Assess regulatory exposure based on breach patterns
+    - If `hhs.json` has `status: "no_matches"` or empty `entity_records`, set `incident_history` to `null` (no breaches is a valid finding, not a failure)
+13. Construct `pain_hypotheses` by combining ≥2 evidence facts and linking to persona `typical_pain`. Drop any hypothesis with <2 facts. Reddit posts can serve as one evidence fact but cannot be both facts for a single hypothesis.
+14. If `displacement_vendor_hits` is empty AND `ssl.json` subdomains.total_unique > 100, populate `displacement_vendor_absence` with naming-hygiene observation naming the exact count and all vendors checked.
+15. Run the anti-genericness self-check: for each section, verify source attribution exists, evidence names specific subdomains/repos/articles, confidence is tagged, and `source_quality` is set. Fix or drop failing claims.
+16. Output the final JSON object. No wrapper, no markdown, no explanation text.
