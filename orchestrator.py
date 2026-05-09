@@ -55,6 +55,14 @@ def _entity_args(company, slug):
 def _query_args(company, slug):
     return {"query": company}
 
+PROCUREMENT_KEYWORDS = [
+    "video surveillance",
+    "access control",
+    "physical security",
+    "school safety",
+]
+
+
 def _category_args(company, slug):
     return {"query": "video surveillance"}
 
@@ -108,21 +116,34 @@ SYM_ERROR = "\033[31m✗\033[0m"    # red X
 SYM_RUN = "\033[90m…\033[0m"      # gray dots (running)
 
 
+COOPERATIVE_CLIENTS = {"sourcewell", "tips", "ga_procurement", "atlanta_procurement"}
+
+
 def run_client(client_name: str, company: str, slug: str, force: bool) -> tuple[str, str, str]:
     """
     Run a single client. Returns (client_name, status_symbol, detail).
+
+    For cooperative purchasing clients (sourcewell, tips, ga_procurement,
+    atlanta_procurement), runs multiple keyword queries and writes results to
+    both the keyword-specific cache AND sources/_market/ for cross-company reuse.
+    Also copies results into sources/{company}/ so subagents can read them.
     """
     mod_name, fn_name, args_factory, cache_file = CLIENT_REGISTRY[client_name]
 
     try:
-        # Check if already cached (for reporting)
-        cache_path = SOURCES_DIR / slug / cache_file
-        was_cached = cache_path.exists() and not force
-
-        # Import and call
         import importlib
         mod = importlib.import_module(mod_name)
         fetch_fn = getattr(mod, fn_name)
+
+        # Cooperative purchasing: run multiple keywords, aggregate results
+        if client_name in COOPERATIVE_CLIENTS:
+            return _run_cooperative_client(
+                client_name, fetch_fn, slug, cache_file, force
+            )
+
+        # Standard client: single call
+        cache_path = SOURCES_DIR / slug / cache_file
+        was_cached = cache_path.exists() and not force
 
         kwargs = args_factory(company, slug)
         kwargs["force_refresh"] = force
@@ -139,6 +160,68 @@ def run_client(client_name: str, company: str, slug: str, force: bool) -> tuple[
 
     except Exception as e:
         return client_name, SYM_ERROR, str(e)[:80]
+
+
+def _run_cooperative_client(
+    client_name: str, fetch_fn, slug: str, cache_file: str, force: bool
+) -> tuple[str, str, str]:
+    """Run a cooperative purchasing client with multiple keywords.
+
+    Writes to:
+    - sources/_market/{client_name}-{keyword_slug}.json (shared cache)
+    - sources/{slug}/{cache_file} (company-specific, aggregated)
+    """
+    market_dir = SOURCES_DIR / "_market"
+    market_dir.mkdir(parents=True, exist_ok=True)
+    company_dir = SOURCES_DIR / slug
+    company_dir.mkdir(parents=True, exist_ok=True)
+
+    all_results = []
+    any_ok = False
+
+    for keyword in PROCUREMENT_KEYWORDS:
+        kw_slug = slugify(keyword)
+        market_path = market_dir / f"{client_name}-{kw_slug}.json"
+
+        # Check market cache
+        if market_path.exists() and not force:
+            try:
+                cached = json.loads(market_path.read_text())
+                all_results.append(cached)
+                any_ok = True
+                continue
+            except (json.JSONDecodeError, KeyError):
+                pass
+
+        try:
+            result = fetch_fn(query=keyword, force_refresh=force)
+            status = result.get("status", "")
+            if status not in ("insufficient_data", "no_matches"):
+                any_ok = True
+
+            # Write to market cache
+            market_path.write_text(json.dumps(result, indent=2, default=str))
+            all_results.append(result)
+        except Exception:
+            continue
+
+    # Aggregate and write to company sources dir
+    aggregated = {
+        "retrieved_at": datetime.now(timezone.utc).isoformat(),
+        "source": client_name,
+        "keywords_queried": PROCUREMENT_KEYWORDS,
+        "results_by_keyword": {
+            r.get("query", PROCUREMENT_KEYWORDS[i] if i < len(PROCUREMENT_KEYWORDS) else "unknown"): r
+            for i, r in enumerate(all_results)
+        },
+    }
+    company_cache = company_dir / cache_file
+    company_cache.write_text(json.dumps(aggregated, indent=2, default=str))
+
+    if any_ok:
+        return client_name, SYM_OK, f"ok ({len(all_results)} keywords)"
+    else:
+        return client_name, SYM_INSUF, "insufficient_data"
 
 
 def run_phase1(company: str, slug: str, force: bool) -> dict:
