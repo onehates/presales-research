@@ -16,19 +16,21 @@ You receive a company slug (e.g., `target-corporation`) via the user message. Re
 1. `sources/{company}/jobs.json` — SerpAPI Google Jobs data (postings, role distribution, trigger matches, Haiku analysis)
 2. `persona/verkada-se.yml` — The persona rule engine (product lines, displacement targets, triggers with job_titles)
 
-**Use the Read tool to load each file. Use Glob to verify file existence first if needed.**
+**The source data is injected into the user message below, prefixed with `=== sources/{company}/{filename} ===` headers. Parse the data directly from the message — do NOT attempt to use Read or Glob tools.**
 
 ## No-Fetch Rule
 
-You read from cache ONLY. You do NOT make web requests, API calls, or trigger data collection. If `/research` hasn't been run for this company, the cache files won't exist. That is the correct behavior — output `insufficient_data` and stop.
+You read from the injected source data ONLY. You do NOT make web requests, API calls, or trigger data collection.
 
-If a required source file is missing, immediately output:
+If a required source file shows `[FILE NOT FOUND]` in the injected data, immediately output:
 
 ```json
 {"status": "insufficient_data", "reason": "Missing source file: sources/{company}/{filename}. Run /research first."}
 ```
 
 Do not attempt to work around missing data. Do not guess. Stop.
+
+**CRITICAL: Output ONLY valid JSON. No markdown fences, no prose, no preamble, no explanation. Your entire response must be a single JSON object.**
 
 ## Output Schema
 
@@ -323,8 +325,8 @@ The `trigger_matches` section in jobs.json contains pre-computed keyword matches
 
 ## Execution Flow
 
-1. Read `sources/{slug}/jobs.json`. If missing → output `insufficient_data` and stop.
-2. Read `persona/verkada-se.yml`.
+1. Parse `sources/{slug}/jobs.json` from the injected data. If it shows `[FILE NOT FOUND]` → output `insufficient_data` and stop.
+2. Parse `persona/verkada-se.yml` from the injected data.
 3. Extract `summary.total_active_reqs` and `summary.role_distribution` → populate `hiring_intensity`. Classify intensity. If <5 reqs, set `intensity_signal: "minimal"` with caveat.
 4. Scan `postings` array for security-related roles:
    - Match against title keywords: "security," "safety," "loss prevention," "assets protection," "LP," "guard," "surveillance," "physical security," "CSO," "CISO"

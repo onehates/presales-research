@@ -20,19 +20,19 @@ You receive a company slug (e.g., `target-corporation`) via the user message. Re
 5. `sources/{company}/hhs.json` — HHS OCR Breach Portal data (HIPAA breach history, regulatory exposure)
 6. `persona/verkada-se.yml` — The persona rule engine (product lines, ICP verticals, displacement targets, triggers)
 
-**Use the Read tool to load each file. Use Glob to verify file existence first if needed.**
+**The source data is injected into the user message below, prefixed with `=== sources/{company}/{filename} ===` headers. Parse the data directly from the message — do NOT attempt to use Read or Glob tools.**
 
 ## No-Fetch Rule
 
-You read from cache ONLY. You do NOT make web requests, API calls, or trigger data collection. If `/research` hasn't been run for this company, the cache files won't exist. That is the correct behavior — output `insufficient_data` and stop.
+You read from the injected source data ONLY. You do NOT make web requests, API calls, or trigger data collection.
 
-If a required source file is missing, immediately output:
+If a required source file shows `[FILE NOT FOUND]` in the injected data, that section outputs `insufficient_data`. At least one source (ssl.json, github.json, news.json, reddit.json, or hhs.json) must have valid data to proceed. If ALL show `[FILE NOT FOUND]`, output:
 
 ```json
-{"status": "insufficient_data", "reason": "Missing source file: sources/{company}/{filename}. Run /research first."}
+{"status": "insufficient_data", "reason": "No source files available. Run /research first."}
 ```
 
-Do not attempt to work around missing data. Do not guess. Stop.
+**CRITICAL: Output ONLY valid JSON. No markdown fences, no prose, no preamble, no explanation. Your entire response must be a single JSON object.**
 
 ## Output Schema
 

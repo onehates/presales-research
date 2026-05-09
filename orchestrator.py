@@ -276,13 +276,58 @@ def read_agent_prompt(agent_name: str) -> str:
     return text
 
 
+SUBAGENT_SOURCE_FILES = {
+    "company-bg": ["sec.json", "nces.json", "clery.json", "sam.json", "news.json"],
+    "tech-and-pain": ["ssl.json", "github.json", "news.json", "reddit.json", "hhs.json"],
+    "hiring-signals": ["jobs.json"],
+}
+
+
+def _load_source_data_for_agent(agent_name: str, slug: str) -> str:
+    """Load cached source files and persona, return as formatted text for injection."""
+    parts = []
+    source_files = SUBAGENT_SOURCE_FILES.get(agent_name, [])
+    sources_dir = SOURCES_DIR / slug
+
+    for filename in source_files:
+        path = sources_dir / filename
+        if path.exists():
+            try:
+                data = path.read_text()
+                # Truncate very large files to avoid token limits
+                if len(data) > 50000:
+                    data = data[:50000] + "\n... [truncated]"
+                parts.append(f"=== sources/{slug}/{filename} ===\n{data}")
+            except OSError:
+                parts.append(f"=== sources/{slug}/{filename} ===\n[ERROR: could not read file]")
+        else:
+            parts.append(f"=== sources/{slug}/{filename} ===\n[FILE NOT FOUND]")
+
+    # Always include persona
+    if PERSONA_PATH.exists():
+        try:
+            persona_text = PERSONA_PATH.read_text()
+            if len(persona_text) > 20000:
+                persona_text = persona_text[:20000] + "\n... [truncated]"
+            parts.append(f"=== persona/verkada-se.yml ===\n{persona_text}")
+        except OSError:
+            parts.append("=== persona/verkada-se.yml ===\n[ERROR: could not read file]")
+
+    return "\n\n".join(parts)
+
+
 def run_subagent(agent_name: str, slug: str) -> dict:
     """Run a Sonnet subagent. Returns the parsed JSON output."""
     if not anthropic or not os.environ.get("ANTHROPIC_API_KEY"):
         return {"status": "insufficient_data", "reason": "ANTHROPIC_API_KEY not set"}
 
     system_prompt = read_agent_prompt(agent_name)
-    user_msg = f"Company slug: {slug}\n\nAnalyze the cached source data for this company and produce the structured JSON output per your instructions."
+    source_data = _load_source_data_for_agent(agent_name, slug)
+    user_msg = (
+        f"Company slug: {slug}\n\n"
+        f"Below is the cached source data. Analyze it and produce the structured JSON output per your instructions.\n\n"
+        f"{source_data}"
+    )
 
     client = anthropic.Anthropic()
     msg = client.messages.create(
