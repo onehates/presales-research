@@ -673,6 +673,8 @@ leverage_references:
 
 personas:
   IT_Director:
+    meddic_role: champion
+    meddic_rationale: "Owns infrastructure decisions, evaluates technical fit, drives internal consensus"
     care_about:
       - integration
       - IT_burden
@@ -689,6 +691,8 @@ personas:
       - insurance_premiums
 
   Director_of_Facilities:
+    meddic_role: influencer
+    meddic_rationale: "End-user of security systems, defines operational requirements, surfaces pain daily"
     care_about:
       - capital_projects
       - vendor_management
@@ -704,6 +708,8 @@ personas:
       - developer_documentation
 
   CSO:
+    meddic_role: economic_buyer
+    meddic_rationale: "Owns security budget, signs off on risk posture, ultimate approver for security spend"
     care_about:
       - risk_posture
       - incident_response
@@ -718,6 +724,8 @@ personas:
       - pricing_per_unit
 
   Superintendent_K12:
+    meddic_role: economic_buyer
+    meddic_rationale: "Final budget authority in K-12 districts, board-accountable for safety investments"
     care_about:
       - student_safety
       - parent_communication
@@ -732,6 +740,8 @@ personas:
       - developer_documentation
 
   VP_of_Operations:
+    meddic_role: influencer
+    meddic_rationale: "Controls operational budget, evaluates multi-site scalability, owns vendor consolidation mandate"
     care_about:
       - operational_efficiency
       - multi_site_visibility
@@ -745,6 +755,8 @@ personas:
       - network_topology_details
 
   Loss_Prevention_Director:
+    meddic_role: champion
+    meddic_rationale: "Day-to-day user with acute pain, strong internal advocate when solution reduces shrink"
     care_about:
       - shrink_reduction
       - POS_integration

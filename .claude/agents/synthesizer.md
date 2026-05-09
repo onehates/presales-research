@@ -101,6 +101,94 @@ Output ONLY valid JSON. No markdown fences, no prose, no preamble. The JSON must
     "Loss_Prevention_Director": [],
     "Superintendent_K12": []
   },
+  "meddic_qualification": {
+    "metrics": {
+      "value": "string — quantifiable business impact Verkada can deliver, derived from snapshot/pain data (e.g., 'Consolidate {site_count} sites onto one platform, eliminating per-site NVR maintenance')",
+      "evidence": ["string — specific facts from subagent outputs supporting this metric"],
+      "confidence": "high|medium|inference",
+      "gap": "string|null — what discovery must confirm to validate this metric",
+      "source_quality": "primary|secondary|weak"
+    },
+    "economic_buyer": {
+      "value": "string — identified or hypothesized economic buyer title and name if known",
+      "evidence": ["string — from leadership, hiring signals, or persona meddic_role mappings"],
+      "confidence": "high|medium|inference",
+      "gap": "string|null — e.g., 'Confirm budget authority — CSO vs CFO vs Superintendent'",
+      "source_quality": "primary|secondary|weak"
+    },
+    "decision_criteria": {
+      "value": "string — what this buyer will evaluate on, derived from vertical_match + pain_hypotheses + technical_footprint",
+      "evidence": ["string — specific signals: e.g., 'NDAA compliance required (100% Title I)', 'Cloud-native preference (46 API subdomains)'"],
+      "confidence": "high|medium|inference",
+      "gap": "string|null — e.g., 'Confirm whether RFP scoring weights technical vs price'",
+      "source_quality": "primary|secondary|weak"
+    },
+    "decision_process": {
+      "value": "string — hypothesized buying process from entity_type + procurement signals",
+      "evidence": ["string — e.g., 'Cooperative purchasing available via Sourcewell #041524-VRK', 'K-12 districts typically require board approval for >$50K'"],
+      "confidence": "high|medium|inference",
+      "gap": "string|null — e.g., 'Confirm procurement path: full RFP vs cooperative vs sole-source'",
+      "source_quality": "primary|secondary|weak"
+    },
+    "identify_pain": {
+      "value": "string — primary pain hypothesis from pain_hypotheses, prioritized by Verkada relevance",
+      "evidence": ["string — specific pain evidence from subagent outputs"],
+      "confidence": "high|medium|inference",
+      "gap": "string|null — what discovery must confirm",
+      "source_quality": "primary|secondary|weak"
+    },
+    "champion": {
+      "value": "string — identified or hypothesized internal champion title/name",
+      "evidence": ["string — from hiring signals, leadership, persona meddic_role=champion mappings"],
+      "confidence": "high|medium|inference",
+      "gap": "string|null — e.g., 'Need to identify specific IT Director or security lead by name'",
+      "source_quality": "primary|secondary|weak"
+    },
+    "competition": {
+      "value": "string — known or hypothesized incumbent/competitor from displacement_intel + cooperative_purchasing competitor_landscape",
+      "evidence": ["string — specific vendor hits, tech stack mentions, cooperative vehicle competitor lists"],
+      "confidence": "high|medium|inference",
+      "gap": "string|null — e.g., 'Zero vendor names detected in OSINT — requires direct discovery'",
+      "source_quality": "primary|secondary|weak"
+    }
+  },
+  "verkada_gtm_strategy": {
+    "land_play": {
+      "recommendation": "string — specific first product to lead with and why (e.g., 'Lead with Cameras at 3 pilot schools — school_safety trigger fired, district has 86 sites with fragmented systems')",
+      "target_sites": "string|null — specific sites/buildings for initial deployment if identifiable from source data",
+      "estimated_scope": "string|null — rough scope from size_indicator (e.g., '86 schools, start with 3–5 highest-need campuses')"
+    },
+    "poc_strategy": {
+      "recommendation": "string — POC approach (e.g., 'Pelican case demo at district office + 1 high-school — show centralized Command view across 2 sites')",
+      "verkada_relevant_triggers": ["string — trigger_ids that make the POC compelling"],
+      "demo_modules": ["string — Command modules to highlight: e.g., 'People Analytics', 'License Plate Recognition', 'Environmental Sensors'"]
+    },
+    "channel_partner": {
+      "recommendation": "string — suggested channel partner strategy based on region/vertical (e.g., 'Engage Convergint for K-12 in Georgia — strong SLED practice')",
+      "evidence": ["string — why this partner: cooperative vehicle data, regional presence, vertical expertise"]
+    },
+    "bundle_recommendation": {
+      "primary_products": ["string — e.g., 'Cameras', 'Access Control'"],
+      "secondary_products": ["string — expansion products: e.g., 'Alarms', 'Intercoms', 'Guest'"],
+      "rationale": "string — why this bundle for this account, tied to pain_hypotheses and vertical_match"
+    },
+    "procurement_path": {
+      "recommended": "string — fastest procurement path (e.g., 'Sourcewell #041524-VRK — bypasses full RFP for K-12 in Georgia')",
+      "alternatives": ["string — other viable paths with trade-offs"],
+      "evidence": ["string — from cooperative_purchasing data"]
+    },
+    "expansion_motion": {
+      "phase_1": "string — initial deployment scope",
+      "phase_2": "string — expansion trigger (e.g., 'After successful POC at 3 schools, propose district-wide rollout to remaining 83 schools')",
+      "phase_3": "string|null — full platform play (e.g., 'Add Access Control to all schools during summer refresh cycle')",
+      "land_to_expand_ratio": "string|null — estimated expansion multiplier if calculable from size_indicator"
+    },
+    "competitive_displacement": {
+      "primary_target": "string|null — incumbent vendor to displace if known",
+      "displacement_playbook": "string — specific Verkada counter-positioning from persona displacement_targets (e.g., 'Hikvision rip-and-replace: NDAA non-compliance + FCC Covered List exposure. Federal funding at risk.')",
+      "proof_points": ["string — leverage_references relevant to this displacement"]
+    }
+  },
   "disqualifier_flags": [
     {
       "id": "string — from persona disqualifiers",
@@ -142,8 +230,25 @@ Most sections are propagated from subagent outputs, not re-synthesized. This pre
     - **TIPS-USA**: Identify security-relevant solicitations.
     If no cooperative purchasing data exists for any vehicle, set `available_vehicles` to empty array.
 13. **`displacement_intel`** — Merge: `vendor_hits` from tech-and-pain `displacement_vendor_hits`, `vendor_absence_finding` from `displacement_vendor_absence`, `tech_stack_mentions` from hiring-signals `tech_stack_mentions`.
+14. **`meddic_qualification`** — Synthesize from ALL subagent outputs + persona file. This is NOT propagation — it's synthesis. For each MEDDIC field:
+    - **Metrics**: Derive from `snapshot.size_indicator` + `pain_hypotheses`. Quantify the business impact Verkada can deliver (e.g., consolidate N sites, eliminate NVR maintenance across N locations, comply with NDAA to protect $X federal funding).
+    - **Economic Buyer**: Map from `leadership` names + persona `meddic_role: economic_buyer` mappings. If leadership is `insufficient_data`, hypothesize from entity_type (K-12 → Superintendent, Corp → CSO/VP).
+    - **Decision Criteria**: Derive from `vertical_match.key_drivers_present` + `pain_hypotheses` + `federal_funding_profile.ndaa_exposure`. What will this buyer evaluate on?
+    - **Decision Process**: Derive from `entity_type` + `cooperative_purchasing` data. K-12 districts need board approval; government entities use cooperative purchasing vehicles; corporations have procurement departments.
+    - **Identify Pain**: Select the highest-confidence `pain_hypothesis` that maps to a Verkada product capability.
+    - **Champion**: Map from persona `meddic_role: champion` mappings + `hiring_signals.security_team_signals`. IT Directors and LP Directors are typical champions.
+    - **Competition**: Merge from `displacement_intel.vendor_hits` + `cooperative_purchasing.competitor_landscape`. If no vendor identified, state that and cite the vendor_absence_finding.
+    - Every field MUST have `evidence` array citing specific subagent data. Every field MUST have `gap` explaining what discovery must confirm. `confidence` follows the same rules as all other sections.
+15. **`verkada_gtm_strategy`** — Synthesize from ALL subagent outputs + persona file. This is the SE's action plan. For each field:
+    - **land_play**: Pick the first Verkada product line to lead with based on `vertical_match.key_drivers_present` and `pain_hypotheses`. K-12 with school_safety → lead with Cameras. Healthcare with access_control_not_integrated_with_video → lead with Access Control + Cameras bundle.
+    - **poc_strategy**: Design around the highest-weight fired trigger. Reference specific sites or buildings from `snapshot.size_indicator` if available.
+    - **channel_partner**: Use regional knowledge from `snapshot.headquarters_state` + vertical. Georgia K-12 → Convergint or Pavion (both on HGACBuy). Reference `cooperative_purchasing` data for partner evidence.
+    - **bundle_recommendation**: Map `vertical_match.key_drivers_present` → Verkada product lines from `persona/verkada-se.yml product.lines`. Primary = immediate need, Secondary = expansion products.
+    - **procurement_path**: Recommend from `cooperative_purchasing.available_vehicles`. Prioritize vehicles where Verkada holds a contract. Reference specific contract numbers.
+    - **expansion_motion**: Design land-and-expand from `snapshot.size_indicator`. Phase 1 = POC scope, Phase 2 = initial rollout, Phase 3 = full platform. Calculate `land_to_expand_ratio` from site count if available.
+    - **competitive_displacement**: Match `displacement_intel.vendor_hits` → `displacement_targets` in persona file. Use the specific `verkada_counter` text. Add `leverage_references` as proof points.
 
-**Do NOT re-interpret, re-summarize, or strip source attribution from propagated sections.** The subagents already applied anti-genericness rules. Your job is to assemble, not rewrite.
+**Do NOT re-interpret, re-summarize, or strip source attribution from propagated sections.** The subagents already applied anti-genericness rules. Your job is to assemble, not rewrite. The MEDDIC and GTM sections are exceptions — they require cross-subagent synthesis.
 
 ## Discovery Question Generation (CRITICAL)
 
@@ -453,8 +558,10 @@ The brief can be generated with 2 of 3 subagents, but NOT without company-bg.
 6. **Build cooperative_purchasing** from all available cooperative purchasing data (sourcewell.json, tips.json, omnia.json, hgac.json, costars.json). For each vehicle: filter for physical security relevance, surface Verkada contract numbers and products, note competitor manufacturers and discount tiers.
 7. **Collect fired triggers** from all subagent outputs into a deduplicated list. Include triggers from practitioner_sentiment.trigger_evidence and federal_funding_profile.
 8. **Generate discovery questions** per the 6-step flow above: collect triggers → look up templates → fill placeholders → filter by persona → attach metadata with leverage references → handle empty personas. When a trigger_id has a matching `leverage_references` entry in the persona file, append the customer reference inline in the question text using format: `"(ref: {customer} — {context})"`. Example: `"Has physical security been included in that cloud-first conversation? (ref: Waukesha SD — verkada.com/customers/waukesha)"`. This gives the SE a proof point to drop during discovery.
-9. **Check disqualifiers** against all subagent data. Only flag with affirmative evidence.
-10. **Generate open_questions** from insufficient_data sections, unfilled templates, inference-tagged claims, vendor absence, and thin hiring data.
-11. **Generate TL;DR** — 3 bullets max, company-specific, priority-ordered.
-12. **Run specificity rewrite pass** — final check on every text string in the output.
-13. Output the final JSON object. No wrapper, no markdown, no explanation text.
+9. **Build MEDDIC qualification** — synthesize across all subagent outputs + persona `meddic_role` mappings. For each of the 7 MEDDIC fields, populate `value`, `evidence[]`, `confidence`, `gap`, and `source_quality`. Every field must have a `gap` — MEDDIC is a living qualification framework, not a checkbox.
+10. **Build Verkada GTM strategy** — synthesize land play, POC strategy, channel partner, bundle recommendation, procurement path, expansion motion, and competitive displacement. Ground every recommendation in specific subagent data (site counts, trigger IDs, cooperative contract numbers, displacement targets).
+11. **Check disqualifiers** against all subagent data. Only flag with affirmative evidence.
+12. **Generate open_questions** from insufficient_data sections, unfilled templates, inference-tagged claims, vendor absence, and thin hiring data.
+13. **Generate TL;DR** — 3 bullets max, company-specific, priority-ordered.
+14. **Run specificity rewrite pass** — final check on every text string in the output.
+15. Output the final JSON object. No wrapper, no markdown, no explanation text.
