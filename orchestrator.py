@@ -319,18 +319,27 @@ def _load_source_data_for_agent(agent_name: str, slug: str) -> str:
 RETRY_DELAYS = [5, 15, 45]
 
 
-def _call_anthropic_with_retry(client, *, model: str, max_tokens: int,
-                                system: str, messages: list,
-                                label: str) -> "anthropic.types.Message":
-    """Call the Anthropic API with exponential backoff on 429/529."""
+def _stream_anthropic_with_retry(client, *, model: str, max_tokens: int,
+                                  system: str, messages: list,
+                                  label: str) -> str:
+    """Stream an Anthropic API call with exponential backoff on 429/529.
+
+    Uses client.messages.stream() to avoid the SDK's 10-minute timeout
+    on non-streaming calls (Opus + large prompts + high max_tokens).
+    Returns the accumulated response text.
+    """
     for attempt in range(len(RETRY_DELAYS) + 1):
         try:
-            return client.messages.create(
+            with client.messages.stream(
                 model=model,
                 max_tokens=max_tokens,
                 system=system,
                 messages=messages,
-            )
+            ) as stream:
+                chunks = []
+                for text in stream.text_stream:
+                    chunks.append(text)
+                return "".join(chunks)
         except anthropic.RateLimitError:
             if attempt >= len(RETRY_DELAYS):
                 raise
@@ -363,15 +372,13 @@ def run_subagent(agent_name: str, slug: str) -> dict:
 
     client = anthropic.Anthropic()
     try:
-        msg = _call_anthropic_with_retry(
+        text = _stream_anthropic_with_retry(
             client, model=SONNET_MODEL, max_tokens=8000,
             system=system_prompt, messages=[{"role": "user", "content": user_msg}],
             label=agent_name,
         )
     except (anthropic.RateLimitError, anthropic.APIStatusError):
         return {"status": "insufficient_data", "reason": "rate_limited_after_3_retries"}
-
-    text = msg.content[0].text
 
     # Try to parse JSON from response
     # Strip markdown fences if present
@@ -478,7 +485,7 @@ def run_phase3(slug: str, subagent_outputs: dict) -> dict:
     try:
         client = anthropic.Anthropic()
         try:
-            msg = _call_anthropic_with_retry(
+            text = _stream_anthropic_with_retry(
                 client, model=OPUS_MODEL, max_tokens=12000,
                 system=system_prompt, messages=[{"role": "user", "content": user_msg}],
                 label="synthesizer",
@@ -487,8 +494,6 @@ def run_phase3(slug: str, subagent_outputs: dict) -> dict:
             print(f"    {SYM_ERROR} synthesizer rate limited after 3 retries", flush=True)
             return {"status": "insufficient_data", "reason": "rate_limited_after_3_retries",
                     "subagent_outputs": subagent_outputs}
-
-        text = msg.content[0].text
         text = re.sub(r'^```(?:json)?\s*\n?', '', text.strip())
         text = re.sub(r'\n?```\s*$', '', text.strip())
 
