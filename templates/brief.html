@@ -202,11 +202,12 @@
       {% endif %}
     </section>
 
-    <!-- Champion Candidates -->
+    <!-- Projected Champion Candidates -->
     {% if data.champion_candidates %}
     <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
-      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Champion Candidates</h2>
-      <div class="space-y-4">
+      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">Projected Champion Candidates</h2>
+      <p class="text-xs text-gray-400 italic mb-4">These are projections based on public signals about each candidate. Validate via discovery.</p>
+      <div class="space-y-5">
         {% for cand in data.champion_candidates[:3] %}
         <div class="border-l-3 {{ 'border-green-400' if cand.champion_fit_score >= 0.6 else 'border-amber-400' if cand.champion_fit_score >= 0.3 else 'border-gray-300' }} pl-4">
           <div class="flex items-start justify-between mb-1">
@@ -222,7 +223,44 @@
               {{ confidence_badge(cand.confidence) }}
             </div>
           </div>
+
+          <!-- Score breakdown bar -->
+          {% if cand.score_breakdown %}
+          <div class="flex items-center gap-1 mb-2 mt-1">
+            {% set factors = [
+              ('Role', cand.score_breakdown.role_fit, 'bg-blue-400'),
+              ('Recency', cand.score_breakdown.recency, 'bg-emerald-400'),
+              ('Arc', cand.score_breakdown.career_arc, 'bg-violet-400'),
+              ('Voice', cand.score_breakdown.public_voice, 'bg-amber-400'),
+              ('Topic', cand.score_breakdown.topic_affinity, 'bg-rose-400'),
+              ('Auth', cand.score_breakdown.authority, 'bg-slate-400')
+            ] %}
+            {% for label, val, color in factors %}
+            <div class="flex flex-col items-center" style="min-width: 44px;">
+              <div class="w-full bg-gray-100 rounded-full h-1.5 mb-0.5">
+                <div class="{{ color }} rounded-full h-1.5" style="width: {{ (val * 100) | int }}%"></div>
+              </div>
+              <span class="text-[9px] text-gray-400">{{ label }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <!-- Reasoning summary -->
+          {% if cand.reasoning_summary %}
+          <p class="text-xs text-gray-600 mb-2">{{ cand.reasoning_summary }}</p>
+          {% elif cand.champion_fit_reasoning %}
           <p class="text-xs text-gray-600 mb-2">{{ cand.champion_fit_reasoning }}</p>
+          {% endif %}
+
+          <!-- Recommended validation question -->
+          {% if cand.recommended_validation_question %}
+          <div class="bg-blue-50 border border-blue-200 rounded px-2 py-1 mb-2">
+            <span class="text-xs font-semibold text-blue-700">Validate:</span>
+            <span class="text-xs text-blue-800 italic">{{ cand.recommended_validation_question }}</span>
+          </div>
+          {% endif %}
+
           {% if cand.recent_activity %}
           <div class="space-y-1 mb-2">
             {% for act in cand.recent_activity[:2] %}

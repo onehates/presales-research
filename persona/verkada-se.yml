@@ -777,6 +777,59 @@ personas:
 # They don't mean "stop research" — they mean "SE needs to know immediately."
 # =============================================================================
 
+# =============================================================================
+# Champion Criteria — Weighted scoring for projected champion identification
+# =============================================================================
+# Used by clients/champion_signals.py to score named individuals from
+# leadership.json. Each factor scored 0-1, weighted sum produces
+# champion_fit_score. Other vendors plug in their own criteria file
+# (e.g., cisco-se.yml would have different vendor_alumni_indicators).
+# =============================================================================
+
+champion_criteria:
+  weights:
+    role_fit: 0.25
+    recency: 0.10
+    career_arc: 0.15
+    public_voice: 0.15
+    topic_affinity: 0.20
+    authority: 0.15
+  role_priority:
+    IT_Director: 1.0
+    CIO: 0.95
+    CSO: 0.95
+    Director_of_Facilities: 0.85
+    Director_of_Public_Safety: 0.85
+    Director_of_Operations: 0.70
+    Superintendent: 0.30  # economic buyer, not champion
+    Board_Member: 0.20
+  champion_topic_signals:
+    - cloud security
+    - multi-site management
+    - vendor consolidation
+    - NDAA compliance
+    - federal funding compliance
+    - physical security modernization
+    - school safety technology
+    - campus safety
+  vendor_alumni_indicators:
+    - Cisco Meraki
+    - Verkada
+    - Genetec  # (if cloud-managed)
+    - Avigilon Cloud
+    - Brivo
+  modern_stack_orgs:
+    - "tech companies (FAANG, unicorns)"
+    - "cloud-first SaaS orgs"
+    - "any org publicly known for cloud transformation"
+
+# =============================================================================
+# Disqualifiers — Flags That Should Kill an Opportunity
+# =============================================================================
+# If any of these are detected, the brief must flag them prominently.
+# They don't mean "stop research" — they mean "SE needs to know immediately."
+# =============================================================================
+
 disqualifiers:
   - id: on_prem_only_mandate
     description: >

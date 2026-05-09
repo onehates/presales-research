@@ -23,6 +23,7 @@ You receive three subagent outputs in the user message as labeled JSON blocks. Y
 6. `sources/{slug}/hgac.json` — HGACBuy cooperative purchasing data (if present)
 7. `sources/{slug}/costars.json` — COSTARS cooperative purchasing data (if present)
 8. `sources/{slug}/leadership.json` — Named individuals extracted from news + leadership pages
+9. `sources/{slug}/champion_signals.json` — Per-individual deep signal enrichment (role_fit, tenure/recency, career_arc, public_voice, topic_affinity, authority) with weighted champion_fit_score and score_breakdown
 
 **All data is provided in the user message as labeled blocks. The subagent outputs AND cooperative purchasing data AND persona file AND leadership data AND seller profile are all injected — do not attempt to read them from files.**
 
@@ -94,8 +95,17 @@ Output ONLY valid JSON. No markdown fences, no prose, no preamble. The JSON must
       "title": "string — official title",
       "role_classification": "string — Executive|IT|Security|Operations|Facilities|Board|Other",
       "meddic_role": "string — champion|economic_buyer|influencer (from persona meddic_role mapping based on title match)",
-      "champion_fit_score": "number 0.0-1.0",
-      "champion_fit_reasoning": "string — specific signals that drive the score (e.g., 'Recent hire (Q1 2026), cloud-first language in press quotes, IT Director maps to champion role in persona')",
+      "champion_fit_score": "number 0.0-1.0 — USE the weighted score from champion_signals.json when available, otherwise compute from synthesizer rules",
+      "score_breakdown": {
+        "role_fit": "number 0.0-1.0 — from champion_signals.json score_breakdown.role_fit or title-based estimate",
+        "recency": "number 0.0-1.0 — from champion_signals.json score_breakdown.recency or news-based estimate",
+        "career_arc": "number 0.0-1.0 — from champion_signals.json score_breakdown.career_arc",
+        "public_voice": "number 0.0-1.0 — from champion_signals.json score_breakdown.public_voice",
+        "topic_affinity": "number 0.0-1.0 — from champion_signals.json score_breakdown.topic_affinity",
+        "authority": "number 0.0-1.0 — from champion_signals.json score_breakdown.authority"
+      },
+      "reasoning_summary": "string — 3-sentence narrative explaining why this person is a projected champion. Cite specific signals: role match, tenure evidence, career trajectory, public commentary topics, authority level.",
+      "recommended_validation_question": "string — a single discovery question tailored to this candidate's profile, designed to validate the champion hypothesis. E.g., 'What infrastructure decisions has {name} been driving since joining in {year}?'",
       "recent_activity": [
         {
           "type": "string — news_mention|quote|decision|hire",
@@ -255,16 +265,20 @@ Most sections are propagated from subagent outputs, not re-synthesized. This pre
     - **TIPS-USA**: Identify security-relevant solicitations.
     If no cooperative purchasing data exists for any vehicle, set `available_vehicles` to empty array.
 13. **`displacement_intel`** — Merge: `vendor_hits` from tech-and-pain `displacement_vendor_hits`, `vendor_absence_finding` from `displacement_vendor_absence`, `tech_stack_mentions` from hiring-signals `tech_stack_mentions`.
-14. **`champion_candidates`** — Synthesize from `leadership.json` named_individuals + company-bg `leadership` + hiring-signals `security_team_signals` + `persona/seller-profile.yml`. For each named individual:
+14. **`champion_candidates`** — Synthesize from `champion_signals.json` (primary, when available) + `leadership.json` named_individuals + company-bg `leadership` + hiring-signals `security_team_signals` + `persona/seller-profile.yml`. When `champion_signals.json` is present, USE its pre-computed weighted scores and score_breakdowns as the primary data source. For each named individual:
+    - **`champion_fit_score`**: If present in `champion_signals.json`, use its `champion_fit_score` directly. Otherwise fall back to manual scoring rules below.
+    - **`score_breakdown`**: Copy from `champion_signals.json` `score_breakdown` per individual. If not available, estimate from synthesizer-available signals: `role_fit` from title matching, `recency` from news hire dates, others default to 0.0.
     - **`meddic_role`**: Match the individual's title against persona `meddic_role` mappings. Superintendent/CSO → `economic_buyer`. IT Director/LP Director → `champion`. Facilities/VP Ops → `influencer`. Board members → `economic_buyer`.
-    - **`champion_fit_score`** (0.0–1.0): Score on these signals, each adding to the score:
+    - **`reasoning_summary`**: Write a 3-sentence narrative citing the strongest signals. Example: "{Name} holds the {title} role, which maps to champion in the persona. Their {recency/career_arc/public_voice} signals suggest {reasoning}. Validation recommended via {recommended question}."
+    - **`recommended_validation_question`**: Generate a single discovery question tailored to this candidate's profile. Tie to their specific role, tenure, or public commentary. Example: "What infrastructure modernization decisions has {name} been driving since joining {org} in {year}?"
+    - **Fallback scoring** (when champion_signals.json is absent):
       - Recent hire (joined within 12 months, detected from "joined", "appointed", "new" language in news) → +0.25
       - Cloud/digital transformation language in their press quotes or decisions → +0.20
       - Public commentary on security, safety, or technology topics → +0.15
       - Role maps to `champion` in persona meddic_role (IT Director, LP Director) → +0.20
       - Prior experience at a similar-vertical org (if detectable from news context) → +0.10
       - Media-active (2+ news mentions or quotes) → +0.10
-      - Board/executive level → set meddic_role to `economic_buyer`, NOT champion (cap champion_fit_score at 0.3 for economic_buyers — they approve, they don't champion)
+    - Board/executive level → set meddic_role to `economic_buyer`, NOT champion (cap champion_fit_score at 0.3 for economic_buyers — they approve, they don't champion)
     - **`warm_intro_path`**: Cross-reference against `persona/seller-profile.yml`. Check:
       - Did the individual previously work at one of the seller's `prior_employers`? → "Shared prior employer: {company}"
       - Does the individual's org/network overlap with seller's `networks`? → "Shared network: {network}"
@@ -595,11 +609,12 @@ The brief can be generated with 2 of 3 subagents, but NOT without company-bg.
 2. Parse `persona/seller-profile.yml` from the user message (SE's prior employers, networks, geographic focus for warm intro cross-referencing).
 3. Parse cooperative purchasing data from the user message: `sourcewell.json`, `tips.json`, `omnia.json`, `hgac.json`, `costars.json` (whichever are present).
 4. Parse `leadership.json` from the user message (named individuals with titles, role classifications, recent activity, LinkedIn URLs).
+4b. Parse `champion_signals.json` from the user message (per-individual signal enrichment: role_fit, tenure/recency, career_arc, public_voice, topic_affinity, authority scores with evidence). When present, this is the PRIMARY source for champion_fit_score and score_breakdown.
 5. Parse the three subagent outputs from the user message.
 6. Validate each subagent output — check for top-level `insufficient_data` status.
 7. Propagate sections: entity_type, snapshot, federal_funding_profile, leadership, material events, vertical match, technical footprint, practitioner_sentiment, incident_history, pain hypotheses, hiring signals, displacement intel.
 8. **Build cooperative_purchasing** from all available cooperative purchasing data (sourcewell.json, tips.json, omnia.json, hgac.json, costars.json). For each vehicle: filter for physical security relevance, surface Verkada contract numbers and products, note competitor manufacturers and discount tiers.
-9. **Build champion_candidates** from `leadership.json` + company-bg `leadership` + hiring-signals `security_team_signals`. For each named individual: classify meddic_role, score champion_fit (0.0–1.0), cross-reference against seller-profile.yml for warm_intro_path. Sort by champion_fit_score descending, output top 5.
+9. **Build champion_candidates** from `champion_signals.json` (primary) + `leadership.json` + company-bg `leadership` + hiring-signals `security_team_signals`. When champion_signals.json is present, use its pre-computed scores and score_breakdowns. For each named individual: classify meddic_role, populate score_breakdown, write reasoning_summary (3 sentences), generate recommended_validation_question, cross-reference against seller-profile.yml for warm_intro_path. Sort by champion_fit_score descending, output top 5.
 10. **Collect fired triggers** from all subagent outputs into a deduplicated list. Include triggers from practitioner_sentiment.trigger_evidence and federal_funding_profile.
 11. **Generate discovery questions** per the 6-step flow above: collect triggers → look up templates → fill placeholders → filter by persona → attach metadata with leverage references → handle empty personas. When a trigger_id has a matching `leverage_references` entry in the persona file, append the customer reference inline in the question text using format: `"(ref: {customer} — {context})"`. Example: `"Has physical security been included in that cloud-first conversation? (ref: Waukesha SD — verkada.com/customers/waukesha)"`. This gives the SE a proof point to drop during discovery.
 12. **Build MEDDIC qualification** — synthesize across all subagent outputs + persona `meddic_role` mappings + `champion_candidates`. For the Champion field: USE the top-scoring named champion candidate from step 9. Format as `"{Name}, {Title} — {reasoning}"`. Only fall back to role placeholder if no named individuals exist. Every field must have a `gap`.

@@ -79,6 +79,11 @@ def _crtsh_args(company, slug):
     return {"company_name": company}
 
 
+def _champion_signals_args(company, slug):
+    """Champion signals depends on leadership.json existing."""
+    return {"company_name": company}
+
+
 def _leadership_args(company, slug):
     """Detect entity_type from cached NCES/SEC data for leadership client."""
     entity_type = "unknown"
@@ -132,6 +137,7 @@ CLIENT_REGISTRY = {
     "costars":              ("clients.costars",           "fetch_costars_data",            _category_args, "costars.json"),
     "hgac":                 ("clients.hgac",              "fetch_hgac_data",               _category_args, "hgac.json"),
     "leadership":           ("clients.leadership",        "fetch_leadership_data",         _leadership_args,  "leadership.json"),
+    "champion_signals":     ("clients.champion_signals",  "fetch_champion_signals",        _champion_signals_args, "champion_signals.json"),
 }
 
 
@@ -154,6 +160,9 @@ SYM_RUN = "\033[90m…\033[0m"      # gray dots (running)
 
 
 COOPERATIVE_CLIENTS = {"sourcewell", "tips", "ga_procurement", "atlanta_procurement", "omnia", "costars", "hgac"}
+
+# Clients that depend on other clients' output and must run after Phase 1
+DEFERRED_CLIENTS = {"champion_signals"}
 
 
 def run_client(client_name: str, company: str, slug: str, force: bool) -> tuple[str, str, str]:
@@ -262,9 +271,9 @@ def _run_cooperative_client(
 
 
 def run_phase1(company: str, slug: str, force: bool) -> dict:
-    """Run all 14 clients in parallel. Returns {client_name: (symbol, detail)}."""
+    """Run all clients in parallel (except deferred). Returns {client_name: (symbol, detail)}."""
     results = {}
-    client_names = list(CLIENT_REGISTRY.keys())
+    client_names = [n for n in CLIENT_REGISTRY if n not in DEFERRED_CLIENTS]
 
     # Print initial grid
     print("\n  Phase 1 — Source Data Collection")
@@ -520,6 +529,15 @@ def run_phase3(slug: str, subagent_outputs: dict) -> dict:
         except (json.JSONDecodeError, OSError):
             pass
 
+    # Include champion signals for enriched champion scoring
+    champion_signals_path = SOURCES_DIR / slug / "champion_signals.json"
+    if champion_signals_path.exists():
+        try:
+            cs_data = json.loads(champion_signals_path.read_text())
+            user_parts.append(f"=== champion_signals.json ===\n{json.dumps(cs_data, indent=2, default=str)}")
+        except (json.JSONDecodeError, OSError):
+            pass
+
     # Include persona file (needed for trigger templates, leverage_references, persona filtering)
     if PERSONA_PATH.exists():
         try:
@@ -622,8 +640,18 @@ def research(company: str, *, force: bool = False, open_browser: bool = False):
     # Phase 1 — Source data collection
     t1 = time.time()
     phase1_results = run_phase1(company, slug, force)
+    print(f"  Phase 1 elapsed: {time.time() - t1:.1f}s")
+
+    # Phase 1b — Deferred clients (depend on Phase 1 output)
+    if DEFERRED_CLIENTS:
+        print(f"\n  Phase 1b — Deferred Clients")
+        print("  " + "─" * 50)
+        for name in DEFERRED_CLIENTS:
+            cname, sym, detail = run_client(name, company, slug, force)
+            phase1_results[cname] = (sym, detail)
+            print(f"    {sym} {cname:<22} {detail}", flush=True)
+
     t1_elapsed = time.time() - t1
-    print(f"  Phase 1 elapsed: {t1_elapsed:.1f}s")
 
     # Phase 2 — Subagent synthesis
     t2 = time.time()
