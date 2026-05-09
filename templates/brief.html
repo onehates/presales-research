@@ -25,7 +25,7 @@
     <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
       <div>
         <h1 class="text-xl font-bold text-gray-900">{{ data.snapshot.name }}</h1>
-        <p class="text-sm text-gray-500">{{ data.snapshot.vertical }} · {{ data.snapshot.ticker or 'Private' }} · {{ data.snapshot.headquarters_state }}</p>
+        <p class="text-sm text-gray-500">{{ data.snapshot.vertical }} · {{ data.entity_type | default(data.snapshot.ticker or 'Private') | replace('_', ' ') }} · {{ data.snapshot.headquarters_state }}</p>
       </div>
       <div class="text-right text-xs text-gray-400">
         <div>Generated {{ data.metadata.generated_at[:10] }}</div>
@@ -100,6 +100,52 @@
         {% endfor %}
       </div>
     </section>
+
+    <!-- Federal Funding Profile -->
+    {% if data.federal_funding_profile %}
+    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Federal Funding Profile</h2>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm mb-4">
+        <div>
+          <dt class="text-gray-500 text-xs uppercase">Federal Funding</dt>
+          <dd class="font-medium">{{ 'Yes' if data.federal_funding_profile.has_federal_funding else 'No' }}</dd>
+        </div>
+        {% if data.federal_funding_profile.title_i_status %}
+        <div>
+          <dt class="text-gray-500 text-xs uppercase">Title I Status</dt>
+          <dd class="font-medium">{{ data.federal_funding_profile.title_i_status }}</dd>
+        </div>
+        {% endif %}
+        {% if data.federal_funding_profile.frpl_percentage %}
+        <div>
+          <dt class="text-gray-500 text-xs uppercase">FRPL Rate</dt>
+          <dd class="font-medium text-lg">{{ data.federal_funding_profile.frpl_percentage }}%</dd>
+        </div>
+        {% endif %}
+      </div>
+      {% if data.federal_funding_profile.frpl_detail %}
+      <p class="text-sm text-gray-600 mb-2">{{ data.federal_funding_profile.frpl_detail }}</p>
+      {% endif %}
+      {% if data.federal_funding_profile.ndaa_exposure %}
+      <div class="bg-amber-50 border border-amber-200 rounded p-3 mb-3">
+        <span class="text-xs font-semibold text-amber-700 uppercase">NDAA Exposure</span>
+        <p class="text-sm text-amber-900 mt-1">{{ data.federal_funding_profile.ndaa_exposure }}</p>
+      </div>
+      {% endif %}
+      {% if data.federal_funding_profile.funding_programs %}
+      <div class="flex flex-wrap gap-1">
+        {% for prog in data.federal_funding_profile.funding_programs %}
+        <span class="inline-block bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-medium">{{ prog }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <div class="mt-2 flex gap-1">
+        {{ confidence_badge(data.federal_funding_profile.confidence) }}
+        {{ quality_badge(data.federal_funding_profile.source_quality) }}
+        {{ source_chip(data.federal_funding_profile.source) }}
+      </div>
+    </section>
+    {% endif %}
 
     <!-- Vertical Match -->
     <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
@@ -301,6 +347,124 @@
         </div>
         {% endfor %}
       </div>
+    </section>
+    {% endif %}
+
+    <!-- Practitioner Sentiment -->
+    {% if data.practitioner_sentiment and data.practitioner_sentiment != "insufficient_data" %}
+    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Practitioner Sentiment (Reddit)</h2>
+      <p class="text-xs text-gray-400 mb-4">{{ data.practitioner_sentiment.total_posts_analyzed }} posts analyzed from {{ data.practitioner_sentiment.source_subreddits | join(', ') }}</p>
+
+      {% if data.practitioner_sentiment.top_pain_themes %}
+      <h3 class="text-xs font-semibold text-gray-500 uppercase mb-2">Top Pain Themes</h3>
+      <div class="space-y-3 mb-5">
+        {% for theme in data.practitioner_sentiment.top_pain_themes %}
+        <div class="border-l-2 border-purple-300 pl-3">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-sm font-medium">{{ theme.theme }}</span>
+            <span class="text-xs text-gray-400">{{ theme.post_count }} post{{ 's' if theme.post_count != 1 else '' }}</span>
+            {{ confidence_badge(theme.confidence) }}
+            {% if theme.linked_persona_pain %}
+            <span class="inline-block bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-xs font-medium">{{ theme.linked_persona_pain }}</span>
+            {% endif %}
+          </div>
+          <blockquote class="text-xs text-gray-600 italic border-l-2 border-gray-200 pl-2 my-1">"{{ theme.representative_quote }}"</blockquote>
+          <div class="mt-0.5">{{ source_chip(theme.source) }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if data.practitioner_sentiment.vendor_mentions %}
+      <h3 class="text-xs font-semibold text-gray-500 uppercase mb-2">Vendor Mentions</h3>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
+        {% for vm in data.practitioner_sentiment.vendor_mentions %}
+        <div class="bg-gray-50 rounded p-2">
+          <div class="flex items-center gap-1">
+            <span class="text-sm font-medium">{{ vm.vendor }}</span>
+            {% set sent_colors = {'positive': 'text-green-600', 'negative': 'text-red-600', 'neutral': 'text-gray-500', 'mixed': 'text-amber-600'} %}
+            <span class="text-xs {{ sent_colors.get(vm.sentiment, 'text-gray-500') }}">{{ vm.sentiment }}</span>
+          </div>
+          <div class="text-xs text-gray-400">{{ vm.mention_count }} mention{{ 's' if vm.mention_count != 1 else '' }}</div>
+          {% if vm.is_displacement_target %}
+          <span class="inline-block bg-red-100 text-red-700 px-1.5 py-0.5 rounded text-xs mt-1">displacement target</span>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    <!-- Incident History -->
+    {% if data.incident_history %}
+    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Incident History</h2>
+      <div class="grid grid-cols-3 gap-4 mb-4 text-sm">
+        <div>
+          <dt class="text-gray-500 text-xs uppercase">Total Breaches</dt>
+          <dd class="font-bold text-lg">{{ data.incident_history.total_breaches }}</dd>
+        </div>
+        <div>
+          <dt class="text-gray-500 text-xs uppercase">Individuals Affected</dt>
+          <dd class="font-bold text-lg">{{ data.incident_history.total_individuals_affected | default(0) }}</dd>
+        </div>
+        <div>
+          <dt class="text-gray-500 text-xs uppercase">Source</dt>
+          <dd class="font-medium">{{ data.incident_history.source }}</dd>
+        </div>
+      </div>
+      {% if data.incident_history.regulatory_exposure %}
+      <div class="bg-amber-50 border border-amber-200 rounded p-3 mb-3">
+        <span class="text-xs font-semibold text-amber-700 uppercase">Regulatory Exposure</span>
+        <p class="text-sm text-amber-900 mt-1">{{ data.incident_history.regulatory_exposure }}</p>
+      </div>
+      {% endif %}
+      <div class="flex gap-1">
+        {{ confidence_badge(data.incident_history.confidence) }}
+        {{ quality_badge(data.incident_history.source_quality) }}
+        {{ source_chip(data.incident_history.source) }}
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- Cooperative Purchasing -->
+    {% if data.cooperative_purchasing %}
+    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Cooperative Purchasing</h2>
+      {% if data.cooperative_purchasing.procurement_signal %}
+      <p class="text-sm text-gray-700 mb-4">{{ data.cooperative_purchasing.procurement_signal }}</p>
+      {% endif %}
+      {% if data.cooperative_purchasing.available_vehicles %}
+      <div class="space-y-4">
+        {% for vehicle in data.cooperative_purchasing.available_vehicles %}
+        <div class="border-l-2 border-green-400 pl-4">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-sm font-semibold">{{ vehicle.vehicle }}</span>
+            {{ confidence_badge(vehicle.confidence) }}
+            {% if vehicle.verkada_contract_status %}
+            <span class="inline-block bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs font-medium">{{ vehicle.verkada_contract_status }}</span>
+            {% endif %}
+          </div>
+          {% if vehicle.relevant_solicitations %}
+          <div class="space-y-1">
+            {% for sol in vehicle.relevant_solicitations %}
+            <div class="text-sm text-gray-700">
+              <a href="{{ sol.url }}" target="_blank" class="text-blue-600 hover:text-blue-800">{{ sol.title }}</a>
+              <span class="text-xs text-gray-400 ml-1">{{ sol.date }}</span>
+              {% if sol.relevance %}
+              <p class="text-xs text-gray-500">{{ sol.relevance }}</p>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+          <div class="mt-1">{{ source_chip(vehicle.source) }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
     </section>
     {% endif %}
 
