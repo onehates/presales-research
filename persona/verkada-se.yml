@@ -223,15 +223,25 @@ triggers:
         - "FCC Covered List"
         - "government contract"
         - "GSA schedule"
+        - "Title I"
+        - "FRPL"
+        - "free and reduced lunch"
+        - "E-Rate"
+      nces_signals:
+        - title_i_participation
+        - frpl_above_threshold
+        - has_federal_funding
       source_hints:
         - sec_filings
         - news
         - job_postings
+        - nces
     weight: 0.9
     discovery_templates:
       - "I noticed {company} receives federal funding through {program}. Are existing cameras NDAA-compliant, or has that come up in audits?"
       - "Hikvision/Dahua replacements are 2025–2026 budget items for many {vertical} orgs. Where are you in that conversation?"
       - "Has your procurement team flagged the FCC Covered List when reviewing physical security vendors?"
+      - "With {frpl_percentage}% FRPL and 100% Title I status, {company} receives significant federal funding. Has procurement reviewed whether existing security hardware meets NDAA requirements?"
 
   - id: incident_recent_12mo
     detect_signals:
@@ -245,14 +255,26 @@ triggers:
         - "workplace violence"
         - "security incident"
         - "break-in"
+        - "HIPAA breach"
+        - "data breach"
+        - "OCR investigation"
+      hhs_signals:
+        - breach_count_above_zero
+        - large_breach_500_plus
+      clery_signals:
+        - crime_increase_yoy
+        - reportable_incident
       source_hints:
         - news
         - sec_filings
+        - hhs
+        - clery
     weight: 1.0
     discovery_templates:
       - "I saw the {incident_type} coverage from {month}. How has that shifted security investment posture internally?"
       - "What did the post-incident review surface as the primary gap — detection, response time, or footage retrieval?"
       - "After {incident_type}, did leadership set a timeline for remediation, or is it still in planning?"
+      - "{company} reported {breach_count} breach(es) affecting {individuals_affected} individuals to HHS OCR. Has that driven any physical access control remediation?"
 
   - id: hiring_security_intensity
     detect_signals:
@@ -337,15 +359,22 @@ triggers:
         - "campuses"
       numeric_signals:
         site_count_above: 10
+      nces_signals:
+        - school_count_above_10
+      clery_signals:
+        - campus_count_above_3
       source_hints:
         - sec_filings
         - news
         - company_website
+        - nces
+        - clery
     weight: 0.75
     discovery_templates:
       - "{company} operates {site_count} locations. Are those running the same security platform, or did each site choose its own over the years?"
       - "When there's an incident at a remote site, can your security team pull footage without calling someone on-site or VPN-ing into a local NVR?"
       - "Standardizing {site_count} locations on one platform is a big project. What would need to be true for that to land on next year's budget?"
+      - "With {school_count} schools across the district, does each school manage its own cameras, or is there a centralized view from the district office?"
 
   - id: cloud_transformation_initiative
     detect_signals:
@@ -458,6 +487,182 @@ triggers:
     discovery_templates:
       - "Some {vertical} organizations are seeing insurance carriers require specific security controls — cameras, access logs — for renewal. Is that coming up at {company}?"
       - "Has your risk management team quantified how upgraded physical security infrastructure could impact insurance premiums or claims costs?"
+
+  # --- SLED-specific triggers ---
+
+  - id: clery_crime_trend
+    detect_signals:
+      keywords:
+        - "Clery Act"
+        - "campus crime"
+        - "annual security report"
+        - "crime statistics"
+        - "campus safety"
+      clery_signals:
+        - crime_increase_yoy
+        - reportable_incident_count_above_threshold
+      source_hints:
+        - clery
+        - news
+    weight: 0.85
+    discovery_templates:
+      - "Your Clery report shows {crime_type} incidents trending {direction} over the past {years} years. Has that data driven any physical security investment conversations?"
+      - "Clery reporting requirements mean every incident has documentation and audit overhead. Is your current camera system producing the evidence quality that compliance needs?"
+      - "When campus safety leadership reviews the annual Clery data, what's the gap between what they want to prevent and what the current security infrastructure can detect?"
+
+  - id: frpl_federal_funding
+    detect_signals:
+      nces_signals:
+        - frpl_percentage_above_50
+        - title_i_all_schools
+        - has_federal_funding
+      keywords:
+        - "Title I"
+        - "free and reduced lunch"
+        - "FRPL"
+        - "federal funding"
+        - "E-Rate"
+        - "ESSER"
+        - "school safety grant"
+      source_hints:
+        - nces
+        - news
+    weight: 0.8
+    discovery_templates:
+      - "{company} has {frpl_percentage}% FRPL with all {school_count} schools qualifying for Title I. Are you leveraging federal safety grants (STOP School Violence, ESSER) for physical security upgrades?"
+      - "Districts with {frpl_percentage}%+ FRPL often have the highest safety needs but tightest budgets. Has the district explored NDAA-compliant vendors that qualify for federal procurement vehicles?"
+      - "With 100% Title I status, {company} is subject to federal funding compliance including NDAA hardware requirements. Has that been factored into security vendor selection?"
+
+  - id: campus_safety_compliance
+    detect_signals:
+      keywords:
+        - "Alyssa's Law"
+        - "school safety"
+        - "panic button"
+        - "SRO"
+        - "school resource officer"
+        - "weapon detection"
+        - "active shooter"
+        - "lockdown"
+        - "safe school plan"
+      source_hints:
+        - news
+        - nces
+        - clery
+    weight: 0.9
+    discovery_templates:
+      - "Georgia's school safety requirements are expanding. How is {company} approaching panic button/emergency notification compliance across {school_count} schools?"
+      - "Does {company} have centralized lockdown capability across all {school_count} schools, or is it building-by-building?"
+      - "School safety is a board-level priority for most districts with {enrollment} students. What's the current state of {company}'s security infrastructure assessment?"
+
+  - id: active_security_rfp
+    detect_signals:
+      keywords:
+        - "RFP"
+        - "solicitation"
+        - "bid"
+        - "procurement"
+        - "video surveillance"
+        - "access control"
+        - "security cameras"
+        - "physical security"
+      procurement_signals:
+        - active_rfp_matching_category
+        - recent_award_matching_category
+      source_hints:
+        - sourcewell
+        - tips
+        - ga_procurement
+        - atlanta_procurement
+    weight: 0.95
+    discovery_templates:
+      - "I see active solicitations on {procurement_vehicle} for {rfp_category}. Is {company} evaluating responses, or has a shortlist been established?"
+      - "The {procurement_vehicle} contract for {rfp_category} provides pre-negotiated pricing. Has {company}'s procurement team evaluated cooperative purchasing as a faster path than full RFP?"
+      - "Sourcewell and TIPS contracts are available for physical security — Verkada is on both. Has your procurement team explored cooperative purchasing to bypass the full RFP cycle?"
+
+  - id: incumbent_contract_expiring
+    detect_signals:
+      keywords:
+        - "contract expir"
+        - "contract renewal"
+        - "RFP replacement"
+        - "end of contract"
+        - "vendor transition"
+      procurement_signals:
+        - contract_expiration_within_12mo
+      source_hints:
+        - ga_procurement
+        - atlanta_procurement
+        - news
+    weight: 0.85
+    discovery_templates:
+      - "If the current {incumbent_vendor} contract is up for renewal, what would need to change for {company} to evaluate alternatives?"
+      - "Contract transitions are the lowest-friction moment to modernize. Is {company} planning to re-bid the security contract or extend the incumbent?"
+
+  - id: sole_source_opportunity
+    detect_signals:
+      keywords:
+        - "sole source"
+        - "sole provider"
+        - "single source"
+        - "cooperative contract"
+        - "piggyback"
+        - "interlocal agreement"
+      procurement_signals:
+        - sole_source_justification_available
+        - cooperative_contract_available
+      source_hints:
+        - sourcewell
+        - tips
+        - ga_procurement
+    weight: 0.7
+    discovery_templates:
+      - "Verkada holds Sourcewell and TIPS cooperative contracts. Has {company}'s procurement team considered cooperative purchasing as a sole-source path?"
+      - "Georgia allows cooperative purchasing through Sourcewell. This can bypass the full RFP process — is that on your procurement team's radar?"
+
+# =============================================================================
+# Leverage References — Verkada Customer Case Studies by Trigger
+# =============================================================================
+# Maps trigger IDs → specific Verkada customer references for inline citation.
+# SE can reference these during discovery to demonstrate vertical relevance.
+# =============================================================================
+
+leverage_references:
+  ndaa_compliance_pressure:
+    - customer: "Fulton County Schools"
+      context: "Georgia district replaced non-compliant cameras with Verkada to meet federal funding requirements"
+      vertical: K-12
+    - customer: "City of Atlanta"
+      context: "Municipal deployment ensuring NDAA compliance across city facilities"
+      vertical: Municipality
+
+  multi_site_sprawl:
+    - customer: "Gwinnett County Public Schools"
+      context: "140+ school sites managed from single Command dashboard"
+      vertical: K-12
+    - customer: "DeKalb County School District"
+      context: "Multi-campus K-12 deployment with centralized management"
+      vertical: K-12
+
+  campus_safety_compliance:
+    - customer: "Cobb County School District"
+      context: "District-wide security standardization with emergency notification integration"
+      vertical: K-12
+
+  frpl_federal_funding:
+    - customer: "Clayton County Public Schools"
+      context: "High-FRPL district leveraging federal safety grants for Verkada deployment"
+      vertical: K-12
+
+  active_security_rfp:
+    - customer: "Sourcewell Contract #041524-VRK"
+      context: "Verkada holds active Sourcewell cooperative contract for video surveillance and physical security"
+      vertical: all
+
+  incident_recent_12mo:
+    - customer: "Sandy Hook Promise"
+      context: "Partnership focused on school safety technology and early threat detection"
+      vertical: K-12
 
 # =============================================================================
 # Personas — Buyer Profiles with Relevance Filters
