@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OSINT for the SE — Pre-Call Intelligence</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .hero {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 80px 24px 60px;
+      text-align: center;
+    }
+    .hero h1 {
+      font-size: 42px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 12px;
+    }
+    .hero h1 span { color: #60a5fa; }
+    .hero p {
+      font-size: 16px;
+      color: #94a3b8;
+      max-width: 500px;
+      margin: 0 auto 8px;
+      line-height: 1.6;
+    }
+    .hero .subtitle {
+      font-size: 12px;
+      color: #475569;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 48px;
+    }
+
+    .cards {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 28px 24px;
+      text-decoration: none;
+      color: #e2e8f0;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .card:hover {
+      border-color: #60a5fa;
+      transform: translateY(-2px);
+    }
+    .card-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #64748b;
+      margin-bottom: 8px;
+    }
+    .card h2 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      line-height: 1.2;
+    }
+    .card p {
+      font-size: 13px;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+    .card .arrow {
+      display: inline-block;
+      margin-top: 12px;
+      font-size: 13px;
+      color: #60a5fa;
+      font-weight: 600;
+    }
+
+    .resources {
+      max-width: 800px;
+      margin: 48px auto 0;
+      padding: 0 24px;
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+    }
+    .res-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 20px;
+      background: transparent;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .res-link:hover {
+      border-color: #60a5fa;
+      color: #e2e8f0;
+    }
+
+    .footer {
+      margin-top: auto;
+      padding: 40px 24px 24px;
+      text-align: center;
+    }
+    .footer p {
+      font-size: 12px;
+      color: #475569;
+      line-height: 1.6;
+    }
+    .footer a {
+      color: #64748b;
+      text-decoration: none;
+    }
+    .footer a:hover { color: #94a3b8; }
+
+    .stats {
+      max-width: 800px;
+      margin: 48px auto 0;
+      padding: 0 24px;
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+    }
+    .stat { text-align: center; }
+    .stat-num {
+      font-size: 28px;
+      font-weight: 900;
+      color: #fff;
+    }
+    .stat-label {
+      font-size: 10px;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 640px) {
+      .hero h1 { font-size: 28px; }
+      .cards { grid-template-columns: 1fr; }
+      .stats { gap: 24px; }
+      .resources { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hero">
+    <h1>OSINT <span>for the SE</span></h1>
+    <p>Multi-agent AI pre-call intelligence platform built for SLED sales engineering. Sourced briefs, not generic summaries.</p>
+    <div class="subtitle">18 sources &middot; 4 agents &middot; 1 brief</div>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num">18</div>
+      <div class="stat-label">Public data sources</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">~3 min</div>
+      <div class="stat-label">End to end</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">0</div>
+      <div class="stat-label">Unsourced claims</div>
+    </div>
+  </div>
+
+  <div style="height: 48px;"></div>
+
+  <div class="cards">
+    <a href="briefs/atlanta-public-schools.html" class="card">
+      <div class="card-label">Demo Brief</div>
+      <h2>Atlanta Public Schools</h2>
+      <p>K-12 district &middot; 86 schools &middot; 100% Title I &middot; 73% FRPL. Federal funding exposure, cooperative purchasing intel, named champion candidates.</p>
+      <span class="arrow">View brief &rarr;</span>
+    </a>
+    <a href="briefs/georgia-institute-of-technology.html" class="card">
+      <div class="card-label">Demo Brief</div>
+      <h2>Georgia Institute of Technology</h2>
+      <p>Higher Ed &middot; R1 research university &middot; Clery Act reporting &middot; multi-campus. Campus safety compliance, leadership scoring, MEDDIC qualification.</p>
+      <span class="arrow">View brief &rarr;</span>
+    </a>
+  </div>
+
+  <div class="resources">
+    <a href="placemat.html" class="res-link">Value Prop Placemat</a>
+    <a href="placemat.pdf" class="res-link" download>Download Placemat PDF</a>
+  </div>
+
+  <div class="footer">
+    <p>Built by Andy for the Verkada SE application &mdash; May 2026</p>
+  </div>
+
+</body>
+</html>

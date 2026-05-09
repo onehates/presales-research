@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OSINT for the SE — Value Prop Placemat</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  @page {
+    size: 11in 8.5in;
+    margin: 0;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #fff;
+    color: #1a1a2e;
+    width: 11in;
+    height: 8.5in;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .page {
+    width: 11in;
+    height: 8.5in;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    position: relative;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: #0f172a;
+    color: #fff;
+    padding: 18px 36px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header-left h1 {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .header-left h1 span { color: #60a5fa; }
+  .header-left p {
+    font-size: 10px;
+    color: #94a3b8;
+    margin-top: 3px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .header-right {
+    text-align: right;
+    font-size: 9px;
+    color: #64748b;
+    line-height: 1.5;
+  }
+  .header-right strong { color: #e2e8f0; font-weight: 600; }
+
+  /* ── Main content ── */
+  .main {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr 1fr;
+    gap: 0;
+    padding: 0;
+  }
+
+  .col {
+    padding: 16px 22px;
+    border-right: 1px solid #e2e8f0;
+  }
+  .col:last-child { border-right: none; }
+
+  .col-label {
+    font-size: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #94a3b8;
+    margin-bottom: 6px;
+  }
+
+  .col h2 {
+    font-size: 14px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+
+  .col p, .col li {
+    font-size: 9.5px;
+    line-height: 1.55;
+    color: #374151;
+  }
+
+  .stat-block {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin: 10px 0;
+  }
+  .stat-block .stat-num {
+    font-size: 22px;
+    font-weight: 900;
+    color: #0f172a;
+    line-height: 1;
+  }
+  .stat-block .stat-label {
+    font-size: 8.5px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+  }
+
+  .gap-text {
+    font-size: 9px;
+    color: #64748b;
+    font-style: italic;
+    margin-top: 8px;
+    line-height: 1.5;
+    border-left: 2px solid #e2e8f0;
+    padding-left: 8px;
+  }
+
+  /* Center col - pipeline */
+  .pipeline {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .pipeline-stage {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 8px;
+    align-items: start;
+  }
+
+  .stage-badge {
+    background: #0f172a;
+    color: #fff;
+    font-size: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 4px 6px;
+    border-radius: 3px;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .stage-badge.blue { background: #1e40af; }
+  .stage-badge.indigo { background: #4338ca; }
+  .stage-badge.violet { background: #6d28d9; }
+
+  .stage-detail {
+    font-size: 8.5px;
+    line-height: 1.45;
+    color: #374151;
+  }
+  .stage-detail strong {
+    color: #0f172a;
+    font-weight: 700;
+  }
+
+  .source-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 10px;
+    margin-top: 6px;
+  }
+  .source-item {
+    font-size: 7.5px;
+    color: #64748b;
+    padding: 3px 0;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .source-item span { color: #0f172a; font-weight: 600; }
+
+  /* Right col - differentiators */
+  .diff-item {
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .diff-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .diff-item h3 {
+    font-size: 10px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 2px;
+  }
+  .diff-item p {
+    font-size: 8.5px;
+    color: #64748b;
+    line-height: 1.45;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    padding: 12px 36px;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .footer-signals h3 {
+    font-size: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #94a3b8;
+    margin-bottom: 6px;
+  }
+
+  .signal-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .signal-chip {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 3px;
+    padding: 3px 7px;
+    font-size: 7.5px;
+    color: #374151;
+    line-height: 1.3;
+  }
+  .signal-chip strong { color: #0f172a; }
+
+  .footer-roadmap h3 {
+    font-size: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #94a3b8;
+    margin-bottom: 6px;
+  }
+
+  .roadmap-tiers {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .tier {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 6px;
+    align-items: center;
+  }
+  .tier-badge {
+    font-size: 7.5px;
+    font-weight: 700;
+    text-align: center;
+    padding: 2px 4px;
+    border-radius: 2px;
+  }
+  .tier-badge.v1 { background: #dcfce7; color: #166534; }
+  .tier-badge.v2 { background: #dbeafe; color: #1e40af; }
+  .tier-badge.v3 { background: #f3e8ff; color: #6b21a8; }
+  .tier-text {
+    font-size: 8px;
+    color: #64748b;
+  }
+
+  /* Right col - demo callout */
+  .demo-callout {
+    background: #0f172a;
+    border-radius: 5px;
+    padding: 12px 14px;
+    margin-top: 8px;
+  }
+  .demo-callout h4 {
+    font-size: 7.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+    margin-bottom: 6px;
+  }
+  .demo-callout code {
+    display: block;
+    font-size: 8.5px;
+    font-family: 'Courier New', monospace;
+    color: #60a5fa;
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+  .demo-callout .dc-stat {
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid #1e293b;
+    padding-top: 6px;
+  }
+  .demo-callout .dc-item {
+    text-align: center;
+  }
+  .demo-callout .dc-num {
+    font-size: 14px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+  }
+  .demo-callout .dc-label {
+    font-size: 6.5px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+  }
+
+  .footer-contact {
+    position: absolute;
+    bottom: 12px;
+    right: 36px;
+    font-size: 7.5px;
+    color: #94a3b8;
+    text-align: right;
+  }
+
+  /* Center col - output preview */
+  .output-preview {
+    background: #0f172a;
+    border-radius: 5px;
+    padding: 10px 12px;
+    margin-top: 8px;
+  }
+  .output-preview h4 {
+    font-size: 7.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+    margin-bottom: 6px;
+  }
+  .output-preview .op-line {
+    font-size: 7.5px;
+    font-family: 'Courier New', monospace;
+    color: #e2e8f0;
+    line-height: 1.6;
+  }
+  .output-preview .op-line .op-dim { color: #64748b; }
+  .output-preview .op-line .op-green { color: #4ade80; }
+  .output-preview .op-line .op-blue { color: #60a5fa; }
+  .output-preview .op-line .op-amber { color: #fbbf24; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <h1>OSINT <span>for the SE</span></h1>
+      <p>Pre-call intelligence built for SLED sales engineering</p>
+    </div>
+    <div class="header-right">
+      <strong>Multi-agent AI research platform</strong><br>
+      18 public data sources &middot; 4 synthesis agents &middot; 1 actionable brief
+    </div>
+  </div>
+
+  <!-- MAIN 3-COL -->
+  <div class="main">
+
+    <!-- LEFT: The Problem -->
+    <div class="col">
+      <div class="col-label">The Problem</div>
+      <h2>SE pre-call research is a quota tax</h2>
+      <p>Every qualified account requires hours of manual research across SEC filings, news, job boards, procurement portals, federal databases, and campus safety reports. Most SEs skip it or settle for generic AI summaries that could describe any company in the vertical.</p>
+
+      <div class="stat-block">
+        <div class="stat-num">2-4 hrs</div>
+        <div class="stat-label">SE prep time per qualified account</div>
+      </div>
+
+      <div class="stat-block">
+        <div class="stat-num">0</div>
+        <div class="stat-label">Source citations from ChatGPT / Clay / Sales Nav</div>
+      </div>
+
+      <p class="gap-text">Generic AI research produces plausible-sounding briefs that lack source attribution, miss vertical-specific signals (NCES, Clery, FRPL), and generate discovery questions that could apply to any account. The SE can't trust the output without re-verifying every claim.</p>
+    </div>
+
+    <!-- CENTER: How It Works -->
+    <div class="col">
+      <div class="col-label">How It Works</div>
+      <h2>One command. Four phases. Sourced brief.</h2>
+
+      <div class="pipeline">
+        <div class="pipeline-stage">
+          <div class="stage-badge">Collect</div>
+          <div class="stage-detail"><strong>18 source clients</strong> run in parallel. Each returns structured JSON with <code>retrieved_at</code> timestamps. Cache-aware with per-source TTLs.</div>
+        </div>
+
+        <div class="source-grid">
+          <div class="source-item"><span>SEC</span> EDGAR filings</div>
+          <div class="source-item"><span>NCES</span> K-12 district data</div>
+          <div class="source-item"><span>Clery</span> campus crime stats</div>
+          <div class="source-item"><span>SAM</span> gov registrations</div>
+          <div class="source-item"><span>News</span> Tavily search</div>
+          <div class="source-item"><span>Indeed</span> job postings</div>
+          <div class="source-item"><span>crt.sh</span> SSL certificates</div>
+          <div class="source-item"><span>GitHub</span> org repos</div>
+          <div class="source-item"><span>HHS</span> HIPAA breaches</div>
+          <div class="source-item"><span>Reddit</span> practitioner voice</div>
+          <div class="source-item"><span>Sourcewell</span> coop contracts</div>
+          <div class="source-item"><span>TIPS</span> coop contracts</div>
+          <div class="source-item"><span>OMNIA</span> coop contracts</div>
+          <div class="source-item"><span>HGACBuy</span> coop + discounts</div>
+          <div class="source-item"><span>COSTARS</span> PA coop</div>
+          <div class="source-item"><span>GA Proc</span> state contracts</div>
+          <div class="source-item"><span>ATL Proc</span> city procurement</div>
+          <div class="source-item"><span>Leadership</span> named people</div>
+        </div>
+
+        <div class="pipeline-stage" style="margin-top: 6px;">
+          <div class="stage-badge blue">Analyze</div>
+          <div class="stage-detail"><strong>3 Sonnet subagents</strong> (company-bg, tech-and-pain, hiring-signals) process source data in parallel. Each outputs structured JSON with confidence tags.</div>
+        </div>
+
+        <div class="pipeline-stage">
+          <div class="stage-badge indigo">Enrich</div>
+          <div class="stage-detail"><strong>Champion signals</strong> client scores named individuals on role fit, tenure, career arc, public voice, topic affinity, authority. Weighted scoring per persona file.</div>
+        </div>
+
+        <div class="pipeline-stage">
+          <div class="stage-badge violet">Synthesize</div>
+          <div class="stage-detail"><strong>Opus synthesizer</strong> merges all outputs against the persona rule engine. Fires trigger-matched discovery questions. Builds MEDDIC. Renders HTML brief.</div>
+        </div>
+      </div>
+
+      <div class="output-preview">
+        <h4>Brief output includes</h4>
+        <div class="op-line"><span class="op-green">&#x2713;</span> TL;DR <span class="op-dim">(3 bullets, 30-sec skim)</span></div>
+        <div class="op-line"><span class="op-green">&#x2713;</span> MEDDIC qualification <span class="op-dim">(7 fields, evidence + gaps)</span></div>
+        <div class="op-line"><span class="op-green">&#x2713;</span> Discovery questions <span class="op-dim">(per persona, trigger-sourced)</span></div>
+        <div class="op-line"><span class="op-green">&#x2713;</span> Champion candidates <span class="op-dim">(scored, with validation Qs)</span></div>
+        <div class="op-line"><span class="op-green">&#x2713;</span> Cooperative purchasing <span class="op-dim">(contract #s, competitor tiers)</span></div>
+        <div class="op-line"><span class="op-green">&#x2713;</span> GTM strategy <span class="op-dim">(land play, POC, channel, bundle)</span></div>
+        <div class="op-line"><span class="op-green">&#x2713;</span> Displacement intel <span class="op-dim">(vendor hits + counter text)</span></div>
+        <div class="op-line"><span class="op-green">&#x2713;</span> Open questions <span class="op-dim">(gaps for discovery to fill)</span></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: What's Different -->
+    <div class="col">
+      <div class="col-label">What's Different</div>
+      <h2>Not another AI wrapper</h2>
+
+      <div class="diff-item">
+        <h3>Source attribution on every claim</h3>
+        <p>Every factual claim carries [source_url, retrieved_date]. Claims without sources are tagged [INFERENCE] or dropped. Footnote chips link directly to the source.</p>
+      </div>
+
+      <div class="diff-item">
+        <h3>Anti-genericness engine</h3>
+        <p>Specificity rewrite pass rejects any sentence that could appear unchanged in a brief about a different company. "Insufficient data" beats filler.</p>
+      </div>
+
+      <div class="diff-item">
+        <h3>Persona-filtered discovery</h3>
+        <p>Discovery questions are generated from trigger templates in the persona file, filled with account-specific data, then filtered by buyer persona (care_about / skip_topics).</p>
+      </div>
+
+      <div class="diff-item">
+        <h3>MEDDIC qualification overlay</h3>
+        <p>Every brief includes a complete MEDDIC framework with named champions, evidence arrays, confidence tags, and gap analysis per field.</p>
+      </div>
+
+      <div class="diff-item">
+        <h3>Champion projection</h3>
+        <p>Named individuals scored on 6 weighted factors from public signals. Not a guess — a structured hypothesis with validation questions.</p>
+      </div>
+
+      <div class="diff-item">
+        <h3>Vendor-agnostic architecture</h3>
+        <p>Swap <code>verkada-se.yml</code> for <code>cisco-se.yml</code>. Triggers, personas, displacement targets, and champion criteria are all config — not code.</p>
+      </div>
+
+      <div class="demo-callout">
+        <h4>One command to run</h4>
+        <code>$ python3 orchestrator.py "Atlanta Public Schools"</code>
+        <div class="dc-stat">
+          <div class="dc-item">
+            <div class="dc-num">~3 min</div>
+            <div class="dc-label">End to end</div>
+          </div>
+          <div class="dc-item">
+            <div class="dc-num">18</div>
+            <div class="dc-label">Sources queried</div>
+          </div>
+          <div class="dc-item">
+            <div class="dc-num">1</div>
+            <div class="dc-label">HTML brief</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-signals">
+      <h3>Sample signals from APS demo account</h3>
+      <div class="signal-chips">
+        <div class="signal-chip"><strong>NCES</strong> 100% Title I, 73% FRPL, 86 schools</div>
+        <div class="signal-chip"><strong>Sourcewell</strong> #041524-VRK active</div>
+        <div class="signal-chip"><strong>HGACBuy</strong> Verkada SE05-26, competitor tiers visible</div>
+        <div class="signal-chip"><strong>News</strong> weapon detection pilot, leadership changes</div>
+        <div class="signal-chip"><strong>Indeed</strong> security coordinator posted</div>
+        <div class="signal-chip"><strong>Reddit</strong> r/k12sysadmin NVR refresh pain</div>
+        <div class="signal-chip"><strong>crt.sh</strong> 12 subdomains mapped</div>
+        <div class="signal-chip"><strong>OMNIA</strong> R250206 Verkada contract</div>
+      </div>
+    </div>
+    <div class="footer-roadmap">
+      <h3>Roadmap</h3>
+      <div class="roadmap-tiers">
+        <div class="tier">
+          <div class="tier-badge v1">V1</div>
+          <div class="tier-text">Free public OSINT (18 sources, built)</div>
+        </div>
+        <div class="tier">
+          <div class="tier-badge v2">V2</div>
+          <div class="tier-text">Apollo + per-district RFP scraping</div>
+        </div>
+        <div class="tier">
+          <div class="tier-badge v3">V3</div>
+          <div class="tier-text">Enterprise: CRM sync, Slack bot, team dashboards</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
