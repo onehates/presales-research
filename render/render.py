@@ -5,7 +5,7 @@ import json
 import sys
 from pathlib import Path
 
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, Undefined
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -59,6 +59,18 @@ def source_chip(source: dict) -> str:
     )
 
 
+class _SilentUndefined(Undefined):
+    """Return empty string / falsy for missing attributes instead of raising."""
+    def __str__(self):
+        return ""
+    def __iter__(self):
+        return iter([])
+    def __bool__(self):
+        return False
+    def __getattr__(self, name):
+        return self
+
+
 def render_brief(json_path: Path) -> Path:
     with open(json_path) as f:
         data = json.load(f)
@@ -66,6 +78,7 @@ def render_brief(json_path: Path) -> Path:
     env = Environment(
         loader=FileSystemLoader(str(TEMPLATE_DIR)),
         autoescape=False,
+        undefined=_SilentUndefined,
     )
     env.globals["confidence_badge"] = confidence_badge
     env.globals["quality_badge"] = quality_badge
