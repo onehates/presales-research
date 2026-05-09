@@ -1,5 +1,6 @@
 sources/
 briefs/
+!demo-site/briefs/
 .venv/
 __pycache__/
 node_modules/
