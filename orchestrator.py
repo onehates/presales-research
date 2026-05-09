@@ -469,7 +469,7 @@ def run_phase3(slug: str, subagent_outputs: dict) -> dict:
         user_parts.append(f"=== {name} OUTPUT ===\n{json.dumps(data, indent=2, default=str)}")
 
     # Include cooperative purchasing data if available
-    for coop_file in ["sourcewell.json", "tips.json"]:
+    for coop_file in ["sourcewell.json", "tips.json", "omnia.json", "hgac.json", "costars.json"]:
         coop_path = SOURCES_DIR / slug / coop_file
         if coop_path.exists():
             try:
@@ -477,6 +477,14 @@ def run_phase3(slug: str, subagent_outputs: dict) -> dict:
                 user_parts.append(f"=== {coop_file} ===\n{json.dumps(coop_data, indent=2, default=str)}")
             except (json.JSONDecodeError, OSError):
                 pass
+
+    # Include persona file (needed for trigger templates, leverage_references, persona filtering)
+    if PERSONA_PATH.exists():
+        try:
+            persona_text = PERSONA_PATH.read_text()
+            user_parts.append(f"=== persona/verkada-se.yml ===\n{persona_text}")
+        except OSError:
+            pass
 
     user_msg = "\n\n".join(user_parts) + f"\n\nCompany slug: {slug}"
 

@@ -18,8 +18,11 @@ You receive three subagent outputs in the user message as labeled JSON blocks. Y
 1. `persona/verkada-se.yml` — The persona rule engine (product lines, ICP verticals, displacement targets, triggers with discovery_templates, buyer personas with care_about/skip_topics, disqualifiers, leverage_references)
 2. `sources/{slug}/sourcewell.json` — Sourcewell cooperative purchasing data (if present)
 3. `sources/{slug}/tips.json` — TIPS-USA cooperative purchasing data (if present)
+4. `sources/{slug}/omnia.json` — OMNIA Partners cooperative purchasing data (if present)
+5. `sources/{slug}/hgac.json` — HGACBuy cooperative purchasing data (if present)
+6. `sources/{slug}/costars.json` — COSTARS cooperative purchasing data (if present)
 
-**Use the Read tool to load the persona file and cooperative purchasing data. The subagent outputs are provided in the user message — do not attempt to read them from files.**
+**All data is provided in the user message as labeled blocks. The subagent outputs AND cooperative purchasing data AND persona file are all injected — do not attempt to read them from files.**
 
 ## No-Fetch Rule
 
@@ -58,7 +61,7 @@ Output ONLY valid JSON. No markdown fences, no prose, no preamble. The JSON must
   "cooperative_purchasing": {
     "available_vehicles": [
       {
-        "vehicle": "string — e.g., 'Sourcewell', 'TIPS-USA'",
+        "vehicle": "string — e.g., 'Sourcewell', 'TIPS-USA', 'OMNIA Partners', 'HGACBuy', 'COSTARS'",
         "relevant_solicitations": [
           {
             "title": "string",
@@ -68,13 +71,15 @@ Output ONLY valid JSON. No markdown fences, no prose, no preamble. The JSON must
             "relevance": "string — why this matters for the account"
           }
         ],
-        "verkada_contract_status": "string — whether Verkada holds a contract on this vehicle",
+        "verkada_contract_status": "string — whether Verkada holds a contract on this vehicle. Include contract number if known (e.g., 'Verkada holds OMNIA contract R250206', 'Verkada listed on HGACBuy SE05-26')",
+        "verkada_products": "array|null — Verkada product listings if available (from hgac.json verkada_products)",
+        "competitor_landscape": "array|null — competitor manufacturers visible on this vehicle (from hgac.json competitor_manufacturers, omnia.json security_relevant)",
         "confidence": "high|medium|inference",
         "source_quality": "primary|secondary|weak",
         "source": {"url": "string", "title": "string", "retrieved_at": "string"}
       }
     ],
-    "procurement_signal": "string — assessment of what cooperative purchasing data means for this account"
+    "procurement_signal": "string — assessment of what cooperative purchasing data means for this account. Reference specific contract numbers and competitor visibility."
   },
   "displacement_intel": {
     "vendor_hits": "array — from tech-and-pain displacement_vendor_hits",
@@ -129,7 +134,13 @@ Most sections are propagated from subagent outputs, not re-synthesized. This pre
 9. **`incident_history`** — Copy from tech-and-pain `incident_history`. Set to `null` if absent.
 10. **`pain_hypotheses`** — Copy from tech-and-pain `pain_hypotheses`. If `"insufficient_data"`, propagate as-is.
 11. **`hiring_signals`** — Assemble from hiring-signals: include `hiring_intensity`, `security_team_signals`, `security_team_absence`, `trigger_evidence`, and `geographic_expansion_signal`.
-12. **`cooperative_purchasing`** — Read `sources/{slug}/sourcewell.json` and `sources/{slug}/tips.json` from the user message or subagent data. Identify solicitations relevant to physical security (video surveillance, access control, school safety). Note Verkada's cooperative contract status. If no cooperative purchasing data exists, set to `null`.
+12. **`cooperative_purchasing`** — Read cooperative purchasing data from user message: `sourcewell.json`, `tips.json`, `omnia.json`, `hgac.json`, `costars.json`. For each vehicle with data:
+    - **Sourcewell**: Identify security-relevant solicitations. Note Verkada Sourcewell contract #041524-VRK.
+    - **OMNIA Partners**: Surface Verkada contract number (e.g., R250206) and contract dates. List security-relevant contracts from competitors visible on the same vehicle.
+    - **HGACBuy**: Surface Verkada manufacturer listing (ID, contract number e.g., SE05-26), product entries with discount tiers (e.g., "5% via Pavion"), and competitor manufacturers (Avigilon, Axis, Genetec, HANWHA, Milestone, Motorola). This competitive landscape data is high-value for displacement conversations.
+    - **COSTARS**: Note contract availability (may be login-walled — report `insufficient_data` if blocked).
+    - **TIPS-USA**: Identify security-relevant solicitations.
+    If no cooperative purchasing data exists for any vehicle, set `available_vehicles` to empty array.
 13. **`displacement_intel`** — Merge: `vendor_hits` from tech-and-pain `displacement_vendor_hits`, `vendor_absence_finding` from `displacement_vendor_absence`, `tech_stack_mentions` from hiring-signals `tech_stack_mentions`.
 
 **Do NOT re-interpret, re-summarize, or strip source attribution from propagated sections.** The subagents already applied anti-genericness rules. Your job is to assemble, not rewrite.
@@ -185,10 +196,11 @@ Build a deduplicated list of `trigger_id` values that fired, with the evidence t
 
 4. Place each question under every persona whose `care_about` includes at least one relevant topic AND whose `skip_topics` does not include any topic the question touches.
 
-**Step 5: Attach metadata.** For each placed question, record:
+**Step 5: Attach metadata and leverage references.** For each placed question, record:
 - `source_trigger`: the trigger_id
 - `evidence`: the specific fact from the subagent output that fired the trigger
 - `confidence`: inherit from the trigger's confidence in the subagent output
+- `leverage_reference`: if the trigger_id has a matching entry in `persona/verkada-se.yml` → `leverage_references`, append the customer reference inline in the question text. Format: `"{question_text} (ref: {customer} — {context})"`. Choose the reference whose `vertical` matches the target account's vertical, or use any if no vertical match. If no leverage_reference exists for this trigger, omit.
 
 **Step 6: Empty personas are valid.** If no triggers fire that are relevant to a persona (e.g., Superintendent_K12 when the company is a retailer, not K-12), output an empty array for that persona. Do NOT generate filler questions.
 
@@ -433,14 +445,14 @@ The brief can be generated with 2 of 3 subagents, but NOT without company-bg.
 
 ## Execution Flow
 
-1. Read `persona/verkada-se.yml` (includes `leverage_references` section — cite these when generating discovery questions for matched triggers).
-2. Read `sources/{slug}/sourcewell.json` and `sources/{slug}/tips.json` if they exist.
+1. Parse `persona/verkada-se.yml` from the user message (includes `leverage_references` section — cite these inline with discovery questions for matched triggers).
+2. Parse cooperative purchasing data from the user message: `sourcewell.json`, `tips.json`, `omnia.json`, `hgac.json`, `costars.json` (whichever are present).
 3. Parse the three subagent outputs from the user message.
 4. Validate each subagent output — check for top-level `insufficient_data` status.
 5. Propagate sections: entity_type, snapshot, federal_funding_profile, leadership, material events, vertical match, technical footprint, practitioner_sentiment, incident_history, pain hypotheses, hiring signals, displacement intel.
-6. **Build cooperative_purchasing** from sourcewell.json and tips.json — filter solicitations for physical security relevance, note Verkada's contract status.
+6. **Build cooperative_purchasing** from all available cooperative purchasing data (sourcewell.json, tips.json, omnia.json, hgac.json, costars.json). For each vehicle: filter for physical security relevance, surface Verkada contract numbers and products, note competitor manufacturers and discount tiers.
 7. **Collect fired triggers** from all subagent outputs into a deduplicated list. Include triggers from practitioner_sentiment.trigger_evidence and federal_funding_profile.
-8. **Generate discovery questions** per the 6-step flow above: collect triggers → look up templates → fill placeholders → filter by persona → attach metadata → handle empty personas. When a trigger matches a `leverage_references` entry, include the reference in the question's evidence field.
+8. **Generate discovery questions** per the 6-step flow above: collect triggers → look up templates → fill placeholders → filter by persona → attach metadata with leverage references → handle empty personas. When a trigger_id has a matching `leverage_references` entry in the persona file, append the customer reference inline in the question text using format: `"(ref: {customer} — {context})"`. Example: `"Has physical security been included in that cloud-first conversation? (ref: Waukesha SD — verkada.com/customers/waukesha)"`. This gives the SE a proof point to drop during discovery.
 9. **Check disqualifiers** against all subagent data. Only flag with affirmative evidence.
 10. **Generate open_questions** from insufficient_data sections, unfilled templates, inference-tagged claims, vendor absence, and thin hiring data.
 11. **Generate TL;DR** — 3 bullets max, company-specific, priority-ordered.
