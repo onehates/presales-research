@@ -11,15 +11,16 @@ Usage:
     PORT=9000 python3 chat_server.py        # custom port
 """
 
+import glob as globmod
 import json
 import os
 import sys
 from pathlib import Path
 
 import anthropic
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
 # ---------------------------------------------------------------------------
@@ -28,8 +29,10 @@ from pydantic import BaseModel
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 BRIEFS_DIR = PROJECT_ROOT / "briefs"
+TEMPLATES_DIR = PROJECT_ROOT / "templates"
 SONNET_MODEL = "claude-sonnet-4-6"
 PORT = int(os.environ.get("PORT", 8000))
+STATUS_DIR = Path("/tmp")
 
 app = FastAPI(title="OSINT Chat", version="1.0")
 
@@ -105,6 +108,36 @@ async def chat(req: ChatRequest):
         yield "data: [DONE]\n\n"
 
     return StreamingResponse(generate(), media_type="text/event-stream")
+
+
+# ---------------------------------------------------------------------------
+# Status dashboard
+# ---------------------------------------------------------------------------
+
+@app.get("/status")
+async def status(slug: str = Query(default=None)):
+    """Return orchestrator status JSON. If no slug, return most recent."""
+    if slug:
+        path = STATUS_DIR / f"orchestrator-status-{slug}.json"
+    else:
+        # Find most recent status file
+        files = sorted(STATUS_DIR.glob("orchestrator-status-*.json"),
+                       key=lambda p: p.stat().st_mtime, reverse=True)
+        if not files:
+            return JSONResponse({"error": "No active runs found"}, status_code=404)
+        path = files[0]
+    if not path.exists():
+        return JSONResponse({"error": f"No status for slug '{slug}'"}, status_code=404)
+    return JSONResponse(json.loads(path.read_text()))
+
+
+@app.get("/status.html")
+async def status_html():
+    """Serve the status dashboard HTML."""
+    path = TEMPLATES_DIR / "status.html"
+    if not path.exists():
+        return HTMLResponse("<h1>status.html not found</h1>", status_code=404)
+    return HTMLResponse(path.read_text())
 
 
 # ---------------------------------------------------------------------------

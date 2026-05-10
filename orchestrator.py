@@ -51,6 +51,67 @@ SUBAGENT_CACHE_TTL = 86400
 # Token usage accumulator (populated by _stream_anthropic_with_retry)
 _token_usage = {"input": 0, "output": 0, "cache_creation": 0, "cache_read": 0}
 
+# Status file for live dashboard
+_status_path: Path | None = None
+
+# Pricing per 1M tokens (Opus 4.6 / Sonnet 4.6)
+_PRICING = {
+    OPUS_MODEL: {"input": 5.0, "output": 25.0, "cache_read": 0.5, "cache_write": 6.25},
+    SONNET_MODEL: {"input": 3.0, "output": 15.0, "cache_read": 0.30, "cache_write": 3.75},
+}
+
+
+def _estimate_cost() -> float:
+    """Estimate total cost from accumulated token usage using blended rates."""
+    # Use Opus rates as conservative estimate (synthesizer dominates cost)
+    p = _PRICING[OPUS_MODEL]
+    return (
+        _token_usage["input"] * p["input"]
+        + _token_usage["output"] * p["output"]
+        + _token_usage["cache_read"] * p["cache_read"]
+        + _token_usage["cache_creation"] * p["cache_write"]
+    ) / 1_000_000
+
+
+import threading
+_status_lock = threading.Lock()
+
+
+def _write_status(phase: str, message: str, **fields):
+    """Append a status event to /tmp/orchestrator-status-{slug}.json.
+
+    The file contains {slug, started_at, current_phase, events: [...]}.
+    Each event has {phase, message, timestamp, **fields}.
+    Thread-safe for Phase 1 parallel source collection.
+    """
+    if _status_path is None:
+        return
+    event = {
+        "phase": phase,
+        "message": message,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        **fields,
+    }
+    with _status_lock:
+        try:
+            if _status_path.exists():
+                status = json.loads(_status_path.read_text())
+            else:
+                status = {"events": []}
+        except (json.JSONDecodeError, OSError):
+            status = {"events": []}
+        status["current_phase"] = phase
+        status["current_message"] = message
+        # Always update token/cost fields
+        status["tokens_input"] = _token_usage["input"]
+        status["tokens_output"] = _token_usage["output"]
+        status["cache_read"] = _token_usage["cache_read"]
+        status["cache_created"] = _token_usage["cache_creation"]
+        status["cost_estimate"] = round(_estimate_cost(), 4)
+        status.update(fields)
+        status["events"].append(event)
+        _status_path.write_text(json.dumps(status, indent=2, default=str))
+
 # ---------------------------------------------------------------------------
 # Client registry — maps client name to (module_path, fetch_function, args_fn)
 # args_fn(company, slug) → dict of kwargs beyond company_name/force_refresh
@@ -300,6 +361,9 @@ def run_phase1(company: str, slug: str, force: bool) -> dict:
             results[name] = (symbol, detail)
             # Live update
             print(f"    {symbol} {name:<22} {detail}", flush=True)
+            # Map symbol to dashboard status
+            sym_map = {SYM_OK: "ok", SYM_CACHED: "cached", SYM_INSUF: "insufficient_data", SYM_ERROR: "error"}
+            _write_status("phase1", f"{name}: {detail}", source=name, source_status=sym_map.get(symbol, "unknown"))
 
     # Summary line
     ok_count = sum(1 for s, _ in results.values() if s in (SYM_OK, SYM_CACHED))
@@ -430,6 +494,14 @@ def _stream_anthropic_with_retry(client, *, model: str, max_tokens: int,
                         print(f"    💾 {label}: cached {cache_created} input tokens", flush=True)
                     if cache_read:
                         print(f"    ⚡ {label}: read {cache_read} cached tokens (90% savings)", flush=True)
+                    _write_status(
+                        "tokens", f"{label} tokens",
+                        tokens_input=_token_usage["input"],
+                        tokens_output=_token_usage["output"],
+                        cache_read=_token_usage["cache_read"],
+                        cache_created=_token_usage["cache_creation"],
+                        cost_estimate=round(_estimate_cost(), 4),
+                    )
                 except Exception:
                     pass
 
@@ -612,20 +684,25 @@ def run_phase2(slug: str, *, use_cache: bool = True) -> dict:
     for i, name in enumerate(agents):
         if i > 0 and not results.get(agents[i-1], {}).get("_was_cached"):
             time.sleep(2)  # Only pause after actual API calls
+        _write_status("phase2", f"Running {name}...", subagent=name, subagent_status="running")
         try:
             result, was_cached = run_subagent(name, slug, use_cache=use_cache)
             status = result.get("status", "ok")
             if was_cached:
                 print(f"    {SYM_CACHED} {name:<22} [cached subagent]", flush=True)
+                _write_status("phase2", f"{name} cached", subagent=name, subagent_status="cached")
             elif status in ("insufficient_data", "parse_error"):
                 print(f"    {SYM_INSUF} {name:<22} {status}: {result.get('reason', result.get('raw', '')[:60])}", flush=True)
+                _write_status("phase2", f"{name} {status}", subagent=name, subagent_status="error")
             else:
                 print(f"    {SYM_OK} {name:<22} ok", flush=True)
+                _write_status("phase2", f"{name} complete", subagent=name, subagent_status="complete")
             result["_was_cached"] = was_cached
             results[name] = result
         except Exception as e:
             print(f"    {SYM_ERROR} {name:<22} {str(e)[:60]}", flush=True)
             results[name] = {"status": "error", "reason": str(e)[:200]}
+            _write_status("phase2", f"{name} error: {str(e)[:60]}", subagent=name, subagent_status="error")
 
     # Write subagent outputs to sources/{slug}/ (strip internal _was_cached flag)
     sources_dir = SOURCES_DIR / slug
@@ -775,6 +852,7 @@ def run_phase3(slug: str, subagent_outputs: dict) -> dict:
     user_msg = "\n\n".join(user_parts) + f"\n\nCompany slug: {slug}"
 
     print(f"    {SYM_RUN} running synthesizer...", flush=True)
+    _write_status("phase3", "Running synthesizer (Opus)...")
 
     # Use structured system with cache_control for prompt caching
     cached_system = _build_cached_system(system_prompt, persona_text)
@@ -847,10 +925,26 @@ def run_phase4(brief_json_path: Path, open_browser: bool) -> Path | None:
 
 def research(company: str, *, force: bool = False, open_browser: bool = False, use_cache: bool = True):
     """Full /research pipeline."""
+    global _status_path
     # Reset token usage for this run
     _token_usage.update({"input": 0, "output": 0, "cache_creation": 0, "cache_read": 0})
     slug = slugify(company)
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    # Initialize status file
+    _status_path = Path(f"/tmp/orchestrator-status-{slug}.json")
+    _status_path.write_text(json.dumps({
+        "slug": slug,
+        "company": company,
+        "started_at": datetime.now(timezone.utc).isoformat(),
+        "current_phase": "starting",
+        "current_message": "Initializing pipeline...",
+        "tokens_input": 0, "tokens_output": 0,
+        "cache_read": 0, "cache_created": 0,
+        "cost_estimate": 0,
+        "events": [],
+    }, indent=2))
+    _write_status("starting", f"Starting /research {company}", slug=slug)
 
     print(f"\n  {'='*54}")
     print(f"  /research {company}")
@@ -873,6 +967,7 @@ def research(company: str, *, force: bool = False, open_browser: bool = False, u
     t0 = time.time()
 
     # Phase 1 — Source data collection
+    _write_status("phase1", "Collecting source data...")
     t1 = time.time()
     phase1_results = run_phase1(company, slug, force)
     print(f"  Phase 1 elapsed: {time.time() - t1:.1f}s")
@@ -902,6 +997,8 @@ def research(company: str, *, force: bool = False, open_browser: bool = False, u
 
     # Handle synthesizer failure
     if brief.get("status") in ("insufficient_data", "error", "parse_error"):
+        _write_status("error", f"Synthesizer failed: {brief.get('reason', brief.get('status'))}",
+                      error_message=brief.get("reason", brief.get("status", "unknown")))
         print(f"\n  ⚠  Synthesizer failed: {brief.get('reason', brief.get('status'))}")
         print(f"  Subagent JSONs saved to sources/{slug}/ for debugging.")
 
@@ -973,6 +1070,12 @@ def research(company: str, *, force: bool = False, open_browser: bool = False, u
         if _token_usage["cache_read"]:
             print(f"    Cache read:     {_token_usage['cache_read']:>8,}  (90% savings)")
     print(f"  {'='*54}\n")
+
+    _write_status("complete", "Research complete",
+                  brief_path=str(brief_path.relative_to(PROJECT_ROOT)),
+                  html_path=str(html_path.relative_to(PROJECT_ROOT)) if html_path else None,
+                  runtime=round(total, 1),
+                  total_cost=round(_estimate_cost(), 4))
 
 
 def main():
