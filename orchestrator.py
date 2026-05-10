@@ -39,8 +39,8 @@ PERSONA_PATH = PROJECT_ROOT / "persona" / "verkada-se.yml"
 AGENTS_DIR = PROJECT_ROOT / ".claude" / "agents"
 RENDER_SCRIPT = PROJECT_ROOT / "render" / "render.py"
 
-SONNET_MODEL = "claude-sonnet-4-20250514"
-OPUS_MODEL = "claude-opus-4-20250514"
+SONNET_MODEL = "claude-sonnet-4-6"
+OPUS_MODEL = "claude-opus-4-6"
 
 # Prompt caching beta header
 PROMPT_CACHE_HEADERS = {"anthropic-beta": "prompt-caching-2024-07-31"}

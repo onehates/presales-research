@@ -28,7 +28,7 @@ from pydantic import BaseModel
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 BRIEFS_DIR = PROJECT_ROOT / "briefs"
-SONNET_MODEL = "claude-sonnet-4-6-20250514"
+SONNET_MODEL = "claude-sonnet-4-6"
 PORT = int(os.environ.get("PORT", 8000))
 
 app = FastAPI(title="OSINT Chat", version="1.0")
