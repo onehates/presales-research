@@ -643,6 +643,48 @@ def run_phase2(slug: str, *, use_cache: bool = True) -> dict:
 # Phase 3 — Synthesizer (Opus)
 # ---------------------------------------------------------------------------
 
+def _parse_json_robust(text: str, raw_path: Path) -> dict | None:
+    """Parse JSON from LLM output with progressive fallbacks.
+
+    1. Strict json.loads() — fast path.
+    2. Extract JSON object via regex, then strict parse.
+    3. json-repair library — handles trailing commas, missing commas,
+       unescaped quotes, unterminated strings, smart quotes.
+    4. Return None if all fail.
+    """
+    # 1. Strict parse
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+
+    # 2. Regex extract + strict parse
+    match = re.search(r'\{.*\}', text, re.S)
+    if match:
+        try:
+            return json.loads(match.group(0))
+        except json.JSONDecodeError:
+            pass
+
+    # 3. json-repair fallback
+    try:
+        from json_repair import repair_json
+        repaired = repair_json(text, return_objects=False)
+        result = json.loads(repaired)
+        # Count differences to report issue count
+        diff_count = sum(1 for a, b in zip(text, repaired) if a != b)
+        diff_count += abs(len(text) - len(repaired))
+        print(f"    \033[33m⚠\033[0m  JSON repaired (had ~{diff_count} issues)", flush=True)
+        return result
+    except Exception:
+        pass
+
+    # 4. All parsers failed
+    print(f"    {SYM_ERROR} synthesizer returned unparseable output", flush=True)
+    print(f"    Raw output saved to {raw_path} for manual recovery.", flush=True)
+    return None
+
+
 def run_phase3(slug: str, subagent_outputs: dict) -> dict:
     """Run the synthesizer with all 3 subagent outputs."""
     print("\n  Phase 3 — Synthesizer (Opus)")
@@ -752,15 +794,15 @@ def run_phase3(slug: str, subagent_outputs: dict) -> dict:
         text = re.sub(r'^```(?:json)?\s*\n?', '', text.strip())
         text = re.sub(r'\n?```\s*$', '', text.strip())
 
-        try:
-            brief = json.loads(text)
-        except json.JSONDecodeError:
-            match = re.search(r'\{.*\}', text, re.S)
-            if match:
-                brief = json.loads(match.group(0))
-            else:
-                print(f"    {SYM_ERROR} synthesizer returned unparseable output", flush=True)
-                return {"status": "parse_error", "raw": text[:2000], "subagent_outputs": subagent_outputs}
+        # Save raw output before parsing (debug artifact + recovery path)
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        BRIEFS_DIR.mkdir(parents=True, exist_ok=True)
+        raw_path = BRIEFS_DIR / f"{slug}-{today}.raw.txt"
+        raw_path.write_text(text)
+
+        brief = _parse_json_robust(text, raw_path)
+        if brief is None:
+            return {"status": "parse_error", "raw": text[:2000], "subagent_outputs": subagent_outputs}
 
         print(f"    {SYM_OK} synthesizer complete", flush=True)
         return brief
