@@ -289,6 +289,7 @@ async def homepage():
 # Documentation page
 # ---------------------------------------------------------------------------
 
+@app.get("/docs", response_class=HTMLResponse)
 @app.get("/docs-page", response_class=HTMLResponse)
 async def docs_page():
     # Collect source client info

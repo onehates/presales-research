@@ -21,8 +21,14 @@ def confidence_badge(confidence: str) -> str:
         "medium": "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800",
         "inference": "bg-red-100 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-800",
     }
+    tooltips = {
+        "high": "High confidence — directly sourced from primary documents (filings, official sites, named individuals)",
+        "medium": "Medium confidence — sourced but inferred or aggregated from multiple secondary signals",
+        "inference": "Inference — pattern-based deduction without direct evidence. Must validate via discovery",
+    }
     css = colors.get(confidence, "bg-gray-100 text-gray-600 border-gray-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-600")
-    return f'<span class="badge inline-block px-1.5 py-0.5 rounded border {css} uppercase font-semibold">{confidence}</span>'
+    tip = tooltips.get(confidence, "")
+    return f'<span class="badge inline-block px-1.5 py-0.5 rounded border {css} uppercase font-semibold" data-tooltip="{tip}">{confidence}</span>'
 
 
 def quality_badge(quality: str) -> str:
@@ -33,8 +39,14 @@ def quality_badge(quality: str) -> str:
         "secondary": "bg-gray-50 text-gray-600 border-gray-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-600",
         "weak": "bg-red-50 text-red-600 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-800",
     }
+    tooltips = {
+        "primary": "Primary source — official company filings, primary government sites, direct citations",
+        "secondary": "Secondary source — news articles, third-party reports, expert blogs",
+        "weak": "Weak source — Reddit threads, forums, unverified social media",
+    }
     css = colors.get(quality, "bg-gray-50 text-gray-500 border-gray-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-600")
-    return f'<span class="badge inline-block px-1.5 py-0.5 rounded border {css} uppercase font-semibold">{quality}</span>'
+    tip = tooltips.get(quality, "")
+    return f'<span class="badge inline-block px-1.5 py-0.5 rounded border {css} uppercase font-semibold" data-tooltip="{tip}">{quality}</span>'
 
 
 def source_chip(source: dict) -> str:
