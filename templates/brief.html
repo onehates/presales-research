@@ -4,7 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ data.snapshot.name }} — Pre-Sales Brief</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={darkMode:'class'}</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     body { font-family: 'Inter', sans-serif; }
@@ -127,6 +130,8 @@
       background: white; border-radius: 12px; padding: 24px 32px; max-width: 380px;
       box-shadow: 0 20px 60px rgba(0,0,0,0.2);
     }
+    .dark .kbd-card { background: #1e293b; }
+    .dark kbd { background: #334155; border-color: #475569; color: #e2e8f0; }
     kbd {
       display: inline-block; background: #f1f5f9; border: 1px solid #e2e8f0;
       border-radius: 4px; padding: 1px 6px; font-size: 12px; font-family: monospace;
@@ -150,11 +155,59 @@
       #chat-header { cursor: default !important; }
     }
 
+    /* Dark mode overrides for non-Tailwind elements */
+    .dark .section-card { border-left-color: #334155; }
+    .dark .section-card:hover { border-left-color: #3b82f6; }
+    .dark .champion-bar { background: #334155; }
+    .dark .timeline-dot { background: #1e293b; border-color: #475569; }
+    .dark .timeline-item::before { background: #475569; }
+    .dark .meddic-notes { background: #1e293b; border-color: #475569; color: #e2e8f0; }
+    .dark #side-nav { background: #1e293b; border-color: #334155; }
+    .dark #side-nav a:hover { background: #334155; }
+    .dark .flow-node { fill: #1e293b; stroke: #475569; }
+    .dark .flow-label { fill: #e2e8f0; }
+    .dark .flow-sublabel { fill: #64748b; }
+    .dark .flow-arrow { stroke: #64748b; }
+
+    /* Hover lift for section cards and champion cards */
+    .section-card { transition: border-left-color 0.2s, box-shadow 0.2s, transform 0.2s; }
+    .section-card:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+    .champion-card { transition: box-shadow 0.2s, transform 0.2s; }
+    .champion-card:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .timeline-item { transition: transform 0.15s; }
+
+    /* Tooltip */
+    .tip { position: relative; }
+    .tip::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: #0f172a; color: white; font-size: 11px; padding: 3px 8px; border-radius: 4px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 150ms; z-index: 50; }
+    .tip:hover::after { opacity: 1; transition-delay: 400ms; }
+    .dark .tip::after { background: #e2e8f0; color: #0f172a; }
+
+    /* Toast */
+    .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 200; display: flex; flex-direction: column-reverse; gap: 8px; }
+    @media (max-width: 639px) { .toast-container { right: 50%; transform: translateX(50%); bottom: 16px; } }
+    .toast-item { padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; color: white; box-shadow: 0 4px 16px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 8px; min-width: 220px; animation: toast-in 200ms ease forwards; }
+    .toast-item.removing { animation: toast-out 200ms ease forwards; }
+    @keyframes toast-in { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes toast-out { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(40px); } }
+    .toast-green { background: #16a34a; } .toast-blue { background: #2563eb; } .toast-red { background: #dc2626; } .toast-gray { background: #475569; }
+
+    /* Command palette */
+    .cmd-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 150; display: none; justify-content: center; padding-top: 15vh; }
+    .cmd-overlay.visible { display: flex; }
+    .dark .cmd-overlay { background: rgba(0,0,0,0.6); }
+    .cmd-card { background: white; border-radius: 12px; width: 560px; max-width: 90vw; max-height: 400px; box-shadow: 0 24px 80px rgba(0,0,0,0.25); display: flex; flex-direction: column; overflow: hidden; }
+    .dark .cmd-card { background: #1e293b; color: #e2e8f0; }
+    .cmd-item { padding: 8px 16px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 13px; }
+    .cmd-item:hover, .cmd-item.active { background: #f1f5f9; }
+    .dark .cmd-item:hover, .dark .cmd-item.active { background: #334155; }
+    .cmd-section { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; padding: 10px 16px 4px; }
+
     /* Print */
     @media print {
       .no-print, #side-nav, #chat-toggle, #chat-panel { display: none !important; }
-      body { background: white !important; }
-      .section-card { break-inside: avoid; border-left-color: #d1d5db !important; box-shadow: none !important; }
+      body { background: white !important; color: black !important; }
+      .dark body { background: white !important; color: black !important; }
+      .section-card { break-inside: avoid; border-left-color: #d1d5db !important; box-shadow: none !important; transform: none !important; }
       main { margin-left: 0 !important; max-width: 100% !important; padding: 0 24px !important; }
       footer { margin-left: 0 !important; max-width: 100% !important; }
       header { position: relative !important; }
@@ -169,25 +222,43 @@
     }
   </style>
 </head>
-<body class="bg-gray-50 text-gray-900 antialiased">
+<body class="bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-slate-100 antialiased">
+  <script>
+    // Apply dark mode immediately to avoid flash
+    (function(){var p=localStorage.getItem('theme-preference')||'system';if(p==='dark'||(p==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');})();
+  </script>
 
   <!-- Header -->
-  <header class="bg-white border-b border-gray-200 sticky top-0 z-10 no-print">
+  <header class="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-10 no-print">
     <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
       <div>
-        <a href="/" class="text-xs text-gray-400 hover:text-blue-600 transition-colors no-print">&larr; Back to Dashboard</a>
-        <h1 class="text-xl font-bold text-gray-900">{{ data.snapshot.name }}</h1>
-        <p class="text-sm text-gray-500">{{ data.snapshot.vertical }} · {{ data.entity_type | default(data.snapshot.ticker or 'Private') | replace('_', ' ') }} · {{ data.snapshot.headquarters_state }}</p>
+        <nav class="flex items-center gap-1 text-xs text-gray-400 dark:text-slate-500 mb-0.5">
+          <a href="/" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Dashboard</a>
+          <span>/</span>
+          <span class="font-medium text-gray-600 dark:text-slate-300">{{ data.snapshot.name }}</span>
+        </nav>
+        <h1 class="text-xl font-bold text-gray-900 dark:text-white">{{ data.snapshot.name }}</h1>
+        <p class="text-sm text-gray-500 dark:text-slate-400">{{ data.snapshot.vertical }} · {{ data.entity_type | default(data.snapshot.ticker or 'Private') | replace('_', ' ') }} · {{ data.snapshot.headquarters_state }}</p>
       </div>
-      <div class="text-right text-xs text-gray-400">
-        <div>Generated {{ data.metadata.generated_at[:10] }}</div>
-        <div>Agents: {{ data.metadata.agents_used | join(', ') }}</div>
+      <div class="flex items-center gap-3">
+        <button onclick="downloadPDF()" class="tip text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5" data-tip="Download as PDF">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          PDF
+        </button>
+        <button onclick="toggleDarkMode()" class="tip p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors" data-tip="Toggle dark mode">
+          <svg class="w-4 h-4 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <svg class="w-4 h-4 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+        </button>
+        <div class="text-right text-xs text-gray-400 dark:text-slate-500">
+          <div>Generated {{ data.metadata.generated_at[:10] }}</div>
+          <div>Agents: {{ data.metadata.agents_used | join(', ') }}</div>
+        </div>
       </div>
     </div>
   </header>
 
   <!-- Side Navigation -->
-  <nav id="side-nav" class="hidden lg:block fixed top-[73px] left-0 w-52 h-[calc(100vh-73px)] overflow-y-auto bg-white border-r border-gray-200 py-4 px-2 z-10 no-print">
+  <nav id="side-nav" class="hidden lg:block fixed top-[73px] left-0 w-52 h-[calc(100vh-73px)] overflow-y-auto bg-white dark:bg-slate-800 border-r border-gray-200 dark:border-slate-700 py-4 px-2 z-10 no-print">
     <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider px-3 mb-2">Sections</div>
     <a href="#sec-tldr" class="nav-link block text-xs text-gray-500 py-1.5 px-3 rounded border-l-2 border-transparent">TL;DR</a>
     <a href="#sec-snapshot" class="nav-link block text-xs text-gray-500 py-1.5 px-3 rounded border-l-2 border-transparent">Snapshot</a>
@@ -226,7 +297,7 @@
   <main class="lg:ml-52 max-w-5xl mx-auto px-6 py-8 space-y-8">
 
     <!-- TL;DR Card -->
-    <section id="sec-tldr" class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+    <section id="sec-tldr" class="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
           <h2 class="text-sm font-semibold text-blue-800 uppercase tracking-wide">TL;DR — 30-Second Skim</h2>
@@ -248,28 +319,28 @@
 
     <!-- Quick Stats Banner -->
     <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div class="bg-white rounded-lg border border-gray-200 p-4 text-center">
-        <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Vertical</div>
-        <div class="text-lg font-bold text-gray-900">{{ data.vertical_match.matched_vertical }}</div>
+      <div class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4 text-center">
+        <div class="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-1">Vertical</div>
+        <div class="text-lg font-bold text-gray-900 dark:text-white">{{ data.vertical_match.matched_vertical }}</div>
       </div>
-      <div class="bg-white rounded-lg border border-gray-200 p-4 text-center">
-        <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Scale</div>
-        <div class="text-sm font-bold text-gray-900 leading-tight">{{ data.snapshot.size_indicator }}</div>
+      <div class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4 text-center">
+        <div class="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-1">Scale</div>
+        <div class="text-sm font-bold text-gray-900 dark:text-white leading-tight">{{ data.snapshot.size_indicator }}</div>
       </div>
-      <div class="bg-white rounded-lg border border-gray-200 p-4 text-center">
-        <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Top Champion</div>
+      <div class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4 text-center">
+        <div class="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-1">Top Champion</div>
         {% if data.champion_candidates %}
         {% set top = data.champion_candidates[0] %}
-        <div class="text-lg font-bold {{ 'text-green-700' if top.champion_fit_score >= 0.6 else 'text-amber-700' if top.champion_fit_score >= 0.3 else 'text-gray-600' }}">{{ (top.champion_fit_score * 100) | int }}%</div>
-        <div class="text-[10px] text-gray-500 truncate">{{ top.name }}</div>
+        <div class="text-lg font-bold {{ 'text-green-700 dark:text-green-400' if top.champion_fit_score >= 0.6 else 'text-amber-700 dark:text-amber-400' if top.champion_fit_score >= 0.3 else 'text-gray-600 dark:text-slate-400' }}">{{ (top.champion_fit_score * 100) | int }}%</div>
+        <div class="text-[10px] text-gray-500 dark:text-slate-400 truncate">{{ top.name }}</div>
         {% else %}
-        <div class="text-lg font-bold text-gray-400">—</div>
+        <div class="text-lg font-bold text-gray-400 dark:text-slate-500">—</div>
         {% endif %}
       </div>
-      <div class="bg-white rounded-lg border border-gray-200 p-4 text-center">
-        <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Key Drivers</div>
-        <div class="text-lg font-bold text-gray-900">{{ data.vertical_match.key_drivers_present | length }}</div>
-        <div class="text-[10px] text-gray-500">signals matched</div>
+      <div class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4 text-center">
+        <div class="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-1">Key Drivers</div>
+        <div class="text-lg font-bold text-gray-900 dark:text-white">{{ data.vertical_match.key_drivers_present | length }}</div>
+        <div class="text-[10px] text-gray-500 dark:text-slate-400">signals matched</div>
       </div>
     </section>
 
@@ -290,7 +361,7 @@
     {% endif %}
 
     <!-- Company Snapshot -->
-    <section id="sec-snapshot" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+    <section id="sec-snapshot" class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6 section-card">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Company Snapshot</h2>
         <button class="ask-btn no-print" onclick="askAbout('company snapshot and background')">
@@ -331,7 +402,7 @@
 
     <!-- Federal Funding Profile -->
     {% if data.federal_funding_profile %}
-    <section id="sec-funding" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+    <section id="sec-funding" class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6 section-card">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Federal Funding Profile</h2>
         <button class="ask-btn no-print" onclick="askAbout('federal funding profile and NDAA exposure')">
@@ -382,7 +453,7 @@
     {% endif %}
 
     <!-- Vertical Match -->
-    <section id="sec-vertical" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+    <section id="sec-vertical" class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6 section-card">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Vertical Match</h2>
         <button class="ask-btn no-print" onclick="askAbout('vertical match and key drivers')">
@@ -416,7 +487,7 @@
     </section>
 
     <!-- Leadership -->
-    <section id="sec-leadership" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+    <section id="sec-leadership" class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6 section-card">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Leadership</h2>
         <button class="ask-btn no-print" onclick="askAbout('leadership team and key contacts')">
@@ -450,7 +521,7 @@
 
     <!-- Projected Champion Candidates -->
     {% if data.champion_candidates %}
-    <section id="sec-champions" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+    <section id="sec-champions" class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6 section-card">
       <div class="flex items-center justify-between mb-2">
         <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Projected Champion Candidates</h2>
         <button class="ask-btn no-print" onclick="askAbout('champion candidates and who to engage first')">
@@ -461,7 +532,7 @@
       <p class="text-xs text-gray-400 italic mb-4">These are projections based on public signals about each candidate. Validate via discovery.</p>
       <div class="space-y-5">
         {% for cand in data.champion_candidates[:3] %}
-        <div class="border-l-3 {{ 'border-green-400' if cand.champion_fit_score >= 0.6 else 'border-amber-400' if cand.champion_fit_score >= 0.3 else 'border-gray-300' }} pl-4">
+        <div class="champion-card border-l-3 {{ 'border-green-400' if cand.champion_fit_score >= 0.6 else 'border-amber-400' if cand.champion_fit_score >= 0.3 else 'border-gray-300' }} pl-4">
           <div class="flex items-start justify-between mb-1">
             <div>
               <span class="font-semibold text-sm text-gray-900">{{ cand.name }}</span>
@@ -549,7 +620,7 @@
 
     <!-- MEDDIC Qualification (Interactive Checklist) -->
     {% if data.meddic_qualification and data.meddic_qualification is mapping %}
-    <section id="sec-meddic" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+    <section id="sec-meddic" class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6 section-card">
       <div class="flex items-center justify-between mb-2">
         <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">MEDDIC Qualification</h2>
         <button class="ask-btn no-print" onclick="askAbout('MEDDIC qualification and gaps to close')">
@@ -625,7 +696,7 @@
     {% endif %}
 
     <!-- Recent Material Events (Timeline) -->
-    <section id="sec-events" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+    <section id="sec-events" class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6 section-card">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Recent Material Events</h2>
         <button class="ask-btn no-print" onclick="askAbout('recent material events and their sales relevance')">
@@ -662,7 +733,7 @@
 
     <!-- Technical Footprint -->
     {% if data.technical_footprint %}
-    <section id="sec-tech" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+    <section id="sec-tech" class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6 section-card">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Technical Footprint</h2>
         <button class="ask-btn no-print" onclick="askAbout('technical footprint and infrastructure signals')">
@@ -758,7 +829,7 @@
 
     <!-- Pain Hypotheses -->
     {% if data.pain_hypotheses %}
-    <section id="sec-pain" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+    <section id="sec-pain" class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6 section-card">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Pain Hypotheses</h2>
         <button class="ask-btn no-print" onclick="askAbout('pain hypotheses and how to validate them')">
@@ -793,7 +864,7 @@
 
     <!-- Practitioner Sentiment -->
     {% if data.practitioner_sentiment and data.practitioner_sentiment != "insufficient_data" %}
-    <section id="sec-sentiment" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+    <section id="sec-sentiment" class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6 section-card">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Practitioner Sentiment (Reddit)</h2>
         <button class="ask-btn no-print" onclick="askAbout('practitioner sentiment and vendor mentions')">
@@ -846,7 +917,7 @@
 
     <!-- Incident History -->
     {% if data.incident_history %}
-    <section id="sec-incidents" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+    <section id="sec-incidents" class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6 section-card">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Incident History</h2>
         <button class="ask-btn no-print" onclick="askAbout('incident history and regulatory exposure')">
@@ -884,7 +955,7 @@
 
     <!-- Cooperative Purchasing -->
     {% if data.cooperative_purchasing %}
-    <section id="sec-coop" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+    <section id="sec-coop" class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6 section-card">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Cooperative Purchasing</h2>
         <button class="ask-btn no-print" onclick="askAbout('cooperative purchasing vehicles and procurement path')">
@@ -937,7 +1008,7 @@
 
     <!-- Displacement Intel -->
     {% if data.displacement_intel %}
-    <section id="sec-displacement" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+    <section id="sec-displacement" class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6 section-card">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Displacement Intel</h2>
         <button class="ask-btn no-print" onclick="askAbout('competitive displacement strategy and incumbent vendors')">
@@ -975,7 +1046,7 @@
 
     <!-- Hiring Signals -->
     {% if data.hiring_signals %}
-    <section id="sec-hiring" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+    <section id="sec-hiring" class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6 section-card">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Hiring Signals</h2>
         <button class="ask-btn no-print" onclick="askAbout('hiring signals and security team build-out')">
@@ -1060,7 +1131,7 @@
 
     <!-- Verkada GTM Strategy -->
     {% if data.verkada_gtm_strategy %}
-    <section id="sec-gtm" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+    <section id="sec-gtm" class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6 section-card">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Verkada GTM Strategy</h2>
         <button class="ask-btn no-print" onclick="askAbout('Verkada GTM strategy and recommended approach')">
@@ -1195,7 +1266,7 @@
 
     <!-- Discovery Questions by Persona -->
     {% if data.discovery_questions_by_persona %}
-    <section id="sec-discovery" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+    <section id="sec-discovery" class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6 section-card">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Discovery Questions by Persona</h2>
         <button class="ask-btn no-print" onclick="askAbout('discovery questions and which persona to lead with')">
@@ -1235,7 +1306,7 @@
 
     <!-- Open Questions -->
     {% if data.open_questions %}
-    <section id="sec-openquestions" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+    <section id="sec-openquestions" class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6 section-card">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Open Questions</h2>
         <button class="ask-btn no-print" onclick="askAbout('open questions and what to validate in discovery')">
@@ -1285,8 +1356,8 @@
         <div style="font-size:11px;color:#64748b;">Grounded in {{ data.snapshot.name }} brief data</div>
       </div>
       <div style="display:flex;gap:8px;">
-        <button onclick="resetChatPosition()" style="background:none;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:13px;color:#94a3b8;cursor:pointer;line-height:1;" title="Reset chat position">&#8635;</button>
-        <button onclick="clearChat()" style="background:none;border:1px solid #e2e8f0;border-radius:6px;padding:4px 10px;font-size:11px;color:#64748b;cursor:pointer;" title="Clear conversation">Clear</button>
+        <button onclick="resetChatPosition()" class="tip" data-tip="Reset position" style="background:none;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:13px;color:#94a3b8;cursor:pointer;line-height:1;">&#8635;</button>
+        <button onclick="clearChat()" class="tip" data-tip="Clear conversation" style="background:none;border:1px solid #e2e8f0;border-radius:6px;padding:4px 10px;font-size:11px;color:#64748b;cursor:pointer;">Clear</button>
         <button onclick="toggleChat()" style="background:none;border:none;cursor:pointer;font-size:18px;color:#94a3b8;line-height:1;">&times;</button>
       </div>
     </div>
@@ -2024,6 +2095,179 @@
         panelEl.classList.remove('animate-pos');
       }, 250);
     };
+  })();
+  </script>
+
+  <!-- Toast container -->
+  <div class="toast-container no-print" id="toast-container"></div>
+
+  <!-- Command Palette -->
+  <div class="cmd-overlay no-print" id="cmd-overlay" onclick="if(event.target===this)closePalette()">
+    <div class="cmd-card">
+      <div style="padding:12px 16px;border-bottom:1px solid #e2e8f0;" class="dark:border-slate-600">
+        <input id="cmd-input" type="text" placeholder="Search briefs, run command, or jump to section..." style="width:100%;border:none;outline:none;font-size:14px;background:transparent;" class="dark:text-white" oninput="filterPalette()" onkeydown="paletteKeydown(event)" />
+      </div>
+      <div id="cmd-results" style="overflow-y:auto;max-height:320px;padding:4px 0;"></div>
+    </div>
+  </div>
+
+  <script>
+  // === Toast ===
+  window.toast = function(msg, type, duration) {
+    type = type || 'gray'; duration = duration || 3000;
+    var container = document.getElementById('toast-container');
+    var el = document.createElement('div');
+    el.className = 'toast-item toast-' + type;
+    el.innerHTML = '<span style="flex:1">' + msg + '</span><button onclick="this.parentElement.classList.add(\'removing\');setTimeout(()=>this.parentElement.remove(),200)" style="background:none;border:none;color:white;cursor:pointer;font-size:16px;line-height:1;opacity:0.7">&times;</button>';
+    container.appendChild(el);
+    setTimeout(function() { el.classList.add('removing'); setTimeout(function() { el.remove(); }, 200); }, duration);
+  };
+
+  // === Dark mode ===
+  function toggleDarkMode() {
+    var isDark = document.documentElement.classList.toggle('dark');
+    localStorage.setItem('theme-preference', isDark ? 'dark' : 'light');
+  }
+
+  // === Download PDF ===
+  function downloadPDF() {
+    if (typeof html2pdf === 'undefined') { toast('PDF library loading, try again in a moment', 'gray', 2000); return; }
+    toast('Generating PDF...', 'blue', 2000);
+    var hideEls = document.querySelectorAll('.no-print, #side-nav, #chat-toggle, #chat-panel');
+    hideEls.forEach(function(e) { e.dataset.prevDisplay = e.style.display; e.style.display = 'none'; });
+    var main = document.querySelector('main');
+    if (main) { main.dataset.prevMl = main.style.marginLeft; main.style.marginLeft = '0'; }
+    var slug = "{{ data.metadata.company_slug }}";
+    html2pdf().set({
+      margin: [10, 10, 10, 10],
+      filename: slug + '-brief.pdf',
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['avoid-all', 'css'] }
+    }).from(document.body).save().then(function() {
+      hideEls.forEach(function(e) { e.style.display = e.dataset.prevDisplay || ''; });
+      if (main) main.style.marginLeft = main.dataset.prevMl || '';
+      toast('PDF downloaded', 'green', 2000);
+    });
+  }
+
+  // === Auto-print on ?print=auto ===
+  if (new URLSearchParams(window.location.search).get('print') === 'auto') {
+    window.addEventListener('load', function() { setTimeout(function() { window.print(); }, 500); });
+  }
+
+  // === Command Palette ===
+  var paletteHighlight = 0;
+  var paletteItemEls = [];
+
+  function openPalette() {
+    document.getElementById('cmd-overlay').classList.add('visible');
+    var input = document.getElementById('cmd-input');
+    input.value = '';
+    input.focus();
+    filterPalette();
+  }
+  function closePalette() {
+    document.getElementById('cmd-overlay').classList.remove('visible');
+  }
+
+  function filterPalette() {
+    var q = (document.getElementById('cmd-input').value || '').toLowerCase();
+    var results = document.getElementById('cmd-results');
+    var html = '';
+
+    // Sections
+    var sections = [];
+    document.querySelectorAll('#side-nav a.nav-link').forEach(function(a) {
+      sections.push({ label: a.textContent.trim(), href: a.getAttribute('href') });
+    });
+    var matchedSections = sections.filter(function(s) { return !q || s.label.toLowerCase().includes(q); });
+    if (matchedSections.length > 0) {
+      html += '<div class="cmd-section">Sections</div>';
+      matchedSections.forEach(function(s, i) {
+        html += '<div class="cmd-item" data-idx="' + i + '" onclick="closePalette();document.querySelector(\'' + s.href + '\').scrollIntoView({behavior:\'smooth\'})">';
+        html += '<svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/></svg>';
+        html += '<span>' + s.label + '</span></div>';
+      });
+    }
+
+    // Commands
+    var commands = [
+      { label: 'Open Dashboard', action: function() { window.location.href = '/'; } },
+      { label: 'Download PDF', action: function() { closePalette(); downloadPDF(); } },
+      { label: 'Print this page', action: function() { closePalette(); window.print(); } },
+      { label: 'Toggle dark mode', action: function() { closePalette(); toggleDarkMode(); } },
+      { label: 'Toggle keyboard shortcuts help', action: function() { closePalette(); toggleKbd(); } },
+      { label: 'Clear chat history', action: function() { closePalette(); clearChat(); } },
+    ];
+    var matchedCmds = commands.filter(function(c) { return !q || c.label.toLowerCase().includes(q); });
+    if (matchedCmds.length > 0) {
+      html += '<div class="cmd-section">Commands</div>';
+      matchedCmds.forEach(function(c, i) {
+        var idx = matchedSections.length + i;
+        html += '<div class="cmd-item" data-idx="' + idx + '" onclick="briefPaletteCommands[' + commands.indexOf(c) + ']()">';
+        html += '<svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>';
+        html += '<span>' + c.label + '</span></div>';
+      });
+    }
+
+    if (!html) html = '<div style="padding:24px;text-align:center;color:#94a3b8;font-size:13px;">No results</div>';
+    results.innerHTML = html;
+    paletteItemEls = results.querySelectorAll('.cmd-item');
+    paletteHighlight = 0;
+    updatePaletteHighlight();
+    window.briefPaletteCommands = commands.map(function(c) { return c.action; });
+  }
+
+  function updatePaletteHighlight() {
+    paletteItemEls.forEach(function(el, i) { el.classList.toggle('active', i === paletteHighlight); });
+    if (paletteItemEls[paletteHighlight]) paletteItemEls[paletteHighlight].scrollIntoView({ block: 'nearest' });
+  }
+
+  function paletteKeydown(e) {
+    if (e.key === 'ArrowDown') { e.preventDefault(); paletteHighlight = Math.min(paletteHighlight + 1, paletteItemEls.length - 1); updatePaletteHighlight(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); paletteHighlight = Math.max(paletteHighlight - 1, 0); updatePaletteHighlight(); }
+    else if (e.key === 'Enter') { e.preventDefault(); if (paletteItemEls[paletteHighlight]) paletteItemEls[paletteHighlight].click(); }
+    else if (e.key === 'Escape') { closePalette(); }
+  }
+
+  // Hook Cmd+K into existing keyboard handler
+  (function() {
+    var origKbHandler = document.onkeydown;
+    document.addEventListener('keydown', function(e) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        openPalette();
+      }
+    }, true);
+  })();
+
+  // === Animated champion score bars on scroll ===
+  (function() {
+    var bars = document.querySelectorAll('.champion-bar-fill');
+    if (!bars.length || !('IntersectionObserver' in window)) return;
+    bars.forEach(function(bar) {
+      var target = bar.style.width;
+      bar.style.width = '0%';
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            setTimeout(function() { bar.style.width = target; }, 100);
+            observer.unobserve(bar);
+          }
+        });
+      }, { threshold: 0.3 });
+      observer.observe(bar);
+    });
+  })();
+
+  // === Hook toast into existing copy buttons ===
+  (function() {
+    document.addEventListener('click', function(e) {
+      if (e.target.classList && e.target.classList.contains('msg-copy')) {
+        setTimeout(function() { if (e.target.classList.contains('copied')) toast('Copied to clipboard', 'gray', 2000); }, 100);
+      }
+    });
   })();
   </script>
 

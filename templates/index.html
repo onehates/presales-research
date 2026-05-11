@@ -4,32 +4,70 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pre-Sales Research Platform</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={darkMode:'class'}</script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
     body { font-family: 'Inter', sans-serif; }
-    .brief-card { transition: border-color 0.15s, box-shadow 0.15s; }
-    .brief-card:hover { border-color: #93c5fd; box-shadow: 0 4px 12px rgba(59,130,246,0.08); }
+    .brief-card { transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; cursor: pointer; }
+    .brief-card:hover { border-color: #93c5fd; box-shadow: 0 8px 24px rgba(59,130,246,0.10); transform: translateY(-1px); }
+    .dark .brief-card:hover { border-color: #3b82f6; box-shadow: 0 8px 24px rgba(59,130,246,0.20); }
     .action-btn { opacity: 0.5; transition: opacity 0.15s, color 0.15s; }
     .action-btn:hover { opacity: 1; }
     .tag-chip { cursor: pointer; transition: all 0.15s; }
     .tag-chip:hover { filter: brightness(0.95); }
     .starred { color: #f59e0b; }
+    /* Toast */
+    .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 200; display: flex; flex-direction: column-reverse; gap: 8px; }
+    @media (max-width: 639px) { .toast-container { right: 50%; transform: translateX(50%); bottom: 16px; } }
+    .toast-item { padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; color: white; box-shadow: 0 4px 16px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 8px; min-width: 220px; animation: toast-in 200ms ease forwards; }
+    .toast-item.removing { animation: toast-out 200ms ease forwards; }
+    @keyframes toast-in { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes toast-out { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(40px); } }
+    .toast-green { background: #16a34a; } .toast-blue { background: #2563eb; } .toast-red { background: #dc2626; } .toast-gray { background: #475569; }
+    /* Command palette */
+    .cmd-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 150; display: none; justify-content: center; padding-top: 15vh; }
+    .cmd-overlay.visible { display: flex; }
+    .dark .cmd-overlay { background: rgba(0,0,0,0.6); }
+    .cmd-card { background: white; border-radius: 12px; width: 560px; max-width: 90vw; max-height: 400px; box-shadow: 0 24px 80px rgba(0,0,0,0.25); display: flex; flex-direction: column; overflow: hidden; }
+    .dark .cmd-card { background: #1e293b; color: #e2e8f0; }
+    .cmd-item { padding: 8px 16px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 13px; }
+    .cmd-item:hover, .cmd-item.active { background: #f1f5f9; }
+    .dark .cmd-item:hover, .dark .cmd-item.active { background: #334155; }
+    .cmd-section { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; padding: 10px 16px 4px; }
+    /* Tooltip */
+    .tip { position: relative; }
+    .tip::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: #0f172a; color: white; font-size: 11px; padding: 3px 8px; border-radius: 4px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 150ms; z-index: 50; }
+    .tip:hover::after { opacity: 1; transition-delay: 400ms; }
+    .dark .tip::after { background: #e2e8f0; color: #0f172a; }
+    /* Search highlight */
+    mark { background: #fef08a; border-radius: 2px; padding: 0 1px; }
+    .dark mark { background: #854d0e; color: #fef3c7; }
+    @media print { body { background: white !important; color: black !important; } .no-print { display: none !important; } }
   </style>
 </head>
-<body class="bg-gray-50 text-gray-900 antialiased min-h-screen flex flex-col">
+<body class="bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-slate-100 antialiased min-h-screen flex flex-col">
 
   <!-- Header -->
-  <header class="bg-white border-b border-gray-200">
+  <header class="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
     <div class="max-w-6xl mx-auto px-6 py-6">
       <div class="flex items-end justify-between">
         <div>
-          <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Pre-Sales Research Platform</h1>
-          <p class="text-sm text-gray-500 mt-1">OSINT-grade account intelligence for the Solutions Engineer workflow</p>
+          <div class="flex items-center gap-2 mb-1">
+            <svg width="22" height="22" viewBox="0 0 32 32" class="flex-shrink-0"><rect width="32" height="32" rx="6" fill="#2563eb"/><text x="16" y="22" text-anchor="middle" fill="white" font-size="18" font-weight="700" font-family="Inter,sans-serif">P</text></svg>
+            <span class="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Pre-Sales Research</span>
+          </div>
+          <h1 class="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">Account intelligence for SEs who think like analysts</h1>
+          <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">Multi-source OSINT research, persona-grounded synthesis, and battlefield-ready deliverables in one platform</p>
         </div>
-        <div class="flex items-center gap-4 text-xs text-gray-400">
-          <a href="/status.html" class="text-blue-600 hover:text-blue-800 font-medium">Live Dashboard</a>
-          <span class="bg-gray-100 text-gray-500 px-2 py-0.5 rounded font-mono">v1.0</span>
+        <div class="flex items-center gap-3 text-xs text-gray-400 dark:text-slate-500 flex-shrink-0">
+          <a href="/status.html" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 font-medium">Live Dashboard</a>
+          <button onclick="toggleDarkMode()" class="tip p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors" data-tip="Toggle dark mode" id="dark-toggle">
+            <svg id="icon-sun" class="w-4 h-4 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+            <svg id="icon-moon" class="w-4 h-4 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+          </button>
+          <span class="bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-400 px-2 py-0.5 rounded font-mono">v1.0</span>
         </div>
       </div>
     </div>
@@ -39,30 +77,30 @@
 
     <!-- Quick Stats Banner -->
     <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-      <div class="bg-white rounded-lg border border-gray-200 p-4 text-center">
-        <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Total Briefs</div>
-        <div class="text-2xl font-bold text-gray-900">{{ total_briefs }}</div>
+      <div class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4 text-center">
+        <div class="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-1">Total Briefs</div>
+        <div class="text-2xl font-bold text-gray-900 dark:text-white counter" data-target="{{ total_briefs }}">0</div>
       </div>
-      <div class="bg-white rounded-lg border border-gray-200 p-4 text-center">
-        <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Accounts</div>
-        <div class="text-2xl font-bold text-gray-900">{{ unique_accounts }}</div>
+      <div class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4 text-center">
+        <div class="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-1">Accounts</div>
+        <div class="text-2xl font-bold text-gray-900 dark:text-white counter" data-target="{{ unique_accounts }}">0</div>
       </div>
-      <div class="bg-white rounded-lg border border-gray-200 p-4 text-center">
-        <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Verticals</div>
-        <div class="text-2xl font-bold text-gray-900">{{ verticals | length }}</div>
+      <div class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4 text-center">
+        <div class="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-1">Verticals</div>
+        <div class="text-2xl font-bold text-gray-900 dark:text-white counter" data-target="{{ verticals | length }}">0</div>
       </div>
-      <div class="bg-white rounded-lg border border-gray-200 p-4 text-center">
-        <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Latest Brief</div>
-        <div class="text-sm font-bold text-gray-900">{{ briefs[0].date if briefs else '—' }}</div>
+      <div class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4 text-center">
+        <div class="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-1">Latest Brief</div>
+        <div class="text-sm font-bold text-gray-900 dark:text-white">{{ briefs[0].date if briefs else '---' }}</div>
       </div>
     </section>
 
     <!-- Start New Research -->
-    <section class="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-      <h2 class="text-lg font-bold text-gray-900 mb-1">Research a new account</h2>
-      <p class="text-xs text-gray-400 mb-4">Cost: ~$1.50 fresh, ~$0.40 cached &middot; Time: 5-9 minutes</p>
+    <section class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6 mb-8">
+      <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-1">Research a new account</h2>
+      <p class="text-xs text-gray-400 dark:text-slate-500 mb-4">Cost: ~$1.50 fresh, ~$0.40 cached &middot; Time: 5-9 minutes</p>
       <form id="research-form" class="flex gap-3" onsubmit="launchResearch(event)">
-        <input id="company-input" type="text" placeholder="Enter company or account name..." class="flex-1 border border-gray-200 rounded-lg px-4 py-3 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100" required />
+        <input id="company-input" type="text" placeholder="Enter company or account name..." class="flex-1 border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-lg px-4 py-3 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 dark:focus:ring-blue-900" required />
         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap">
           Start Research
         </button>
@@ -70,17 +108,25 @@
       <div class="mt-3 flex gap-2 flex-wrap">
         {% set examples = {'K-12 District': 'Gwinnett County Public Schools', 'Higher Ed': 'Georgia State University', 'Healthcare': 'Piedmont Healthcare', 'Government': 'City of Atlanta', 'Retail': 'Floor & Decor'} %}
         {% for label, example in examples.items() %}
-        <button onclick="document.getElementById('company-input').value='{{ example }}'" class="text-xs bg-gray-100 hover:bg-blue-50 text-gray-600 hover:text-blue-700 px-2.5 py-1 rounded-full transition-colors">{{ label }}</button>
+        <button onclick="document.getElementById('company-input').value='{{ example }}'" class="text-xs bg-gray-100 dark:bg-slate-700 hover:bg-blue-50 dark:hover:bg-slate-600 text-gray-600 dark:text-slate-300 hover:text-blue-700 dark:hover:text-blue-400 px-2.5 py-1 rounded-full transition-colors">{{ label }}</button>
         {% endfor %}
       </div>
     </section>
 
+    <!-- Existing Briefs heading + search -->
+    <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+      <h2 class="text-lg font-bold text-gray-900 dark:text-white">Existing Briefs ({{ total_briefs }})</h2>
+      <div class="relative">
+        <svg class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input id="brief-search" type="text" placeholder="Search briefs by account or champion..." oninput="filterBriefs()" class="pl-9 pr-3 py-1.5 text-xs border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-lg outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 dark:focus:ring-blue-900 w-64" />
+      </div>
+    </div>
+
     <!-- Filter / Sort Bar -->
-    <h2 class="text-lg font-bold text-gray-900 mb-4">Existing Briefs ({{ total_briefs }})</h2>
     <section class="flex items-center gap-4 mb-6 flex-wrap">
       <div class="flex items-center gap-2">
-        <label class="text-xs font-semibold text-gray-400 uppercase">Vertical</label>
-        <select id="filter-vertical" onchange="filterBriefs()" class="text-xs border border-gray-200 rounded px-2 py-1 outline-none">
+        <label class="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase">Vertical</label>
+        <select id="filter-vertical" onchange="filterBriefs()" class="text-xs border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded px-2 py-1 outline-none">
           <option value="">All</option>
           {% for v in verticals %}
           <option value="{{ v }}">{{ v }}</option>
@@ -88,8 +134,8 @@
         </select>
       </div>
       <div class="flex items-center gap-2">
-        <label class="text-xs font-semibold text-gray-400 uppercase">Sort</label>
-        <select id="sort-by" onchange="filterBriefs()" class="text-xs border border-gray-200 rounded px-2 py-1 outline-none">
+        <label class="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase">Sort</label>
+        <select id="sort-by" onchange="filterBriefs()" class="text-xs border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded px-2 py-1 outline-none">
           <option value="newest">Newest</option>
           <option value="oldest">Oldest</option>
           <option value="name">Account A-Z</option>
@@ -97,82 +143,93 @@
       </div>
       <div class="flex gap-1.5 ml-auto">
         {% for tag in ['All', 'Starred', 'Prospect', 'Active POC', 'Closed-Won'] %}
-        <button onclick="setTagFilter('{{ tag }}')" class="tag-filter text-xs px-2.5 py-1 rounded-full border {{ 'bg-blue-50 border-blue-200 text-blue-700 font-medium' if tag == 'All' else 'bg-white border-gray-200 text-gray-500' }}" data-tag="{{ tag }}">{{ tag }}</button>
+        <button onclick="setTagFilter('{{ tag }}')" class="tag-filter text-xs px-2.5 py-1 rounded-full border {{ 'bg-blue-50 border-blue-200 text-blue-700 font-medium dark:bg-blue-900 dark:border-blue-700 dark:text-blue-300' if tag == 'All' else 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-600 text-gray-500 dark:text-slate-400' }}" data-tag="{{ tag }}">{{ tag }}</button>
         {% endfor %}
       </div>
     </section>
+
+    <!-- No search results message -->
+    <div id="no-results" class="hidden col-span-2 text-center py-12 mb-8">
+      <p class="text-gray-400 dark:text-slate-500 text-sm">No briefs match '<span id="no-results-query"></span>'. <button onclick="document.getElementById('brief-search').value='';filterBriefs()" class="text-blue-600 hover:underline">Clear search</button></p>
+    </div>
 
     <!-- Brief Cards Grid -->
     <section id="briefs-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
       {% if not briefs %}
       <div class="col-span-2 text-center py-16">
-        <div class="text-gray-300 text-5xl mb-4">&#128269;</div>
-        <p class="text-gray-500 text-sm">No briefs yet. Run your first research above.</p>
+        <div class="text-gray-300 dark:text-slate-600 text-5xl mb-4">&#128269;</div>
+        <p class="text-gray-500 dark:text-slate-400 text-sm">No briefs yet. Run your first research above.</p>
       </div>
       {% endif %}
 
       {% for b in briefs %}
-      <div class="brief-card bg-white rounded-lg border border-gray-200 p-5 flex flex-col"
+      <div class="brief-card bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-5 flex flex-col"
            data-slug="{{ b.slug }}" data-date="{{ b.date }}" data-vertical="{{ b.vertical }}"
            data-name="{{ b.name }}" data-starred="{{ b.starred }}" data-archived="{{ b.archived }}"
-           data-tags="{{ b.tags | join(',') }}" data-generated="{{ b.generated_at }}">
+           data-tags="{{ b.tags | join(',') }}" data-generated="{{ b.generated_at }}"
+           data-champion="{{ b.top_champion }}" data-size="{{ b.size_indicator }}"
+           onclick="cardClick(event, '{{ b.slug }}', '{{ b.date }}', {{ b.html_exists | tojson }})">
         <div class="flex items-start justify-between mb-2">
           <div>
-            <h3 class="text-base font-bold text-gray-900">{{ b.name }}</h3>
+            <h3 class="text-base font-bold text-gray-900 dark:text-white brief-name">{{ b.name }}</h3>
             <div class="flex items-center gap-2 mt-1">
-              {% set vert_colors = {'K-12': 'bg-blue-100 text-blue-700', 'Higher Ed': 'bg-purple-100 text-purple-700', 'Healthcare': 'bg-emerald-100 text-emerald-700', 'Government': 'bg-amber-100 text-amber-700', 'Retail': 'bg-rose-100 text-rose-700', 'Manufacturing': 'bg-orange-100 text-orange-700'} %}
-              <span class="inline-block px-2 py-0.5 rounded text-xs font-medium {{ vert_colors.get(b.vertical, 'bg-gray-100 text-gray-600') }}">{{ b.vertical or 'Unknown' }}</span>
-              <span class="text-xs text-gray-400">{{ b.date }}</span>
+              {% set vert_colors = {'K-12': 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300', 'Higher Ed': 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300', 'Healthcare': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300', 'Government': 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300', 'Retail': 'bg-rose-100 text-rose-700 dark:bg-rose-900 dark:text-rose-300', 'Manufacturing': 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300'} %}
+              <span class="inline-block px-2 py-0.5 rounded text-xs font-medium {{ vert_colors.get(b.vertical, 'bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-slate-300') }}">{{ b.vertical or 'Unknown' }}</span>
+              <span class="text-xs text-gray-400 dark:text-slate-500">{{ b.date }}</span>
               {% if b.headquarters_state %}
-              <span class="text-xs text-gray-400">{{ b.headquarters_state }}</span>
+              <span class="text-xs text-gray-400 dark:text-slate-500">{{ b.headquarters_state }}</span>
               {% endif %}
             </div>
           </div>
-          <button onclick="toggleStar('{{ b.slug }}', '{{ b.date }}')" class="text-lg leading-none {{ 'starred' if b.starred else 'text-gray-300 hover:text-amber-400' }} transition-colors" title="Star">&#9733;</button>
+          <button onclick="event.stopPropagation();toggleStar('{{ b.slug }}', '{{ b.date }}')" class="tip text-lg leading-none {{ 'starred' if b.starred else 'text-gray-300 dark:text-slate-600 hover:text-amber-400' }} transition-colors" data-tip="Star">&#9733;</button>
         </div>
 
         {% if b.size_indicator %}
-        <p class="text-xs text-gray-500 mb-2 line-clamp-1">{{ b.size_indicator }}</p>
+        <p class="text-xs text-gray-500 dark:text-slate-400 mb-2 line-clamp-1 brief-size">{{ b.size_indicator }}</p>
         {% endif %}
 
         {% if b.top_champion %}
         <div class="flex items-center gap-2 mb-2">
-          <span class="text-xs text-gray-500">Top champion:</span>
-          <span class="text-xs font-medium text-gray-800">{{ b.top_champion }}</span>
+          <span class="text-xs text-gray-500 dark:text-slate-400">Top champion:</span>
+          <span class="text-xs font-medium text-gray-800 dark:text-slate-200 brief-champion">{{ b.top_champion }}</span>
           {% set score_pct = (b.top_champion_score * 100) | int %}
-          <span class="text-xs font-bold {{ 'text-green-600' if b.top_champion_score >= 0.6 else 'text-amber-600' if b.top_champion_score >= 0.3 else 'text-gray-500' }}">{{ score_pct }}%</span>
+          <span class="text-xs font-bold {{ 'text-green-600 dark:text-green-400' if b.top_champion_score >= 0.6 else 'text-amber-600 dark:text-amber-400' if b.top_champion_score >= 0.3 else 'text-gray-500 dark:text-slate-400' }}">{{ score_pct }}%</span>
         </div>
         {% endif %}
 
         <!-- Tags -->
         <div class="flex items-center gap-1 mb-3 min-h-[24px]" id="tags-{{ b.slug }}-{{ b.date }}">
           {% for tag in b.tags %}
-          <span class="inline-block bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs">{{ tag }}</span>
+          <span class="inline-block bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 px-2 py-0.5 rounded text-xs">{{ tag }}</span>
           {% endfor %}
-          <button onclick="editTags('{{ b.slug }}', '{{ b.date }}')" class="text-xs text-gray-400 hover:text-blue-600 ml-1" title="Edit tags">+ tag</button>
+          <button onclick="event.stopPropagation();editTags('{{ b.slug }}', '{{ b.date }}')" class="text-xs text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 ml-1" title="Edit tags">+ tag</button>
         </div>
 
         <!-- Actions -->
-        <div class="flex items-center gap-1 mt-auto pt-2 border-t border-gray-100">
+        <div class="flex items-center gap-1 mt-auto pt-2 border-t border-gray-100 dark:border-slate-700">
           {% if b.html_exists %}
-          <a href="/briefs/{{ b.slug }}-{{ b.date }}.html" class="action-btn text-xs px-2 py-1 rounded hover:bg-blue-50 hover:text-blue-700 flex items-center gap-1" title="View Brief">
+          <a href="/briefs/{{ b.slug }}-{{ b.date }}.html" onclick="event.stopPropagation()" class="tip action-btn text-xs px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-slate-700 hover:text-blue-700 dark:hover:text-blue-400 flex items-center gap-1" data-tip="View Brief">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
             View
           </a>
+          <a href="/briefs/{{ b.slug }}-{{ b.date }}.html?print=auto" target="_blank" onclick="event.stopPropagation()" class="tip action-btn text-xs px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-700 dark:hover:text-slate-200 flex items-center gap-1" data-tip="Print Brief">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+            Print
+          </a>
           {% endif %}
-          <button onclick="rerunResearch('{{ b.name }}')" class="action-btn text-xs px-2 py-1 rounded hover:bg-amber-50 hover:text-amber-700 flex items-center gap-1" title="Re-run research">
+          <button onclick="event.stopPropagation();rerunResearch('{{ b.name }}')" class="tip action-btn text-xs px-2 py-1 rounded hover:bg-amber-50 dark:hover:bg-slate-700 hover:text-amber-700 dark:hover:text-amber-400 flex items-center gap-1" data-tip="Re-run research">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
             Re-run
           </button>
-          <a href="mailto:?subject=Account%20brief%3A%20{{ b.name | urlencode }}&body=Brief%20URL%3A%20{{ b.slug }}-{{ b.date }}.html" class="action-btn text-xs px-2 py-1 rounded hover:bg-purple-50 hover:text-purple-700 flex items-center gap-1" title="Email brief link">
+          <a href="mailto:?subject=Account%20brief%3A%20{{ b.name | urlencode }}&body=Brief%20URL%3A%20{{ b.slug }}-{{ b.date }}.html" onclick="event.stopPropagation()" class="tip action-btn text-xs px-2 py-1 rounded hover:bg-purple-50 dark:hover:bg-slate-700 hover:text-purple-700 dark:hover:text-purple-400 flex items-center gap-1" data-tip="Email brief link">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
             Email
           </a>
-          <a href="/briefs/{{ b.slug }}-{{ b.date }}.json" download class="action-btn text-xs px-2 py-1 rounded hover:bg-green-50 hover:text-green-700 flex items-center gap-1" title="Download JSON">
+          <a href="/briefs/{{ b.slug }}-{{ b.date }}.json" download onclick="event.stopPropagation()" class="tip action-btn text-xs px-2 py-1 rounded hover:bg-green-50 dark:hover:bg-slate-700 hover:text-green-700 dark:hover:text-green-400 flex items-center gap-1" data-tip="Download JSON">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             JSON
           </a>
-          <button onclick="deleteBrief('{{ b.slug }}', '{{ b.date }}', '{{ b.name }}')" class="action-btn text-xs px-2 py-1 rounded hover:bg-red-50 hover:text-red-700 flex items-center gap-1 ml-auto" title="Delete">
+          <button onclick="event.stopPropagation();deleteBrief('{{ b.slug }}', '{{ b.date }}', '{{ b.name }}')" class="tip action-btn text-xs px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-slate-700 hover:text-red-700 dark:hover:text-red-400 flex items-center gap-1 ml-auto" data-tip="Delete brief">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
             Delete
           </button>
@@ -184,15 +241,80 @@
   </main>
 
   <!-- Footer -->
-  <footer class="border-t border-gray-200 bg-white mt-auto">
-    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between text-xs text-gray-400">
+  <footer class="border-t border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 mt-auto">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between text-xs text-gray-400 dark:text-slate-500">
       <span>Built by Andy &middot; v1.0</span>
       <span>{{ total_briefs }} brief{{ 's' if total_briefs != 1 else '' }} across {{ unique_accounts }} account{{ 's' if unique_accounts != 1 else '' }}</span>
     </div>
   </footer>
 
+  <!-- Toast container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Command Palette -->
+  <div class="cmd-overlay no-print" id="cmd-overlay" onclick="if(event.target===this)closePalette()">
+    <div class="cmd-card">
+      <div style="padding:12px 16px;border-bottom:1px solid #e2e8f0;" class="dark:border-slate-600">
+        <input id="cmd-input" type="text" placeholder="Search briefs, run command, or jump to section..." style="width:100%;border:none;outline:none;font-size:14px;background:transparent;" class="dark:text-white" oninput="filterPalette()" onkeydown="paletteKeydown(event)" />
+      </div>
+      <div id="cmd-results" style="overflow-y:auto;max-height:320px;padding:4px 0;"></div>
+    </div>
+  </div>
+
   <script>
-  // --- Research launcher ---
+  // === Brief data for command palette ===
+  const BRIEFS_DATA = {{ briefs | tojson }};
+
+  // === Toast ===
+  window.toast = function(msg, type, duration) {
+    type = type || 'gray'; duration = duration || 3000;
+    const container = document.getElementById('toast-container');
+    const el = document.createElement('div');
+    el.className = 'toast-item toast-' + type;
+    el.innerHTML = '<span style="flex:1">' + msg + '</span><button onclick="this.parentElement.classList.add(\'removing\');setTimeout(()=>this.parentElement.remove(),200)" style="background:none;border:none;color:white;cursor:pointer;font-size:16px;line-height:1;opacity:0.7">&times;</button>';
+    container.appendChild(el);
+    setTimeout(() => { el.classList.add('removing'); setTimeout(() => el.remove(), 200); }, duration);
+  };
+
+  // === Dark mode ===
+  function initDarkMode() {
+    const pref = localStorage.getItem('theme-preference') || 'system';
+    if (pref === 'dark' || (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    }
+  }
+  initDarkMode();
+  function toggleDarkMode() {
+    const html = document.documentElement;
+    const isDark = html.classList.toggle('dark');
+    localStorage.setItem('theme-preference', isDark ? 'dark' : 'light');
+  }
+
+  // === Animated counters ===
+  function animateCounters() {
+    document.querySelectorAll('.counter').forEach(el => {
+      const target = parseInt(el.dataset.target) || 0;
+      if (target === 0) return;
+      const start = performance.now();
+      const duration = 800;
+      function tick(now) {
+        const t = Math.min((now - start) / duration, 1);
+        const ease = 1 - Math.pow(1 - t, 3);
+        el.textContent = Math.round(ease * target);
+        if (t < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    });
+  }
+  animateCounters();
+
+  // === Card click (whole card navigates to brief) ===
+  function cardClick(e, slug, date, htmlExists) {
+    if (e.target.closest('button, a, input')) return;
+    if (htmlExists) window.location.href = '/briefs/' + slug + '-' + date + '.html';
+  }
+
+  // === Research launcher ===
   function launchResearch(e) {
     e.preventDefault();
     const company = document.getElementById('company-input').value.trim();
@@ -200,6 +322,7 @@
     const btn = e.target.querySelector('button[type="submit"]');
     btn.textContent = 'Launching...';
     btn.disabled = true;
+    toast('Research started for ' + company + '... Redirecting to dashboard', 'blue', 4000);
     fetch('/api/research', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
@@ -207,14 +330,15 @@
     }).then(r => r.json()).then(data => {
       window.location.href = data.status_url;
     }).catch(() => {
-      btn.textContent = 'Run Research';
+      btn.textContent = 'Start Research';
       btn.disabled = false;
-      alert('Failed to launch research. Is the server running?');
+      toast('Failed to launch research. Is the server running?', 'red', 4000);
     });
   }
 
   function rerunResearch(company) {
-    if (!confirm(`Re-run research for "${company}"? This will fetch fresh data.`)) return;
+    if (!confirm('Re-run research for "' + company + '"? This will fetch fresh data.')) return;
+    toast('Research started for ' + company + '...', 'blue', 4000);
     fetch('/api/research', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
@@ -224,52 +348,53 @@
     });
   }
 
-  // --- Star toggle ---
+  // === Star toggle ===
   function toggleStar(slug, date) {
-    const card = document.querySelector(`[data-slug="${slug}"][data-date="${date}"]`);
+    const card = document.querySelector('[data-slug="' + slug + '"][data-date="' + date + '"]');
     const btn = card.querySelector('.starred, .text-gray-300');
     const isStarred = card.dataset.starred === 'True';
-    fetch(`/api/briefs/${slug}/${date}`, {
+    fetch('/api/briefs/' + slug + '/' + date, {
       method: 'PATCH',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({starred: !isStarred})
     }).then(r => r.json()).then(() => {
       card.dataset.starred = (!isStarred).toString();
-      btn.className = `text-lg leading-none transition-colors ${!isStarred ? 'starred' : 'text-gray-300 hover:text-amber-400'}`;
+      if (!isStarred) { btn.className = 'tip text-lg leading-none starred transition-colors'; }
+      else { btn.className = 'tip text-lg leading-none text-gray-300 dark:text-slate-600 hover:text-amber-400 transition-colors'; }
     });
   }
 
-  // --- Tag editing ---
+  // === Tag editing ===
   function editTags(slug, date) {
-    const current = document.querySelector(`[data-slug="${slug}"][data-date="${date}"]`).dataset.tags;
+    const current = document.querySelector('[data-slug="' + slug + '"][data-date="' + date + '"]').dataset.tags;
     const input = prompt('Tags (comma-separated):', current);
     if (input === null) return;
     const tags = input.split(',').map(t => t.trim()).filter(Boolean);
-    fetch(`/api/briefs/${slug}/${date}`, {
+    fetch('/api/briefs/' + slug + '/' + date, {
       method: 'PATCH',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({tags})
-    }).then(r => r.json()).then(() => {
-      location.reload();
-    });
+    }).then(r => r.json()).then(() => location.reload());
   }
 
-  // --- Delete ---
+  // === Delete ===
   function deleteBrief(slug, date, name) {
-    if (!confirm(`Delete brief for "${name}" (${date})? This cannot be undone.`)) return;
-    fetch(`/api/briefs/${slug}/${date}`, {method: 'DELETE'}).then(r => r.json()).then(() => {
-      location.reload();
+    if (!confirm('Delete brief for "' + name + '" (' + date + ')? This cannot be undone.')) return;
+    fetch('/api/briefs/' + slug + '/' + date, {method: 'DELETE'}).then(r => r.json()).then(() => {
+      toast('Brief deleted', 'green', 3000);
+      const card = document.querySelector('[data-slug="' + slug + '"][data-date="' + date + '"]');
+      if (card) { card.style.transition = 'opacity 0.3s, transform 0.3s'; card.style.opacity = '0'; card.style.transform = 'scale(0.95)'; setTimeout(() => card.remove(), 300); }
     });
   }
 
-  // --- Client-side filter/sort ---
+  // === Client-side filter/sort with search ===
   let activeTagFilter = 'All';
 
   function setTagFilter(tag) {
     activeTagFilter = tag;
     document.querySelectorAll('.tag-filter').forEach(btn => {
       const isActive = btn.dataset.tag === tag;
-      btn.className = `tag-filter text-xs px-2.5 py-1 rounded-full border ${isActive ? 'bg-blue-50 border-blue-200 text-blue-700 font-medium' : 'bg-white border-gray-200 text-gray-500'}`;
+      btn.className = 'tag-filter text-xs px-2.5 py-1 rounded-full border ' + (isActive ? 'bg-blue-50 border-blue-200 text-blue-700 font-medium dark:bg-blue-900 dark:border-blue-700 dark:text-blue-300' : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-600 text-gray-500 dark:text-slate-400');
     });
     filterBriefs();
   }
@@ -277,8 +402,10 @@
   function filterBriefs() {
     const vertical = document.getElementById('filter-vertical').value;
     const sortBy = document.getElementById('sort-by').value;
+    const query = (document.getElementById('brief-search').value || '').trim().toLowerCase();
     const cards = Array.from(document.querySelectorAll('.brief-card'));
 
+    let visibleCount = 0;
     cards.forEach(card => {
       let show = true;
       if (vertical && card.dataset.vertical !== vertical) show = false;
@@ -287,8 +414,41 @@
         const tags = card.dataset.tags.split(',');
         if (!tags.includes(activeTagFilter)) show = false;
       }
+      // Text search
+      if (query && show) {
+        const searchable = (card.dataset.name + ' ' + (card.dataset.champion || '') + ' ' + card.dataset.vertical + ' ' + (card.dataset.size || '')).toLowerCase();
+        if (!searchable.includes(query)) show = false;
+      }
       card.style.display = show ? '' : 'none';
+      if (show) visibleCount++;
+
+      // Highlight matches
+      const nameEl = card.querySelector('.brief-name');
+      const champEl = card.querySelector('.brief-champion');
+      const sizeEl = card.querySelector('.brief-size');
+      if (query && show) {
+        [nameEl, champEl, sizeEl].forEach(el => {
+          if (!el) return;
+          const orig = el.dataset.orig || el.textContent;
+          el.dataset.orig = orig;
+          const re = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+          el.innerHTML = orig.replace(re, '<mark>$1</mark>');
+        });
+      } else {
+        [nameEl, champEl, sizeEl].forEach(el => {
+          if (el && el.dataset.orig) el.textContent = el.dataset.orig;
+        });
+      }
     });
+
+    // Show/hide no-results message
+    const noRes = document.getElementById('no-results');
+    if (query && visibleCount === 0) {
+      noRes.classList.remove('hidden');
+      document.getElementById('no-results-query').textContent = query;
+    } else {
+      noRes.classList.add('hidden');
+    }
 
     const grid = document.getElementById('briefs-grid');
     const visible = cards.filter(c => c.style.display !== 'none');
@@ -300,6 +460,92 @@
     });
     visible.forEach(c => grid.appendChild(c));
   }
+
+  // === Command Palette ===
+  let paletteHighlight = 0;
+  let paletteItems = [];
+
+  function openPalette() {
+    document.getElementById('cmd-overlay').classList.add('visible');
+    const input = document.getElementById('cmd-input');
+    input.value = '';
+    input.focus();
+    filterPalette();
+  }
+  function closePalette() {
+    document.getElementById('cmd-overlay').classList.remove('visible');
+  }
+
+  function filterPalette() {
+    const q = (document.getElementById('cmd-input').value || '').toLowerCase();
+    const results = document.getElementById('cmd-results');
+    let html = '';
+
+    // Briefs section
+    const matchedBriefs = BRIEFS_DATA.filter(b => !q || b.name.toLowerCase().includes(q) || (b.top_champion || '').toLowerCase().includes(q));
+    if (matchedBriefs.length > 0) {
+      html += '<div class="cmd-section">Briefs</div>';
+      matchedBriefs.slice(0, 5).forEach((b, i) => {
+        html += '<div class="cmd-item" data-idx="' + i + '" data-action="brief" data-slug="' + b.slug + '" data-date="' + b.date + '" onclick="window.location.href=\'/briefs/' + b.slug + '-' + b.date + '.html\'">';
+        html += '<svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>';
+        html += '<span style="flex:1">' + b.name + '</span>';
+        html += '<span class="text-xs text-gray-400">' + (b.vertical || '') + '</span>';
+        html += '</div>';
+      });
+    }
+
+    // Commands section
+    const commands = [
+      {label: 'Start new research', icon: 'M12 4v16m8-8H4', action: () => { closePalette(); document.getElementById('company-input').focus(); }},
+      {label: 'Open Dashboard', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', action: () => { window.location.href = '/status.html'; }},
+      {label: 'Toggle dark mode', icon: 'M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z', action: () => { closePalette(); toggleDarkMode(); }},
+      {label: 'Print this page', icon: 'M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z', action: () => { closePalette(); window.print(); }},
+    ];
+    const matchedCmds = commands.filter(c => !q || c.label.toLowerCase().includes(q));
+    if (matchedCmds.length > 0) {
+      html += '<div class="cmd-section">Commands</div>';
+      matchedCmds.forEach((c, i) => {
+        const idx = matchedBriefs.slice(0, 5).length + i;
+        html += '<div class="cmd-item" data-idx="' + idx + '" data-action="cmd" data-cmd-idx="' + i + '" onclick="paletteCommands[' + commands.indexOf(c) + ']()">';
+        html += '<svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="' + c.icon + '"/></svg>';
+        html += '<span>' + c.label + '</span></div>';
+      });
+    }
+
+    if (!html) {
+      html = '<div style="padding:24px;text-align:center;color:#94a3b8;font-size:13px;">No results</div>';
+    }
+
+    results.innerHTML = html;
+    paletteItems = results.querySelectorAll('.cmd-item');
+    paletteHighlight = 0;
+    updatePaletteHighlight();
+
+    // Store command actions for onclick
+    window.paletteCommands = commands.map(c => c.action);
+  }
+
+  function updatePaletteHighlight() {
+    paletteItems.forEach((el, i) => el.classList.toggle('active', i === paletteHighlight));
+    if (paletteItems[paletteHighlight]) paletteItems[paletteHighlight].scrollIntoView({block: 'nearest'});
+  }
+
+  function paletteKeydown(e) {
+    if (e.key === 'ArrowDown') { e.preventDefault(); paletteHighlight = Math.min(paletteHighlight + 1, paletteItems.length - 1); updatePaletteHighlight(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); paletteHighlight = Math.max(paletteHighlight - 1, 0); updatePaletteHighlight(); }
+    else if (e.key === 'Enter') { e.preventDefault(); if (paletteItems[paletteHighlight]) paletteItems[paletteHighlight].click(); }
+    else if (e.key === 'Escape') { closePalette(); }
+  }
+
+  // === Global keyboard shortcuts ===
+  document.addEventListener('keydown', function(e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+      if (e.key === 'Escape') { closePalette(); e.target.blur(); }
+      return;
+    }
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openPalette(); }
+    if ((e.metaKey || e.ctrlKey) && e.key === '/') { e.preventDefault(); document.getElementById('brief-search').focus(); }
+  });
   </script>
 </body>
 </html>

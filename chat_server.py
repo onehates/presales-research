@@ -26,6 +26,7 @@ import anthropic
 from fastapi import FastAPI, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel
 
@@ -38,11 +39,14 @@ BRIEFS_DIR = PROJECT_ROOT / "briefs"
 TEMPLATES_DIR = PROJECT_ROOT / "templates"
 SOURCES_DIR = PROJECT_ROOT / "sources"
 CLIENTS_DIR = PROJECT_ROOT / "clients"
+STATIC_DIR = PROJECT_ROOT / "static"
 SONNET_MODEL = "claude-sonnet-4-6"
 PORT = int(os.environ.get("PORT", 8000))
 STATUS_DIR = Path("/tmp")
 
 app = FastAPI(title="Pre-Sales Research Platform", version="1.0")
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 # Jinja2 env for rendering templates
 _jinja_env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)), autoescape=True)
