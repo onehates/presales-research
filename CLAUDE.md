@@ -78,8 +78,8 @@ briefs/
 |---|---|
 | Source parsing, extraction, deduplication | Haiku |
 | Subagent reasoning (per-source synthesis) | Sonnet |
-| Final synthesizer (assembles brief) | Sonnet + extended thinking |
-| Specificity rewrite pass | Sonnet + extended thinking |
+| Final synthesizer (assembles brief) | Opus |
+| Specificity rewrite pass | Opus |
 | Module commands (`/displace`, `/discovery-prep`, etc.) | Sonnet |
 
 Do not promote tasks to Opus to "improve quality" — output quality comes from prompts and the persona file, not from model size at the wrong layer.

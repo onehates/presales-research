@@ -1,7 +1,7 @@
 ---
 name: synthesizer
 description: Final synthesis layer — combines company-bg, tech-and-pain, hiring-signals subagent outputs with persona file into structured brief JSON
-model: sonnet
+model: opus
 tools: Read, Glob
 ---
 
