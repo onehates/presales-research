@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """
-Chat server — conversational interface grounded in brief data.
+Pre-Sales Research Platform server.
 
-POST /chat with {slug, date, message, history[]}
-Loads briefs/{slug}-{date}.json, builds system prompt with full brief context,
-streams response from Claude Sonnet via Anthropic API.
+Serves:
+- Homepage (/) with brief listing and research launcher
+- Docs (/docs-page) with platform documentation
+- Chat (/chat) — conversational interface grounded in brief data
+- API (/api/...) — brief CRUD, research launcher
+- Status dashboard (/status.html)
 
 Usage:
     python3 chat_server.py                  # localhost:8000
@@ -14,13 +17,16 @@ Usage:
 import glob as globmod
 import json
 import os
+import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import anthropic
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, StreamingResponse
+from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel
 
 # ---------------------------------------------------------------------------
@@ -30,11 +36,16 @@ from pydantic import BaseModel
 PROJECT_ROOT = Path(__file__).resolve().parent
 BRIEFS_DIR = PROJECT_ROOT / "briefs"
 TEMPLATES_DIR = PROJECT_ROOT / "templates"
+SOURCES_DIR = PROJECT_ROOT / "sources"
+CLIENTS_DIR = PROJECT_ROOT / "clients"
 SONNET_MODEL = "claude-sonnet-4-6"
 PORT = int(os.environ.get("PORT", 8000))
 STATUS_DIR = Path("/tmp")
 
-app = FastAPI(title="OSINT Chat", version="1.0")
+app = FastAPI(title="Pre-Sales Research Platform", version="1.0")
+
+# Jinja2 env for rendering templates
+_jinja_env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)), autoescape=True)
 
 app.add_middleware(
     CORSMiddleware,
@@ -179,6 +190,216 @@ async def serve_brief(filename: str):
     if filename.endswith(".html"):
         return FileResponse(path, media_type="text/html")
     return JSONResponse(json.loads(path.read_text()))
+
+
+# ---------------------------------------------------------------------------
+# Brief metadata helpers
+# ---------------------------------------------------------------------------
+
+def _load_brief_metadata(brief_path: Path) -> dict | None:
+    """Extract card metadata from a brief JSON + optional .meta.json."""
+    try:
+        data = json.loads(brief_path.read_text())
+    except Exception:
+        return None
+    if not isinstance(data, dict) or not data.get("snapshot"):
+        return None
+
+    snap = data.get("snapshot", {})
+    meta = data.get("metadata", {})
+    champs = data.get("champion_candidates", [])
+    top_champ = champs[0] if champs else {}
+
+    slug = meta.get("company_slug", brief_path.stem.rsplit("-", 3)[0])
+    date_str = meta.get("generated_at", "")[:10]
+
+    result = {
+        "filename": brief_path.name,
+        "slug": slug,
+        "date": date_str,
+        "name": snap.get("name", slug),
+        "vertical": snap.get("vertical", ""),
+        "entity_type": data.get("entity_type", ""),
+        "size_indicator": snap.get("size_indicator", ""),
+        "headquarters_state": snap.get("headquarters_state", ""),
+        "generated_at": meta.get("generated_at", ""),
+        "top_champion": top_champ.get("name", ""),
+        "top_champion_score": top_champ.get("champion_fit_score", 0),
+        "agents_used": meta.get("agents_used", []),
+        "runtime_seconds": meta.get("runtime_seconds", 0),
+        "html_exists": brief_path.with_suffix(".html").exists(),
+    }
+
+    # Load .meta.json overlay (tags, starred, archived)
+    meta_path = brief_path.with_name(brief_path.stem + ".meta.json")
+    if meta_path.exists():
+        try:
+            overlay = json.loads(meta_path.read_text())
+            result["tags"] = overlay.get("tags", [])
+            result["starred"] = overlay.get("starred", False)
+            result["archived"] = overlay.get("archived", False)
+        except Exception:
+            pass
+    result.setdefault("tags", [])
+    result.setdefault("starred", False)
+    result.setdefault("archived", False)
+
+    return result
+
+
+def _list_briefs(include_archived: bool = False) -> list[dict]:
+    """List all briefs with metadata, newest first."""
+    results = []
+    for p in BRIEFS_DIR.glob("*.json"):
+        if ".failed." in p.name or ".meta." in p.name:
+            continue
+        m = _load_brief_metadata(p)
+        if m and (include_archived or not m.get("archived")):
+            results.append(m)
+    results.sort(key=lambda x: x.get("generated_at", ""), reverse=True)
+    return results
+
+
+# ---------------------------------------------------------------------------
+# Homepage
+# ---------------------------------------------------------------------------
+
+@app.get("/", response_class=HTMLResponse)
+async def homepage():
+    briefs = _list_briefs()
+    verticals = sorted(set(b["vertical"] for b in briefs if b["vertical"]))
+    template = _jinja_env.get_template("index.html")
+    return template.render(
+        briefs=briefs,
+        verticals=verticals,
+        total_briefs=len(briefs),
+        unique_accounts=len(set(b["slug"] for b in briefs)),
+        today=datetime.now().strftime("%B %d, %Y"),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Documentation page
+# ---------------------------------------------------------------------------
+
+@app.get("/docs-page", response_class=HTMLResponse)
+async def docs_page():
+    # Collect source client info
+    clients = []
+    if CLIENTS_DIR.exists():
+        for p in sorted(CLIENTS_DIR.glob("*.py")):
+            if p.name.startswith("_"):
+                continue
+            name = p.stem
+            # Read first docstring line for description
+            desc = ""
+            try:
+                text = p.read_text()
+                if '"""' in text:
+                    start = text.index('"""') + 3
+                    end = text.index('"""', start)
+                    desc = text[start:end].strip().split("\n")[0]
+            except Exception:
+                pass
+            clients.append({"name": name, "description": desc, "file": p.name})
+
+    template = _jinja_env.get_template("docs.html")
+    return template.render(clients=clients)
+
+
+# ---------------------------------------------------------------------------
+# API: Brief list
+# ---------------------------------------------------------------------------
+
+@app.get("/api/briefs")
+async def api_list_briefs(include_archived: bool = False):
+    return _list_briefs(include_archived)
+
+
+# ---------------------------------------------------------------------------
+# API: Launch research
+# ---------------------------------------------------------------------------
+
+class ResearchRequest(BaseModel):
+    company: str
+    force: bool = False
+    use_cache: bool = True
+
+@app.post("/api/research")
+async def api_research(req: ResearchRequest):
+    slug = req.company.lower().replace(" ", "-").replace(",", "").replace(".", "")
+    cmd = [sys.executable, str(PROJECT_ROOT / "orchestrator.py"), req.company]
+    if req.force:
+        cmd.append("--force")
+    if not req.use_cache:
+        cmd.append("--no-cache")
+
+    subprocess.Popen(
+        cmd,
+        env=os.environ.copy(),
+        cwd=str(PROJECT_ROOT),
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    return {"slug": slug, "status_url": f"/status.html?slug={slug}"}
+
+
+# ---------------------------------------------------------------------------
+# API: Delete brief
+# ---------------------------------------------------------------------------
+
+@app.delete("/api/briefs/{slug}/{date}")
+async def api_delete_brief(slug: str, date: str):
+    if ".." in slug or ".." in date:
+        return JSONResponse({"error": "Invalid"}, status_code=400)
+    stem = f"{slug}-{date}"
+    deleted = []
+    for suffix in [".json", ".html", ".failed.json"]:
+        p = BRIEFS_DIR / (stem + suffix)
+        if p.exists():
+            p.unlink()
+            deleted.append(p.name)
+    meta = BRIEFS_DIR / (stem + ".meta.json")
+    if meta.exists():
+        meta.unlink()
+        deleted.append(meta.name)
+    if not deleted:
+        return JSONResponse({"error": "Brief not found"}, status_code=404)
+    return {"deleted": deleted}
+
+
+# ---------------------------------------------------------------------------
+# API: Update brief metadata (tags, star, archive)
+# ---------------------------------------------------------------------------
+
+class BriefMetaUpdate(BaseModel):
+    tags: list[str] | None = None
+    starred: bool | None = None
+    archived: bool | None = None
+
+@app.patch("/api/briefs/{slug}/{date}")
+async def api_patch_brief(slug: str, date: str, update: BriefMetaUpdate):
+    if ".." in slug or ".." in date:
+        return JSONResponse({"error": "Invalid"}, status_code=400)
+    stem = f"{slug}-{date}"
+    brief_path = BRIEFS_DIR / (stem + ".json")
+    if not brief_path.exists():
+        return JSONResponse({"error": "Brief not found"}, status_code=404)
+    meta_path = BRIEFS_DIR / (stem + ".meta.json")
+    existing = {}
+    if meta_path.exists():
+        try:
+            existing = json.loads(meta_path.read_text())
+        except Exception:
+            pass
+    if update.tags is not None:
+        existing["tags"] = update.tags
+    if update.starred is not None:
+        existing["starred"] = update.starred
+    if update.archived is not None:
+        existing["archived"] = update.archived
+    meta_path.write_text(json.dumps(existing, indent=2))
+    return existing
 
 
 # ---------------------------------------------------------------------------
