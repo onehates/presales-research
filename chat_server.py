@@ -79,17 +79,20 @@ When asked about discovery questions, reference the trigger-sourced questions fr
 
 @app.post("/chat")
 async def chat(req: ChatRequest):
-    brief_path = BRIEFS_DIR / f"{req.slug}-{req.date}.json"
-
-    # Load and validate brief
+    # Find most recent non-failed brief for this slug
     try:
-        if not brief_path.exists():
-            raise FileNotFoundError(brief_path.name)
+        candidates = [p for p in sorted(
+            BRIEFS_DIR.glob(f"{req.slug}-*.json"),
+            key=lambda p: p.stat().st_mtime, reverse=True,
+        ) if ".failed." not in p.name]
+        if not candidates:
+            raise FileNotFoundError(f"No briefs matching {req.slug}-*.json")
+        brief_path = candidates[0]
         brief_data = json.loads(brief_path.read_text())
         if not isinstance(brief_data, dict) or not brief_data.get("snapshot"):
             raise ValueError("Brief missing required 'snapshot' field")
     except Exception as e:
-        error_msg = f"Brief data is unavailable or corrupted for this account. Try re-running /research, or check briefs/{req.slug}-{req.date}.json. ({e})"
+        error_msg = f"Brief data is unavailable or corrupted for this account. Try re-running /research, or check briefs/ for {req.slug}. ({e})"
         def error_stream():
             yield f"data: {json.dumps({'text': error_msg})}\n\n"
             yield "data: [DONE]\n\n"
@@ -98,7 +101,7 @@ async def chat(req: ChatRequest):
     company_name = brief_data.get("snapshot", {}).get("name", req.slug)
     brief_size = len(json.dumps(brief_data))
     key_count = len(brief_data)
-    print(f"[chat] loaded brief: {req.slug}-{req.date}.json ({brief_size} bytes, {key_count} keys)", flush=True)
+    print(f"[chat] loaded brief for {req.slug}: {brief_path.name} ({brief_size} bytes, {key_count} keys)", flush=True)
 
     system_prompt = SYSTEM_TEMPLATE.format(
         company_name=company_name,
