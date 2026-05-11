@@ -379,7 +379,7 @@ def fetch_nces_data(district_name: str, *, state: str = "GA", force_refresh: boo
         result = {
             "retrieved_at": datetime.now(timezone.utc).isoformat(),
             "source": "nces_ccd",
-            "source_url": f"{URBAN_API_BASE}/school-districts/ccd/directory/",
+            "source_url": "https://nces.ed.gov/ccd/districtsearch/",
             "status": "insufficient_data",
             "reason": f"No NCES district found matching '{district_name}' in {state}. "
                       "Try the exact district name as it appears in NCES records.",
@@ -423,7 +423,7 @@ def fetch_nces_data(district_name: str, *, state: str = "GA", force_refresh: boo
     result = {
         "retrieved_at": datetime.now(timezone.utc).isoformat(),
         "source": "nces_ccd",
-        "source_url": f"{URBAN_API_BASE}/school-districts/ccd/directory/{year}/?leaid={leaid}",
+        "source_url": f"https://nces.ed.gov/ccd/districtsearch/district_detail.asp?Search=1&details=1&ID2={leaid}",
         "data_year": year,
         "district_metadata": {
             "leaid": leaid,

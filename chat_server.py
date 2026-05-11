@@ -181,6 +181,40 @@ async def status_html():
 
 
 # ---------------------------------------------------------------------------
+# Battlecard page
+# ---------------------------------------------------------------------------
+
+@app.get("/briefs/{slug}-{date}.battlecard.html", response_class=HTMLResponse)
+async def battlecard_page(slug: str, date: str):
+    if ".." in slug or ".." in date:
+        return HTMLResponse("<h1>Invalid</h1>", status_code=400)
+    brief_path = BRIEFS_DIR / f"{slug}-{date}.json"
+    if not brief_path.exists():
+        return HTMLResponse("<h1>Brief not found</h1>", status_code=404)
+    try:
+        brief_data = json.loads(brief_path.read_text())
+    except Exception:
+        return HTMLResponse("<h1>Brief corrupted</h1>", status_code=500)
+    template = _jinja_env.get_template("battlecard.html")
+    return template.render(data=brief_data, slug=slug, date=date)
+
+
+@app.get("/briefs/{slug}-{date}.salesreport.html", response_class=HTMLResponse)
+async def salesreport_page(slug: str, date: str):
+    if ".." in slug or ".." in date:
+        return HTMLResponse("<h1>Invalid</h1>", status_code=400)
+    brief_path = BRIEFS_DIR / f"{slug}-{date}.json"
+    if not brief_path.exists():
+        return HTMLResponse("<h1>Brief not found</h1>", status_code=404)
+    try:
+        brief_data = json.loads(brief_path.read_text())
+    except Exception:
+        return HTMLResponse("<h1>Brief corrupted</h1>", status_code=500)
+    template = _jinja_env.get_template("salesreport.html")
+    return template.render(data=brief_data, slug=slug, date=date)
+
+
+# ---------------------------------------------------------------------------
 # Brief file serving
 # ---------------------------------------------------------------------------
 
@@ -332,25 +366,6 @@ async def products_page():
             pass
     template = _jinja_env.get_template("products.html")
     return template.render(products=products, categories=categories)
-
-
-# ---------------------------------------------------------------------------
-# Battlecard page
-# ---------------------------------------------------------------------------
-
-@app.get("/briefs/{slug}-{date}.battlecard.html", response_class=HTMLResponse)
-async def battlecard_page(slug: str, date: str):
-    if ".." in slug or ".." in date:
-        return HTMLResponse("<h1>Invalid</h1>", status_code=400)
-    brief_path = BRIEFS_DIR / f"{slug}-{date}.json"
-    if not brief_path.exists():
-        return HTMLResponse("<h1>Brief not found</h1>", status_code=404)
-    try:
-        brief_data = json.loads(brief_path.read_text())
-    except Exception:
-        return HTMLResponse("<h1>Brief corrupted</h1>", status_code=500)
-    template = _jinja_env.get_template("battlecard.html")
-    return template.render(data=brief_data, slug=slug, date=date)
 
 
 # ---------------------------------------------------------------------------

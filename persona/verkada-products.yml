@@ -163,7 +163,7 @@ products:
       fips: false
       fedramp_in_process: false
     image_url: ""
-    datasheet_url: "https://www.verkada.com/security-cameras/bullet/cb52/"
+    datasheet_url: "https://www.verkada.com/security-cameras/bullet/"
     local_image: "static/product-images/bullet-camera.png"
     typical_deployment:
       - "Perimeter fencing"
@@ -198,7 +198,7 @@ products:
       fips: true
       fedramp_in_process: true
     image_url: ""
-    datasheet_url: "https://www.verkada.com/security-cameras/bullet/cb62/"
+    datasheet_url: "https://www.verkada.com/security-cameras/bullet/"
     local_image: "static/product-images/bullet-camera.png"
     typical_deployment:
       - "Long-range perimeter monitoring"
@@ -565,7 +565,7 @@ products:
       fips: false
       fedramp_in_process: false
     image_url: ""
-    datasheet_url: "https://www.verkada.com/environmental-sensors/"
+    datasheet_url: "https://www.verkada.com/sensors/"
     local_image: "static/product-images/sensor-sv23.png"
     typical_deployment:
       - "School restrooms (vape detection)"
@@ -597,7 +597,7 @@ products:
       fips: false
       fedramp_in_process: false
     image_url: ""
-    datasheet_url: "https://www.verkada.com/environmental-sensors/"
+    datasheet_url: "https://www.verkada.com/sensors/"
     local_image: "static/product-images/sensor-sv21.png"
     typical_deployment:
       - "Server rooms and data closets"
@@ -636,7 +636,7 @@ products:
       fips: false
       fedramp_in_process: false
     image_url: ""
-    datasheet_url: "https://www.verkada.com/intercoms/"
+    datasheet_url: "https://www.verkada.com/intercom/"
     local_image: "static/product-images/intercom.png"
     typical_deployment:
       - "School main entrances"

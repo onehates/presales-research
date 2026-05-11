@@ -563,7 +563,7 @@ def fetch_crtsh_data(company_name: str, *, domain: str = "", force_refresh: bool
         result = {
             "retrieved_at": datetime.now(timezone.utc).isoformat(),
             "source": "crt.sh",
-            "source_url": f"https://crt.sh/?q=%25.{domain}&output=json",
+            "source_url": f"https://crt.sh/?q=%25.{domain}",
             "status": "insufficient_data",
             "reason": f"No certificate transparency data found for {domain}. The domain may not use publicly-issued SSL certificates.",
             "company": {"name": company_name, "domain": domain},
@@ -597,7 +597,7 @@ def fetch_crtsh_data(company_name: str, *, domain: str = "", force_refresh: bool
     result = {
         "retrieved_at": datetime.now(timezone.utc).isoformat(),
         "source": "crt.sh",
-        "source_url": f"https://crt.sh/?q=%25.{domain}&output=json",
+        "source_url": f"https://crt.sh/?q=%25.{domain}",
         "company": {
             "name": company_name,
             "domain": domain,

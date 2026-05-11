@@ -432,7 +432,7 @@ def fetch_sam_data(entity_name: str, *, state: str = "GA", force_refresh: bool =
         result = {
             "retrieved_at": datetime.now(timezone.utc).isoformat(),
             "source": "sam_gov",
-            "source_url": "https://api.sam.gov/prod/opportunities/v2/search",
+            "source_url": "https://sam.gov/search/?keywords=security+cameras&page=1",
             "status": "insufficient_data",
             "reason": (
                 "SAM_API_KEY not set. Register free at sam.gov and generate an API key "
@@ -476,7 +476,7 @@ def fetch_sam_data(entity_name: str, *, state: str = "GA", force_refresh: bool =
     result = {
         "retrieved_at": datetime.now(timezone.utc).isoformat(),
         "source": "sam_gov",
-        "source_url": "https://api.sam.gov/prod/opportunities/v2/search",
+        "source_url": "https://sam.gov/search/?keywords=security+cameras&page=1",
         "entity": {"name": entity_name, "state": state},
         "active_rfps": classified["active_rfps"],
         "recent_awards": classified["recent_awards"],
