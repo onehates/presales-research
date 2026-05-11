@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pre-Sales Research Platform</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .brief-card { transition: border-color 0.15s, box-shadow 0.15s; }
+    .brief-card:hover { border-color: #93c5fd; box-shadow: 0 4px 12px rgba(59,130,246,0.08); }
+    .action-btn { opacity: 0.5; transition: opacity 0.15s, color 0.15s; }
+    .action-btn:hover { opacity: 1; }
+    .tag-chip { cursor: pointer; transition: all 0.15s; }
+    .tag-chip:hover { filter: brightness(0.95); }
+    .starred { color: #f59e0b; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900 antialiased min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200">
+    <div class="max-w-6xl mx-auto px-6 py-6">
+      <div class="flex items-end justify-between">
+        <div>
+          <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Pre-Sales Research Platform</h1>
+          <p class="text-sm text-gray-500 mt-1">OSINT-grade account intelligence for the Solutions Engineer workflow</p>
+        </div>
+        <div class="text-right text-xs text-gray-400">
+          <div>{{ today }}</div>
+          <div class="mt-1 flex gap-3">
+            <a href="/docs-page" class="text-blue-600 hover:text-blue-800 font-medium">Documentation</a>
+            <a href="/status.html" class="text-blue-600 hover:text-blue-800 font-medium">Live Dashboard</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-6 py-8 flex-1">
+
+    <!-- Quick Stats Banner -->
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div class="bg-white rounded-lg border border-gray-200 p-4 text-center">
+        <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Total Briefs</div>
+        <div class="text-2xl font-bold text-gray-900">{{ total_briefs }}</div>
+      </div>
+      <div class="bg-white rounded-lg border border-gray-200 p-4 text-center">
+        <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Accounts</div>
+        <div class="text-2xl font-bold text-gray-900">{{ unique_accounts }}</div>
+      </div>
+      <div class="bg-white rounded-lg border border-gray-200 p-4 text-center">
+        <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Verticals</div>
+        <div class="text-2xl font-bold text-gray-900">{{ verticals | length }}</div>
+      </div>
+      <div class="bg-white rounded-lg border border-gray-200 p-4 text-center">
+        <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Latest Brief</div>
+        <div class="text-sm font-bold text-gray-900">{{ briefs[0].date if briefs else '—' }}</div>
+      </div>
+    </section>
+
+    <!-- Start New Research -->
+    <section class="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Start New Research</h2>
+      <form id="research-form" class="flex gap-3" onsubmit="launchResearch(event)">
+        <input id="company-input" type="text" placeholder="Enter company or account name..." class="flex-1 border border-gray-200 rounded-lg px-4 py-3 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100" required />
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap">
+          Run Research
+        </button>
+      </form>
+      <div class="mt-3 flex items-center gap-4">
+        <span class="text-xs text-gray-400">Cost: ~$1.50 fresh, ~$0.40 cached. Time: 5-9 min.</span>
+        <div class="flex gap-2 ml-auto">
+          {% for v in ['K-12 District', 'Higher Ed', 'Healthcare', 'Retail Multi-site', 'Manufacturing'] %}
+          <button onclick="document.getElementById('company-input').value='{{ v }}'" class="text-xs bg-gray-100 hover:bg-blue-50 text-gray-600 hover:text-blue-700 px-2.5 py-1 rounded-full transition-colors">{{ v }}</button>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <!-- Filter / Sort Bar -->
+    <section class="flex items-center gap-4 mb-6 flex-wrap">
+      <div class="flex items-center gap-2">
+        <label class="text-xs font-semibold text-gray-400 uppercase">Vertical</label>
+        <select id="filter-vertical" onchange="filterBriefs()" class="text-xs border border-gray-200 rounded px-2 py-1 outline-none">
+          <option value="">All</option>
+          {% for v in verticals %}
+          <option value="{{ v }}">{{ v }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="flex items-center gap-2">
+        <label class="text-xs font-semibold text-gray-400 uppercase">Sort</label>
+        <select id="sort-by" onchange="filterBriefs()" class="text-xs border border-gray-200 rounded px-2 py-1 outline-none">
+          <option value="newest">Newest</option>
+          <option value="oldest">Oldest</option>
+          <option value="name">Account A-Z</option>
+        </select>
+      </div>
+      <div class="flex gap-1.5 ml-auto">
+        {% for tag in ['All', 'Starred', 'Prospect', 'Active POC', 'Closed-Won'] %}
+        <button onclick="setTagFilter('{{ tag }}')" class="tag-filter text-xs px-2.5 py-1 rounded-full border {{ 'bg-blue-50 border-blue-200 text-blue-700 font-medium' if tag == 'All' else 'bg-white border-gray-200 text-gray-500' }}" data-tag="{{ tag }}">{{ tag }}</button>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Brief Cards Grid -->
+    <section id="briefs-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+      {% if not briefs %}
+      <div class="col-span-2 text-center py-16">
+        <div class="text-gray-300 text-5xl mb-4">&#128269;</div>
+        <p class="text-gray-500 text-sm">No briefs yet. Run your first research above.</p>
+      </div>
+      {% endif %}
+
+      {% for b in briefs %}
+      <div class="brief-card bg-white rounded-lg border border-gray-200 p-5 flex flex-col"
+           data-slug="{{ b.slug }}" data-date="{{ b.date }}" data-vertical="{{ b.vertical }}"
+           data-name="{{ b.name }}" data-starred="{{ b.starred }}" data-archived="{{ b.archived }}"
+           data-tags="{{ b.tags | join(',') }}" data-generated="{{ b.generated_at }}">
+        <div class="flex items-start justify-between mb-2">
+          <div>
+            <h3 class="text-base font-bold text-gray-900">{{ b.name }}</h3>
+            <div class="flex items-center gap-2 mt-1">
+              {% set vert_colors = {'K-12': 'bg-blue-100 text-blue-700', 'Higher Ed': 'bg-purple-100 text-purple-700', 'Healthcare': 'bg-emerald-100 text-emerald-700', 'Government': 'bg-amber-100 text-amber-700', 'Retail': 'bg-rose-100 text-rose-700', 'Manufacturing': 'bg-orange-100 text-orange-700'} %}
+              <span class="inline-block px-2 py-0.5 rounded text-xs font-medium {{ vert_colors.get(b.vertical, 'bg-gray-100 text-gray-600') }}">{{ b.vertical or 'Unknown' }}</span>
+              <span class="text-xs text-gray-400">{{ b.date }}</span>
+              {% if b.headquarters_state %}
+              <span class="text-xs text-gray-400">{{ b.headquarters_state }}</span>
+              {% endif %}
+            </div>
+          </div>
+          <button onclick="toggleStar('{{ b.slug }}', '{{ b.date }}')" class="text-lg leading-none {{ 'starred' if b.starred else 'text-gray-300 hover:text-amber-400' }} transition-colors" title="Star">&#9733;</button>
+        </div>
+
+        {% if b.size_indicator %}
+        <p class="text-xs text-gray-500 mb-2 line-clamp-1">{{ b.size_indicator }}</p>
+        {% endif %}
+
+        {% if b.top_champion %}
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-xs text-gray-500">Top champion:</span>
+          <span class="text-xs font-medium text-gray-800">{{ b.top_champion }}</span>
+          {% set score_pct = (b.top_champion_score * 100) | int %}
+          <span class="text-xs font-bold {{ 'text-green-600' if b.top_champion_score >= 0.6 else 'text-amber-600' if b.top_champion_score >= 0.3 else 'text-gray-500' }}">{{ score_pct }}%</span>
+        </div>
+        {% endif %}
+
+        <!-- Tags -->
+        <div class="flex items-center gap-1 mb-3 min-h-[24px]" id="tags-{{ b.slug }}-{{ b.date }}">
+          {% for tag in b.tags %}
+          <span class="inline-block bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs">{{ tag }}</span>
+          {% endfor %}
+          <button onclick="editTags('{{ b.slug }}', '{{ b.date }}')" class="text-xs text-gray-400 hover:text-blue-600 ml-1" title="Edit tags">+ tag</button>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-1 mt-auto pt-2 border-t border-gray-100">
+          {% if b.html_exists %}
+          <a href="/briefs/{{ b.slug }}-{{ b.date }}.html" class="action-btn text-xs px-2 py-1 rounded hover:bg-blue-50 hover:text-blue-700 flex items-center gap-1" title="View Brief">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            View
+          </a>
+          {% endif %}
+          <button onclick="rerunResearch('{{ b.name }}')" class="action-btn text-xs px-2 py-1 rounded hover:bg-amber-50 hover:text-amber-700 flex items-center gap-1" title="Re-run research">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            Re-run
+          </button>
+          <a href="/briefs/{{ b.slug }}-{{ b.date }}.json" download class="action-btn text-xs px-2 py-1 rounded hover:bg-green-50 hover:text-green-700 flex items-center gap-1" title="Download JSON">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            JSON
+          </a>
+          <button onclick="deleteBrief('{{ b.slug }}', '{{ b.date }}', '{{ b.name }}')" class="action-btn text-xs px-2 py-1 rounded hover:bg-red-50 hover:text-red-700 flex items-center gap-1 ml-auto" title="Delete">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            Delete
+          </button>
+        </div>
+      </div>
+      {% endfor %}
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-gray-200 bg-white mt-auto">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between text-xs text-gray-400">
+      <span>Built by Andy &middot; v1.0</span>
+      <div class="flex gap-4">
+        <a href="/docs-page" class="hover:text-blue-600">Documentation</a>
+        <a href="/status.html" class="hover:text-blue-600">Live Dashboard</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+  // --- Research launcher ---
+  function launchResearch(e) {
+    e.preventDefault();
+    const company = document.getElementById('company-input').value.trim();
+    if (!company) return;
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.textContent = 'Launching...';
+    btn.disabled = true;
+    fetch('/api/research', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({company, force: false, use_cache: true})
+    }).then(r => r.json()).then(data => {
+      window.location.href = data.status_url;
+    }).catch(() => {
+      btn.textContent = 'Run Research';
+      btn.disabled = false;
+      alert('Failed to launch research. Is the server running?');
+    });
+  }
+
+  function rerunResearch(company) {
+    if (!confirm(`Re-run research for "${company}"? This will fetch fresh data.`)) return;
+    fetch('/api/research', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({company, force: true, use_cache: false})
+    }).then(r => r.json()).then(data => {
+      window.location.href = data.status_url;
+    });
+  }
+
+  // --- Star toggle ---
+  function toggleStar(slug, date) {
+    const card = document.querySelector(`[data-slug="${slug}"][data-date="${date}"]`);
+    const btn = card.querySelector('.starred, .text-gray-300');
+    const isStarred = card.dataset.starred === 'True';
+    fetch(`/api/briefs/${slug}/${date}`, {
+      method: 'PATCH',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({starred: !isStarred})
+    }).then(r => r.json()).then(() => {
+      card.dataset.starred = (!isStarred).toString();
+      btn.className = `text-lg leading-none transition-colors ${!isStarred ? 'starred' : 'text-gray-300 hover:text-amber-400'}`;
+    });
+  }
+
+  // --- Tag editing ---
+  function editTags(slug, date) {
+    const current = document.querySelector(`[data-slug="${slug}"][data-date="${date}"]`).dataset.tags;
+    const input = prompt('Tags (comma-separated):', current);
+    if (input === null) return;
+    const tags = input.split(',').map(t => t.trim()).filter(Boolean);
+    fetch(`/api/briefs/${slug}/${date}`, {
+      method: 'PATCH',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({tags})
+    }).then(r => r.json()).then(() => {
+      location.reload();
+    });
+  }
+
+  // --- Delete ---
+  function deleteBrief(slug, date, name) {
+    if (!confirm(`Delete brief for "${name}" (${date})? This cannot be undone.`)) return;
+    fetch(`/api/briefs/${slug}/${date}`, {method: 'DELETE'}).then(r => r.json()).then(() => {
+      location.reload();
+    });
+  }
+
+  // --- Client-side filter/sort ---
+  let activeTagFilter = 'All';
+
+  function setTagFilter(tag) {
+    activeTagFilter = tag;
+    document.querySelectorAll('.tag-filter').forEach(btn => {
+      const isActive = btn.dataset.tag === tag;
+      btn.className = `tag-filter text-xs px-2.5 py-1 rounded-full border ${isActive ? 'bg-blue-50 border-blue-200 text-blue-700 font-medium' : 'bg-white border-gray-200 text-gray-500'}`;
+    });
+    filterBriefs();
+  }
+
+  function filterBriefs() {
+    const vertical = document.getElementById('filter-vertical').value;
+    const sortBy = document.getElementById('sort-by').value;
+    const cards = Array.from(document.querySelectorAll('.brief-card'));
+
+    cards.forEach(card => {
+      let show = true;
+      if (vertical && card.dataset.vertical !== vertical) show = false;
+      if (activeTagFilter === 'Starred' && card.dataset.starred !== 'True') show = false;
+      else if (activeTagFilter !== 'All' && activeTagFilter !== 'Starred') {
+        const tags = card.dataset.tags.split(',');
+        if (!tags.includes(activeTagFilter)) show = false;
+      }
+      card.style.display = show ? '' : 'none';
+    });
+
+    const grid = document.getElementById('briefs-grid');
+    const visible = cards.filter(c => c.style.display !== 'none');
+    visible.sort((a, b) => {
+      if (sortBy === 'newest') return b.dataset.generated.localeCompare(a.dataset.generated);
+      if (sortBy === 'oldest') return a.dataset.generated.localeCompare(b.dataset.generated);
+      if (sortBy === 'name') return a.dataset.name.localeCompare(b.dataset.name);
+      return 0;
+    });
+    visible.forEach(c => grid.appendChild(c));
+  }
+  </script>
+</body>
+</html>
