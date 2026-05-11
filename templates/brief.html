@@ -83,6 +83,56 @@
     #chat-panel.dragging { box-shadow: 0 24px 80px rgba(0,0,0,0.22); }
     #chat-header button { cursor: pointer; }
 
+    /* Copy button on chat messages */
+    .msg-copy {
+      position: absolute; top: 4px; right: 4px;
+      background: rgba(255,255,255,0.85); border: 1px solid #e2e8f0; border-radius: 4px;
+      padding: 2px 6px; font-size: 10px; color: #64748b; cursor: pointer;
+      opacity: 0; transition: opacity 0.15s;
+    }
+    .chat-msg:hover .msg-copy { opacity: 1; }
+    .msg-copy.copied { color: #16a34a; }
+
+    /* Procurement flowchart */
+    .flow-node {
+      fill: white; stroke: #cbd5e1; stroke-width: 1.5; rx: 8;
+    }
+    .flow-node.buyer { fill: #eff6ff; stroke: #93c5fd; }
+    .flow-node.vehicle { fill: #f0fdf4; stroke: #86efac; }
+    .flow-node.contract { fill: #fefce8; stroke: #fde047; }
+    .flow-node.vendor { fill: #faf5ff; stroke: #c084fc; }
+    .flow-arrow { stroke: #94a3b8; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+    .flow-label { font-size: 11px; fill: #334155; font-family: Inter, sans-serif; text-anchor: middle; dominant-baseline: central; }
+    .flow-sublabel { font-size: 9px; fill: #94a3b8; font-family: Inter, sans-serif; text-anchor: middle; dominant-baseline: central; }
+
+    /* MEDDIC checklist */
+    .meddic-progress-bar { height: 6px; border-radius: 3px; background: #e5e7eb; overflow: hidden; }
+    .meddic-progress-fill { height: 100%; border-radius: 3px; background: #2563eb; transition: width 0.3s; }
+    .meddic-check { width: 16px; height: 16px; accent-color: #2563eb; cursor: pointer; }
+    .meddic-notes {
+      width: 100%; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 8px;
+      font-size: 11px; font-family: Inter, sans-serif; resize: vertical; min-height: 28px;
+      color: #334155; outline: none; transition: border-color 0.15s;
+    }
+    .meddic-notes:focus { border-color: #93c5fd; }
+    .meddic-notes::placeholder { color: #cbd5e1; }
+
+    /* Keyboard shortcut overlay */
+    .kbd-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100;
+      display: none; align-items: center; justify-content: center;
+    }
+    .kbd-overlay.visible { display: flex; }
+    .kbd-card {
+      background: white; border-radius: 12px; padding: 24px 32px; max-width: 380px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    kbd {
+      display: inline-block; background: #f1f5f9; border: 1px solid #e2e8f0;
+      border-radius: 4px; padding: 1px 6px; font-size: 12px; font-family: monospace;
+      color: #334155; min-width: 22px; text-align: center;
+    }
+
     /* Mobile: disable drag, standard positioning */
     @media (max-width: 639px) {
       #chat-toggle {
@@ -485,6 +535,10 @@
           <div class="flex items-center gap-2">
             <a href="{{ cand.linkedin_search_url }}" target="_blank" class="text-xs text-blue-600 hover:text-blue-800 font-medium">LinkedIn Search</a>
             {{ quality_badge(cand.source_quality) }}
+            <button class="ask-btn no-print" onclick="draftOutreach({{ loop.index0 }})" style="margin-left:auto;">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              Draft outreach
+            </button>
           </div>
         </div>
         {% endfor %}
@@ -492,15 +546,22 @@
     </section>
     {% endif %}
 
-    <!-- MEDDIC Qualification (Summary) -->
+    <!-- MEDDIC Qualification (Interactive Checklist) -->
     {% if data.meddic_qualification and data.meddic_qualification is mapping %}
     <section id="sec-meddic" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
-      <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center justify-between mb-2">
         <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">MEDDIC Qualification</h2>
         <button class="ask-btn no-print" onclick="askAbout('MEDDIC qualification and gaps to close')">
           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
           Ask
         </button>
+      </div>
+      <!-- Progress bar -->
+      <div class="flex items-center gap-3 mb-4 no-print">
+        <div class="meddic-progress-bar flex-1 max-w-[240px]">
+          <div id="meddic-progress-fill" class="meddic-progress-fill" style="width:0%"></div>
+        </div>
+        <span id="meddic-progress-label" class="text-xs font-medium text-gray-500">0 / 7 validated</span>
       </div>
       {% if data.meddic_qualification is string %}
       <p class="text-sm text-gray-500 italic">{{ data.meddic_qualification }}</p>
@@ -509,10 +570,11 @@
         <table class="w-full text-sm">
           <thead>
             <tr class="border-b border-gray-200">
+              <th class="text-left py-2 px-1 w-8 no-print"></th>
               <th class="text-left py-2 px-3 text-xs font-semibold text-gray-500 uppercase w-1/6">Element</th>
               <th class="text-left py-2 px-3 text-xs font-semibold text-gray-500 uppercase w-2/5">Assessment</th>
-              <th class="text-left py-2 px-3 text-xs font-semibold text-gray-500 uppercase w-1/4">Gap to Close</th>
-              <th class="text-left py-2 px-3 text-xs font-semibold text-gray-500 uppercase w-1/6">Confidence</th>
+              <th class="text-left py-2 px-3 text-xs font-semibold text-gray-500 uppercase w-1/5">Gap to Close</th>
+              <th class="text-left py-2 px-3 text-xs font-semibold text-gray-500 uppercase w-1/8">Confidence</th>
             </tr>
           </thead>
           <tbody>
@@ -521,7 +583,10 @@
             {% for key, label in meddic_labels.items() %}
             {% set field = data.meddic_qualification[key] %}
             {% if field %}
-            <tr class="border-b border-gray-100 hover:bg-gray-50">
+            <tr class="border-b border-gray-100 hover:bg-gray-50" id="meddic-row-{{ key }}">
+              <td class="py-3 px-1 no-print">
+                <input type="checkbox" class="meddic-check" data-key="{{ key }}" onchange="updateMeddicProgress()" title="Mark as validated" />
+              </td>
               <td class="py-3 px-3">
                 <span class="inline-block bg-{{ meddic_colors[key] }}-100 text-{{ meddic_colors[key] }}-800 px-2 py-0.5 rounded text-xs font-bold">{{ label[0] }}</span>
                 <span class="text-xs text-gray-600 ml-1">{{ label }}</span>
@@ -535,6 +600,7 @@
                   {% endfor %}
                 </div>
                 {% endif %}
+                <textarea class="meddic-notes mt-2 no-print" data-key="{{ key }}" placeholder="Discovery notes..." oninput="saveMeddicState()"></textarea>
               </td>
               <td class="py-3 px-3">
                 {% if field.gap %}
@@ -855,6 +921,14 @@
           <div class="mt-1">{{ source_chip(vehicle.source) }}</div>
         </div>
         {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Procurement Flowchart -->
+      {% if data.cooperative_purchasing.available_vehicles %}
+      <div class="mt-6 pt-4 border-t border-gray-100">
+        <h3 class="text-xs font-semibold text-gray-500 uppercase mb-3">Procurement Path Flowchart</h3>
+        <div id="procurement-flow" class="overflow-x-auto"></div>
       </div>
       {% endif %}
     </section>
@@ -1240,6 +1314,25 @@
     </div>
   </div>
 
+  <!-- Keyboard Shortcuts Overlay -->
+  <div id="kbd-overlay" class="kbd-overlay no-print" onclick="if(event.target===this)toggleKbd()">
+    <div class="kbd-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h3 style="font-weight:700;font-size:15px;color:#0f172a;margin:0;">Keyboard Shortcuts</h3>
+        <button onclick="toggleKbd()" style="background:none;border:none;font-size:18px;color:#94a3b8;cursor:pointer;line-height:1;">&times;</button>
+      </div>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:8px 16px;align-items:center;">
+        <kbd>?</kbd><span style="font-size:13px;color:#475569;">Show / hide this help</span>
+        <kbd>k</kbd><span style="font-size:13px;color:#475569;">Open / close chat</span>
+        <kbd>/</kbd><span style="font-size:13px;color:#475569;">Focus chat + slash menu</span>
+        <kbd>j</kbd><span style="font-size:13px;color:#475569;">Next section</span>
+        <kbd>i</kbd><span style="font-size:13px;color:#475569;">Previous section</span>
+        <kbd>p</kbd><span style="font-size:13px;color:#475569;">Print brief (Ctrl+P)</span>
+        <kbd>Esc</kbd><span style="font-size:13px;color:#475569;">Close overlay / chat</span>
+      </div>
+    </div>
+  </div>
+
   <script>
   (function() {
     const SLUG = "{{ data.metadata.company_slug }}";
@@ -1538,6 +1631,224 @@
     function saveHistory() {
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(history)); } catch(e) {}
     }
+
+    // --- Draft outreach for champion candidates ---
+    const CHAMPION_DATA = {{ data.champion_candidates | default([]) | tojson }};
+    window.draftOutreach = function(idx) {
+      const cand = CHAMPION_DATA[idx] || {};
+      const name = cand.name || 'this person';
+      const title = cand.title || '';
+      const activities = (cand.recent_activity || []).map(a => a.context).join('; ');
+      const reasoning = cand.reasoning_summary || cand.champion_fit_reasoning || '';
+      let prompt = `Write a personalized LinkedIn intro message to ${name} (${title}) at {{ data.snapshot.name }}.`;
+      if (activities) prompt += ` Reference their recent activity: ${activities}.`;
+      if (reasoning) prompt += ` Context: ${reasoning}`;
+      prompt += ` Frame around a specific pain point Verkada solves for {{ data.snapshot.vertical }} organizations.`;
+      prompt += ` Keep it under 80 words, conversational, no hard sell. End with one open question.`;
+      // Open chat and send
+      const panel = document.getElementById('chat-panel');
+      const toggle = document.getElementById('chat-toggle');
+      panel.style.display = 'flex';
+      toggle.style.display = 'none';
+      const starters = document.getElementById('chat-starters');
+      if (starters) starters.style.display = 'none';
+      doSend(prompt);
+    };
+
+    // --- Copy button on assistant messages ---
+    const origAppend = appendMessage;
+    appendMessage = function(role, content) {
+      const el = origAppend(role, content);
+      if (role === 'assistant') {
+        el.style.position = 'relative';
+        el.classList.add('chat-msg');
+        const btn = document.createElement('button');
+        btn.className = 'msg-copy';
+        btn.textContent = 'Copy';
+        btn.onclick = function() {
+          const text = el.innerText.replace('Copy', '').replace('Copied!', '').trim();
+          navigator.clipboard.writeText(text).then(() => {
+            btn.textContent = 'Copied!';
+            btn.classList.add('copied');
+            setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+          });
+        };
+        el.appendChild(btn);
+      }
+      return el;
+    };
+
+    // --- MEDDIC interactive checklist ---
+    const MEDDIC_STORAGE = `meddic_${SLUG}`;
+    function loadMeddicState() {
+      try { return JSON.parse(localStorage.getItem(MEDDIC_STORAGE)) || {}; } catch(e) { return {}; }
+    }
+    window.saveMeddicState = function() {
+      const state = {};
+      document.querySelectorAll('.meddic-check').forEach(cb => {
+        const key = cb.dataset.key;
+        const notes = document.querySelector(`.meddic-notes[data-key="${key}"]`);
+        state[key] = { checked: cb.checked, notes: notes ? notes.value : '' };
+      });
+      try { localStorage.setItem(MEDDIC_STORAGE, JSON.stringify(state)); } catch(e) {}
+    };
+    window.updateMeddicProgress = function() {
+      const checks = document.querySelectorAll('.meddic-check');
+      const total = checks.length;
+      let validated = 0;
+      checks.forEach(cb => { if (cb.checked) validated++; });
+      const pct = total > 0 ? Math.round((validated / total) * 100) : 0;
+      const fill = document.getElementById('meddic-progress-fill');
+      const label = document.getElementById('meddic-progress-label');
+      if (fill) fill.style.width = pct + '%';
+      if (label) {
+        label.textContent = `${validated} / ${total} validated`;
+        label.style.color = validated === total ? '#16a34a' : '#64748b';
+      }
+      // Highlight validated rows
+      checks.forEach(cb => {
+        const row = document.getElementById('meddic-row-' + cb.dataset.key);
+        if (row) row.style.background = cb.checked ? '#f0fdf4' : '';
+      });
+      saveMeddicState();
+    };
+    // Restore MEDDIC state on load
+    (function() {
+      const saved = loadMeddicState();
+      Object.keys(saved).forEach(key => {
+        const cb = document.querySelector(`.meddic-check[data-key="${key}"]`);
+        const notes = document.querySelector(`.meddic-notes[data-key="${key}"]`);
+        if (cb && saved[key].checked) cb.checked = true;
+        if (notes && saved[key].notes) notes.value = saved[key].notes;
+      });
+      if (document.querySelector('.meddic-check')) updateMeddicProgress();
+    })();
+
+    // --- Procurement Flowchart SVG ---
+    (function() {
+      const container = document.getElementById('procurement-flow');
+      if (!container) return;
+      const vehicles = {{ data.cooperative_purchasing.available_vehicles | default([]) | tojson }};
+      const validVehicles = vehicles.filter(v => v.relevant_solicitations && v.relevant_solicitations.length > 0);
+      if (validVehicles.length === 0) return;
+
+      const BUYER = "{{ data.snapshot.name }}";
+      const COL_W = 140, ROW_H = 80, PAD = 20, GAP_X = 40;
+      const cols = 4; // buyer -> vehicle -> contract -> verkada
+      const rows = validVehicles.length;
+      const svgW = PAD * 2 + cols * COL_W + (cols - 1) * GAP_X;
+      const svgH = PAD * 2 + rows * ROW_H;
+
+      let svg = `<svg viewBox="0 0 ${svgW} ${svgH}" width="100%" style="max-width:${svgW}px;" xmlns="http://www.w3.org/2000/svg">`;
+      svg += `<defs><marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#94a3b8"/></marker></defs>`;
+
+      function nodeX(col) { return PAD + col * (COL_W + GAP_X); }
+      function nodeY(row) { return PAD + row * ROW_H; }
+      function nodeCenter(col, row) { return { x: nodeX(col) + COL_W / 2, y: nodeY(row) + 36 / 2 + 10 }; }
+
+      function box(col, row, text, sub, cls) {
+        const x = nodeX(col), y = nodeY(row);
+        const display = text.length > 18 ? text.slice(0, 17) + '...' : text;
+        let h = `<rect x="${x}" y="${y + 4}" width="${COL_W}" height="${sub ? 44 : 36}" class="flow-node ${cls}"/>`;
+        h += `<text x="${x + COL_W/2}" y="${y + 24}" class="flow-label">${display}</text>`;
+        if (sub) h += `<text x="${x + COL_W/2}" y="${y + 40}" class="flow-sublabel">${sub}</text>`;
+        return h;
+      }
+      function arrow(col1, row1, col2, row2) {
+        const a = nodeCenter(col1, row1), b = nodeCenter(col2, row2);
+        return `<line x1="${a.x + COL_W/2}" y1="${a.y}" x2="${b.x - COL_W/2}" y2="${b.y}" class="flow-arrow"/>`;
+      }
+
+      // Buyer column (merged into one node spanning all rows)
+      const buyerMidRow = (rows - 1) / 2;
+      svg += box(0, buyerMidRow, BUYER, 'Public Sector', 'buyer');
+
+      validVehicles.forEach((v, i) => {
+        // Vehicle
+        svg += box(1, i, v.vehicle, '', 'vehicle');
+        // Arrow: buyer -> vehicle
+        svg += arrow(0, buyerMidRow, 1, i);
+        // Contract
+        const sol = v.relevant_solicitations[0];
+        const contractId = sol.id || '—';
+        svg += box(2, i, contractId, v.vehicle, 'contract');
+        // Arrow: vehicle -> contract
+        svg += arrow(1, i, 2, i);
+        // Verkada
+        svg += box(3, i, 'Verkada', v.verkada_contract_status ? 'Active' : '', 'vendor');
+        // Arrow: contract -> verkada
+        svg += arrow(2, i, 3, i);
+      });
+
+      svg += '</svg>';
+      container.innerHTML = svg;
+    })();
+
+    // --- Keyboard shortcuts ---
+    window.toggleKbd = function() {
+      document.getElementById('kbd-overlay').classList.toggle('visible');
+    };
+    const allSections = Array.from(document.querySelectorAll('section[id^="sec-"]'));
+    let currentSectionIdx = 0;
+    document.addEventListener('keydown', function(e) {
+      // Ignore if focus is in an input, textarea, or contenteditable
+      const tag = e.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable) return;
+
+      switch (e.key) {
+        case '?':
+          e.preventDefault();
+          toggleKbd();
+          break;
+        case 'k':
+          e.preventDefault();
+          toggleChat();
+          break;
+        case '/':
+          e.preventDefault();
+          // Open chat + focus input for slash commands
+          const panel = document.getElementById('chat-panel');
+          const toggle = document.getElementById('chat-toggle');
+          if (panel.style.display === 'none') {
+            panel.style.display = 'flex';
+            toggle.style.display = 'none';
+          }
+          const inp = document.getElementById('chat-input');
+          inp.focus();
+          inp.value = '/';
+          handleInputChange();
+          break;
+        case 'j':
+          e.preventDefault();
+          if (allSections.length > 0) {
+            currentSectionIdx = Math.min(currentSectionIdx + 1, allSections.length - 1);
+            allSections[currentSectionIdx].scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+          break;
+        case 'i':
+          e.preventDefault();
+          if (allSections.length > 0) {
+            currentSectionIdx = Math.max(currentSectionIdx - 1, 0);
+            allSections[currentSectionIdx].scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+          break;
+        case 'p':
+          if (!e.ctrlKey && !e.metaKey) {
+            e.preventDefault();
+            window.print();
+          }
+          break;
+        case 'Escape':
+          const overlay = document.getElementById('kbd-overlay');
+          if (overlay.classList.contains('visible')) {
+            toggleKbd();
+          } else {
+            const cp = document.getElementById('chat-panel');
+            if (cp.style.display !== 'none') toggleChat();
+          }
+          break;
+      }
+    });
 
     // --- Draggable FAB + Panel ---
     const DRAG_THRESHOLD = 5;
