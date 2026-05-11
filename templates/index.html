@@ -27,12 +27,9 @@
           <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Pre-Sales Research Platform</h1>
           <p class="text-sm text-gray-500 mt-1">OSINT-grade account intelligence for the Solutions Engineer workflow</p>
         </div>
-        <div class="text-right text-xs text-gray-400">
-          <div>{{ today }}</div>
-          <div class="mt-1 flex gap-3">
-            <a href="/docs-page" class="text-blue-600 hover:text-blue-800 font-medium">Documentation</a>
-            <a href="/status.html" class="text-blue-600 hover:text-blue-800 font-medium">Live Dashboard</a>
-          </div>
+        <div class="flex items-center gap-4 text-xs text-gray-400">
+          <a href="/status.html" class="text-blue-600 hover:text-blue-800 font-medium">Live Dashboard</a>
+          <span class="bg-gray-100 text-gray-500 px-2 py-0.5 rounded font-mono">v1.0</span>
         </div>
       </div>
     </div>
@@ -62,24 +59,24 @@
 
     <!-- Start New Research -->
     <section class="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Start New Research</h2>
+      <h2 class="text-lg font-bold text-gray-900 mb-1">Research a new account</h2>
+      <p class="text-xs text-gray-400 mb-4">Cost: ~$1.50 fresh, ~$0.40 cached &middot; Time: 5-9 minutes</p>
       <form id="research-form" class="flex gap-3" onsubmit="launchResearch(event)">
         <input id="company-input" type="text" placeholder="Enter company or account name..." class="flex-1 border border-gray-200 rounded-lg px-4 py-3 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100" required />
         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap">
-          Run Research
+          Start Research
         </button>
       </form>
-      <div class="mt-3 flex items-center gap-4">
-        <span class="text-xs text-gray-400">Cost: ~$1.50 fresh, ~$0.40 cached. Time: 5-9 min.</span>
-        <div class="flex gap-2 ml-auto">
-          {% for v in ['K-12 District', 'Higher Ed', 'Healthcare', 'Retail Multi-site', 'Manufacturing'] %}
-          <button onclick="document.getElementById('company-input').value='{{ v }}'" class="text-xs bg-gray-100 hover:bg-blue-50 text-gray-600 hover:text-blue-700 px-2.5 py-1 rounded-full transition-colors">{{ v }}</button>
-          {% endfor %}
-        </div>
+      <div class="mt-3 flex gap-2 flex-wrap">
+        {% set examples = {'K-12 District': 'Gwinnett County Public Schools', 'Higher Ed': 'Georgia State University', 'Healthcare': 'Piedmont Healthcare', 'Government': 'City of Atlanta', 'Retail': 'Floor & Decor'} %}
+        {% for label, example in examples.items() %}
+        <button onclick="document.getElementById('company-input').value='{{ example }}'" class="text-xs bg-gray-100 hover:bg-blue-50 text-gray-600 hover:text-blue-700 px-2.5 py-1 rounded-full transition-colors">{{ label }}</button>
+        {% endfor %}
       </div>
     </section>
 
     <!-- Filter / Sort Bar -->
+    <h2 class="text-lg font-bold text-gray-900 mb-4">Existing Briefs ({{ total_briefs }})</h2>
     <section class="flex items-center gap-4 mb-6 flex-wrap">
       <div class="flex items-center gap-2">
         <label class="text-xs font-semibold text-gray-400 uppercase">Vertical</label>
@@ -167,6 +164,10 @@
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
             Re-run
           </button>
+          <a href="mailto:?subject=Account%20brief%3A%20{{ b.name | urlencode }}&body=Brief%20URL%3A%20{{ b.slug }}-{{ b.date }}.html" class="action-btn text-xs px-2 py-1 rounded hover:bg-purple-50 hover:text-purple-700 flex items-center gap-1" title="Email brief link">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            Email
+          </a>
           <a href="/briefs/{{ b.slug }}-{{ b.date }}.json" download class="action-btn text-xs px-2 py-1 rounded hover:bg-green-50 hover:text-green-700 flex items-center gap-1" title="Download JSON">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             JSON
@@ -186,10 +187,7 @@
   <footer class="border-t border-gray-200 bg-white mt-auto">
     <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between text-xs text-gray-400">
       <span>Built by Andy &middot; v1.0</span>
-      <div class="flex gap-4">
-        <a href="/docs-page" class="hover:text-blue-600">Documentation</a>
-        <a href="/status.html" class="hover:text-blue-600">Live Dashboard</a>
-      </div>
+      <span>{{ total_briefs }} brief{{ 's' if total_briefs != 1 else '' }} across {{ unique_accounts }} account{{ 's' if unique_accounts != 1 else '' }}</span>
     </div>
   </footer>
 

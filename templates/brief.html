@@ -1309,7 +1309,8 @@
       <div id="slash-menu" style="display:none;position:absolute;bottom:100%;left:0;right:0;background:white;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 -8px 24px rgba(0,0,0,0.12);max-height:280px;overflow-y:auto;z-index:60;margin-bottom:4px;"></div>
       <div style="display:flex;gap:8px;">
         <input id="chat-input" type="text" placeholder="Ask about this brief... (type / for commands)" style="flex:1;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:13px;outline:none;font-family:Inter,sans-serif;" onkeydown="handleInputKeydown(event)" oninput="handleInputChange()" />
-        <button onclick="sendMessage()" style="background:#2563eb;color:white;border:none;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">Send</button>
+        <button id="chat-send-btn" onclick="sendMessage()" style="background:#2563eb;color:white;border:none;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">Send</button>
+        <button id="chat-stop-btn" onclick="stopChat()" style="display:none;background:#ef4444;color:white;border:none;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">Stop</button>
       </div>
     </div>
   </div>
@@ -1338,19 +1339,8 @@
     const SLUG = "{{ data.metadata.company_slug }}";
     const DATE = "{{ data.metadata.generated_date }}";
     const CHAT_URL = "http://localhost:8000/chat";
-    const STORAGE_KEY = `chat_${SLUG}_${DATE}`;
-
-    // Restore history from localStorage
     let history = [];
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        history = JSON.parse(saved);
-        const starters = document.getElementById('chat-starters');
-        if (history.length > 0 && starters) starters.style.display = 'none';
-        history.forEach(m => appendMessage(m.role, m.content));
-      }
-    } catch(e) {}
+    let currentAbort = null;
 
     // --- Scroll-spy with IntersectionObserver ---
     const navLinks = document.querySelectorAll('#side-nav a.nav-link');
@@ -1407,7 +1397,7 @@
 
     window.clearChat = function() {
       history = [];
-      localStorage.removeItem(STORAGE_KEY);
+      if (currentAbort) { currentAbort.abort(); currentAbort = null; }
       const msgs = document.getElementById('chat-messages');
       msgs.innerHTML = '';
       // Re-add starters
@@ -1562,15 +1552,19 @@
     function doSend(text) {
       appendMessage('user', text);
       history.push({role: 'user', content: text});
-      saveHistory();
 
       const assistantEl = appendMessage('assistant', '');
       let fullText = '';
 
+      const controller = new AbortController();
+      currentAbort = controller;
+      showStopButton(true);
+
       fetch(CHAT_URL, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({slug: SLUG, date: DATE, message: text, history: history.slice(0, -1)})
+        body: JSON.stringify({slug: SLUG, date: DATE, message: text, history: history.slice(0, -1)}),
+        signal: controller.signal
       }).then(response => {
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
@@ -1579,7 +1573,8 @@
           reader.read().then(({done, value}) => {
             if (done) {
               history.push({role: 'assistant', content: fullText});
-              saveHistory();
+              currentAbort = null;
+              showStopButton(false);
               return;
             }
             const chunk = decoder.decode(value, {stream: true});
@@ -1595,13 +1590,49 @@
               }
             }
             read();
+          }).catch(err => {
+            if (err.name === 'AbortError') return;
+            assistantEl.innerHTML += '<br><span style="color:#ef4444;">Stream interrupted.</span>';
+            currentAbort = null;
+            showStopButton(false);
           });
         }
         read();
       }).catch(err => {
+        currentAbort = null;
+        showStopButton(false);
+        if (err.name === 'AbortError') {
+          if (fullText) {
+            assistantEl.innerHTML = formatMarkdown(fullText) + '<br><span style="color:#94a3b8;font-style:italic;font-size:12px;">Response cancelled by user.</span>';
+            history.push({role: 'assistant', content: fullText + '\n[cancelled]'});
+          } else {
+            assistantEl.innerHTML = '<span style="color:#94a3b8;font-style:italic;">Response cancelled by user.</span>';
+          }
+          return;
+        }
         assistantEl.innerHTML = '<span style="color:#ef4444;">Connection error — is chat_server.py running on port 8000?</span>';
       });
     }
+
+    function showStopButton(show) {
+      const sendBtn = document.getElementById('chat-send-btn');
+      const stopBtn = document.getElementById('chat-stop-btn');
+      if (show) {
+        sendBtn.style.display = 'none';
+        stopBtn.style.display = 'inline-block';
+      } else {
+        sendBtn.style.display = 'inline-block';
+        stopBtn.style.display = 'none';
+      }
+    }
+
+    window.stopChat = function() {
+      if (currentAbort) {
+        currentAbort.abort();
+        currentAbort = null;
+        showStopButton(false);
+      }
+    };
 
     function appendMessage(role, content) {
       const msgs = document.getElementById('chat-messages');
@@ -1628,9 +1659,6 @@
       msgs.scrollTop = msgs.scrollHeight;
     }
 
-    function saveHistory() {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(history)); } catch(e) {}
-    }
 
     // --- Draft outreach for champion candidates ---
     const CHAMPION_DATA = {{ data.champion_candidates | default([]) | tojson }};
