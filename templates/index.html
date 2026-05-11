@@ -31,10 +31,10 @@
     .cmd-overlay.visible { display: flex; }
     .dark .cmd-overlay { background: rgba(0,0,0,0.6); }
     .cmd-card { background: white; border-radius: 12px; width: 560px; max-width: 90vw; max-height: 400px; box-shadow: 0 24px 80px rgba(0,0,0,0.25); display: flex; flex-direction: column; overflow: hidden; }
-    .dark .cmd-card { background: #1e293b; color: #e2e8f0; }
+    .dark .cmd-card { background: #0f172a; color: #e2e8f0; }
     .cmd-item { padding: 8px 16px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 13px; }
     .cmd-item:hover, .cmd-item.active { background: #f1f5f9; }
-    .dark .cmd-item:hover, .dark .cmd-item.active { background: #334155; }
+    .dark .cmd-item:hover, .dark .cmd-item.active { background: #1e293b; }
     .cmd-section { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; padding: 10px 16px 4px; }
     /* Tooltip */
     .tip { position: relative; }
@@ -43,14 +43,14 @@
     .dark .tip::after { background: #e2e8f0; color: #0f172a; }
     /* Search highlight */
     mark { background: #fef08a; border-radius: 2px; padding: 0 1px; }
-    .dark mark { background: #854d0e; color: #fef3c7; }
+    .dark mark { background: #854d0e; color: #fef9c3; }
     @media print { body { background: white !important; color: black !important; } .no-print { display: none !important; } }
   </style>
 </head>
-<body class="bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-slate-100 antialiased min-h-screen flex flex-col">
+<body class="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 antialiased min-h-screen flex flex-col">
 
   <!-- Header -->
-  <header class="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
+  <header class="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800">
     <div class="max-w-6xl mx-auto px-6 py-6">
       <div class="flex items-end justify-between">
         <div>
@@ -63,7 +63,7 @@
         </div>
         <div class="flex items-center gap-3 text-xs text-gray-400 dark:text-slate-500 flex-shrink-0">
           <a href="/status.html" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 font-medium">Live Dashboard</a>
-          <button onclick="toggleDarkMode()" class="tip p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors" data-tip="Toggle dark mode" id="dark-toggle">
+          <button onclick="toggleDarkMode()" class="tip p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors" data-tip="Toggle dark mode" id="dark-toggle">
             <svg id="icon-sun" class="w-4 h-4 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
             <svg id="icon-moon" class="w-4 h-4 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
           </button>
@@ -77,30 +77,30 @@
 
     <!-- Quick Stats Banner -->
     <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-      <div class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4 text-center">
+      <div class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-4 text-center">
         <div class="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-1">Total Briefs</div>
         <div class="text-2xl font-bold text-gray-900 dark:text-white counter" data-target="{{ total_briefs }}">0</div>
       </div>
-      <div class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4 text-center">
+      <div class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-4 text-center">
         <div class="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-1">Accounts</div>
         <div class="text-2xl font-bold text-gray-900 dark:text-white counter" data-target="{{ unique_accounts }}">0</div>
       </div>
-      <div class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4 text-center">
+      <div class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-4 text-center">
         <div class="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-1">Verticals</div>
         <div class="text-2xl font-bold text-gray-900 dark:text-white counter" data-target="{{ verticals | length }}">0</div>
       </div>
-      <div class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4 text-center">
+      <div class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-4 text-center">
         <div class="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-1">Latest Brief</div>
         <div class="text-sm font-bold text-gray-900 dark:text-white">{{ briefs[0].date if briefs else '---' }}</div>
       </div>
     </section>
 
     <!-- Start New Research -->
-    <section class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6 mb-8">
+    <section class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-6 mb-8">
       <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-1">Research a new account</h2>
       <p class="text-xs text-gray-400 dark:text-slate-500 mb-4">Cost: ~$1.50 fresh, ~$0.40 cached &middot; Time: 5-9 minutes</p>
       <form id="research-form" class="flex gap-3" onsubmit="launchResearch(event)">
-        <input id="company-input" type="text" placeholder="Enter company or account name..." class="flex-1 border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-lg px-4 py-3 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 dark:focus:ring-blue-900" required />
+        <input id="company-input" type="text" placeholder="Enter company or account name..." class="flex-1 border border-gray-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-lg px-4 py-3 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 dark:focus:ring-blue-900" required />
         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap">
           Start Research
         </button>
@@ -118,7 +118,7 @@
       <h2 class="text-lg font-bold text-gray-900 dark:text-white">Existing Briefs ({{ total_briefs }})</h2>
       <div class="relative">
         <svg class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        <input id="brief-search" type="text" placeholder="Search briefs by account or champion..." oninput="filterBriefs()" class="pl-9 pr-3 py-1.5 text-xs border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-lg outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 dark:focus:ring-blue-900 w-64" />
+        <input id="brief-search" type="text" placeholder="Search briefs by account or champion..." oninput="filterBriefs()" class="pl-9 pr-3 py-1.5 text-xs border border-gray-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-lg outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 dark:focus:ring-blue-900 w-64" />
       </div>
     </div>
 
@@ -126,7 +126,7 @@
     <section class="flex items-center gap-4 mb-6 flex-wrap">
       <div class="flex items-center gap-2">
         <label class="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase">Vertical</label>
-        <select id="filter-vertical" onchange="filterBriefs()" class="text-xs border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded px-2 py-1 outline-none">
+        <select id="filter-vertical" onchange="filterBriefs()" class="text-xs border border-gray-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded px-2 py-1 outline-none">
           <option value="">All</option>
           {% for v in verticals %}
           <option value="{{ v }}">{{ v }}</option>
@@ -135,7 +135,7 @@
       </div>
       <div class="flex items-center gap-2">
         <label class="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase">Sort</label>
-        <select id="sort-by" onchange="filterBriefs()" class="text-xs border border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded px-2 py-1 outline-none">
+        <select id="sort-by" onchange="filterBriefs()" class="text-xs border border-gray-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded px-2 py-1 outline-none">
           <option value="newest">Newest</option>
           <option value="oldest">Oldest</option>
           <option value="name">Account A-Z</option>
@@ -143,7 +143,7 @@
       </div>
       <div class="flex gap-1.5 ml-auto">
         {% for tag in ['All', 'Starred', 'Prospect', 'Active POC', 'Closed-Won'] %}
-        <button onclick="setTagFilter('{{ tag }}')" class="tag-filter text-xs px-2.5 py-1 rounded-full border {{ 'bg-blue-50 border-blue-200 text-blue-700 font-medium dark:bg-blue-900 dark:border-blue-700 dark:text-blue-300' if tag == 'All' else 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-600 text-gray-500 dark:text-slate-400' }}" data-tag="{{ tag }}">{{ tag }}</button>
+        <button onclick="setTagFilter('{{ tag }}')" class="tag-filter text-xs px-2.5 py-1 rounded-full border {{ 'bg-blue-50 border-blue-200 text-blue-700 font-medium dark:bg-blue-950 dark:border-blue-700 dark:text-blue-300' if tag == 'All' else 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-800 text-gray-500 dark:text-slate-400' }}" data-tag="{{ tag }}">{{ tag }}</button>
         {% endfor %}
       </div>
     </section>
@@ -157,13 +157,13 @@
     <section id="briefs-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
       {% if not briefs %}
       <div class="col-span-2 text-center py-16">
-        <div class="text-gray-300 dark:text-slate-600 text-5xl mb-4">&#128269;</div>
+        <div class="text-gray-300 dark:text-slate-500 text-5xl mb-4">&#128269;</div>
         <p class="text-gray-500 dark:text-slate-400 text-sm">No briefs yet. Run your first research above.</p>
       </div>
       {% endif %}
 
       {% for b in briefs %}
-      <div class="brief-card bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-5 flex flex-col"
+      <div class="brief-card bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-5 flex flex-col"
            data-slug="{{ b.slug }}" data-date="{{ b.date }}" data-vertical="{{ b.vertical }}"
            data-name="{{ b.name }}" data-starred="{{ b.starred }}" data-archived="{{ b.archived }}"
            data-tags="{{ b.tags | join(',') }}" data-generated="{{ b.generated_at }}"
@@ -173,7 +173,7 @@
           <div>
             <h3 class="text-base font-bold text-gray-900 dark:text-white brief-name">{{ b.name }}</h3>
             <div class="flex items-center gap-2 mt-1">
-              {% set vert_colors = {'K-12': 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300', 'Higher Ed': 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300', 'Healthcare': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300', 'Government': 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300', 'Retail': 'bg-rose-100 text-rose-700 dark:bg-rose-900 dark:text-rose-300', 'Manufacturing': 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300'} %}
+              {% set vert_colors = {'K-12': 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300', 'Higher Ed': 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300', 'Healthcare': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300', 'Government': 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300', 'Retail': 'bg-rose-100 text-rose-700 dark:bg-rose-900 dark:text-rose-300', 'Manufacturing': 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300'} %}
               <span class="inline-block px-2 py-0.5 rounded text-xs font-medium {{ vert_colors.get(b.vertical, 'bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-slate-300') }}">{{ b.vertical or 'Unknown' }}</span>
               <span class="text-xs text-gray-400 dark:text-slate-500">{{ b.date }}</span>
               {% if b.headquarters_state %}
@@ -181,7 +181,7 @@
               {% endif %}
             </div>
           </div>
-          <button onclick="event.stopPropagation();toggleStar('{{ b.slug }}', '{{ b.date }}')" class="tip text-lg leading-none {{ 'starred' if b.starred else 'text-gray-300 dark:text-slate-600 hover:text-amber-400' }} transition-colors" data-tip="Star">&#9733;</button>
+          <button onclick="event.stopPropagation();toggleStar('{{ b.slug }}', '{{ b.date }}')" class="tip text-lg leading-none {{ 'starred' if b.starred else 'text-gray-300 dark:text-slate-500 hover:text-amber-400' }} transition-colors" data-tip="Star">&#9733;</button>
         </div>
 
         {% if b.size_indicator %}
@@ -206,30 +206,30 @@
         </div>
 
         <!-- Actions -->
-        <div class="flex items-center gap-1 mt-auto pt-2 border-t border-gray-100 dark:border-slate-700">
+        <div class="flex items-center gap-1 mt-auto pt-2 border-t border-gray-100 dark:border-slate-800">
           {% if b.html_exists %}
-          <a href="/briefs/{{ b.slug }}-{{ b.date }}.html" onclick="event.stopPropagation()" class="tip action-btn text-xs px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-slate-700 hover:text-blue-700 dark:hover:text-blue-400 flex items-center gap-1" data-tip="View Brief">
+          <a href="/briefs/{{ b.slug }}-{{ b.date }}.html" onclick="event.stopPropagation()" class="tip action-btn text-xs px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-700 dark:hover:text-blue-400 flex items-center gap-1" data-tip="View Brief">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
             View
           </a>
-          <a href="/briefs/{{ b.slug }}-{{ b.date }}.html?print=auto" target="_blank" onclick="event.stopPropagation()" class="tip action-btn text-xs px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-700 dark:hover:text-slate-200 flex items-center gap-1" data-tip="Print Brief">
+          <a href="/briefs/{{ b.slug }}-{{ b.date }}.html?print=auto" target="_blank" onclick="event.stopPropagation()" class="tip action-btn text-xs px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-slate-200 flex items-center gap-1" data-tip="Print Brief">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
             Print
           </a>
           {% endif %}
-          <button onclick="event.stopPropagation();rerunResearch('{{ b.name }}')" class="tip action-btn text-xs px-2 py-1 rounded hover:bg-amber-50 dark:hover:bg-slate-700 hover:text-amber-700 dark:hover:text-amber-400 flex items-center gap-1" data-tip="Re-run research">
+          <button onclick="event.stopPropagation();rerunResearch('{{ b.name }}')" class="tip action-btn text-xs px-2 py-1 rounded hover:bg-amber-50 dark:hover:bg-slate-800 hover:text-amber-700 dark:hover:text-amber-400 flex items-center gap-1" data-tip="Re-run research">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
             Re-run
           </button>
-          <a href="mailto:?subject=Account%20brief%3A%20{{ b.name | urlencode }}&body=Brief%20URL%3A%20{{ b.slug }}-{{ b.date }}.html" onclick="event.stopPropagation()" class="tip action-btn text-xs px-2 py-1 rounded hover:bg-purple-50 dark:hover:bg-slate-700 hover:text-purple-700 dark:hover:text-purple-400 flex items-center gap-1" data-tip="Email brief link">
+          <a href="mailto:?subject=Account%20brief%3A%20{{ b.name | urlencode }}&body=Brief%20URL%3A%20{{ b.slug }}-{{ b.date }}.html" onclick="event.stopPropagation()" class="tip action-btn text-xs px-2 py-1 rounded hover:bg-purple-50 dark:hover:bg-slate-800 hover:text-purple-700 dark:hover:text-purple-400 flex items-center gap-1" data-tip="Email brief link">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
             Email
           </a>
-          <a href="/briefs/{{ b.slug }}-{{ b.date }}.json" download onclick="event.stopPropagation()" class="tip action-btn text-xs px-2 py-1 rounded hover:bg-green-50 dark:hover:bg-slate-700 hover:text-green-700 dark:hover:text-green-400 flex items-center gap-1" data-tip="Download JSON">
+          <a href="/briefs/{{ b.slug }}-{{ b.date }}.json" download onclick="event.stopPropagation()" class="tip action-btn text-xs px-2 py-1 rounded hover:bg-green-50 dark:hover:bg-slate-800 hover:text-green-700 dark:hover:text-green-400 flex items-center gap-1" data-tip="Download JSON">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             JSON
           </a>
-          <button onclick="event.stopPropagation();deleteBrief('{{ b.slug }}', '{{ b.date }}', '{{ b.name }}')" class="tip action-btn text-xs px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-slate-700 hover:text-red-700 dark:hover:text-red-400 flex items-center gap-1 ml-auto" data-tip="Delete brief">
+          <button onclick="event.stopPropagation();deleteBrief('{{ b.slug }}', '{{ b.date }}', '{{ b.name }}')" class="tip action-btn text-xs px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-slate-800 hover:text-red-700 dark:hover:text-red-400 flex items-center gap-1 ml-auto" data-tip="Delete brief">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
             Delete
           </button>
@@ -241,7 +241,7 @@
   </main>
 
   <!-- Footer -->
-  <footer class="border-t border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 mt-auto">
+  <footer class="border-t border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 mt-auto">
     <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between text-xs text-gray-400 dark:text-slate-500">
       <span>Built by Andy &middot; v1.0</span>
       <span>{{ total_briefs }} brief{{ 's' if total_briefs != 1 else '' }} across {{ unique_accounts }} account{{ 's' if unique_accounts != 1 else '' }}</span>
@@ -254,7 +254,7 @@
   <!-- Command Palette -->
   <div class="cmd-overlay no-print" id="cmd-overlay" onclick="if(event.target===this)closePalette()">
     <div class="cmd-card">
-      <div style="padding:12px 16px;border-bottom:1px solid #e2e8f0;" class="dark:border-slate-600">
+      <div style="padding:12px 16px;border-bottom:1px solid #e2e8f0;" class="dark:border-slate-800">
         <input id="cmd-input" type="text" placeholder="Search briefs, run command, or jump to section..." style="width:100%;border:none;outline:none;font-size:14px;background:transparent;" class="dark:text-white" oninput="filterPalette()" onkeydown="paletteKeydown(event)" />
       </div>
       <div id="cmd-results" style="overflow-y:auto;max-height:320px;padding:4px 0;"></div>
@@ -360,7 +360,7 @@
     }).then(r => r.json()).then(() => {
       card.dataset.starred = (!isStarred).toString();
       if (!isStarred) { btn.className = 'tip text-lg leading-none starred transition-colors'; }
-      else { btn.className = 'tip text-lg leading-none text-gray-300 dark:text-slate-600 hover:text-amber-400 transition-colors'; }
+      else { btn.className = 'tip text-lg leading-none text-gray-300 dark:text-slate-500 hover:text-amber-400 transition-colors'; }
     });
   }
 
@@ -394,7 +394,7 @@
     activeTagFilter = tag;
     document.querySelectorAll('.tag-filter').forEach(btn => {
       const isActive = btn.dataset.tag === tag;
-      btn.className = 'tag-filter text-xs px-2.5 py-1 rounded-full border ' + (isActive ? 'bg-blue-50 border-blue-200 text-blue-700 font-medium dark:bg-blue-900 dark:border-blue-700 dark:text-blue-300' : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-600 text-gray-500 dark:text-slate-400');
+      btn.className = 'tag-filter text-xs px-2.5 py-1 rounded-full border ' + (isActive ? 'bg-blue-50 border-blue-200 text-blue-700 font-medium dark:bg-blue-950 dark:border-blue-700 dark:text-blue-300' : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-800 text-gray-500 dark:text-slate-400');
     });
     filterBriefs();
   }

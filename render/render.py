@@ -17,11 +17,11 @@ PERSONA_PATH = PROJECT_ROOT / "persona" / "verkada-se.yml"
 
 def confidence_badge(confidence: str) -> str:
     colors = {
-        "high": "bg-green-100 text-green-700 border-green-200",
-        "medium": "bg-amber-100 text-amber-700 border-amber-200",
-        "inference": "bg-red-100 text-red-700 border-red-200",
+        "high": "bg-green-100 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-800",
+        "medium": "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800",
+        "inference": "bg-red-100 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-800",
     }
-    css = colors.get(confidence, "bg-gray-100 text-gray-600 border-gray-200")
+    css = colors.get(confidence, "bg-gray-100 text-gray-600 border-gray-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-600")
     return f'<span class="badge inline-block px-1.5 py-0.5 rounded border {css} uppercase font-semibold">{confidence}</span>'
 
 
@@ -29,11 +29,11 @@ def quality_badge(quality: str) -> str:
     if not quality:
         return ""
     colors = {
-        "primary": "bg-blue-50 text-blue-600 border-blue-200",
-        "secondary": "bg-gray-50 text-gray-600 border-gray-200",
-        "weak": "bg-red-50 text-red-600 border-red-200",
+        "primary": "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800",
+        "secondary": "bg-gray-50 text-gray-600 border-gray-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-600",
+        "weak": "bg-red-50 text-red-600 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-800",
     }
-    css = colors.get(quality, "bg-gray-50 text-gray-500 border-gray-200")
+    css = colors.get(quality, "bg-gray-50 text-gray-500 border-gray-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-600")
     return f'<span class="badge inline-block px-1.5 py-0.5 rounded border {css} uppercase font-semibold">{quality}</span>'
 
 
@@ -49,7 +49,8 @@ def source_chip(source: dict) -> str:
     return (
         f'<a href="{url}" target="_blank" rel="noopener" '
         f'class="source-chip inline-flex items-center gap-1 px-2 py-0.5 rounded-full '
-        f'bg-gray-100 text-gray-500 hover:bg-blue-100 hover:text-blue-700 transition-colors" '
+        f'bg-gray-100 text-gray-500 hover:bg-blue-100 hover:text-blue-700 '
+        f'dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-blue-950 dark:hover:text-blue-300 transition-colors" '
         f'title="{title}">'
         f'<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">'
         f'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" '
