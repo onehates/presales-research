@@ -665,44 +665,61 @@ def run_subagent(agent_name: str, slug: str, *, use_cache: bool = True) -> tuple
     return result, False
 
 
-def run_phase2(slug: str, *, use_cache: bool = True) -> dict:
-    """Run 3 subagents sequentially with 2s pause between each.
+def _run_subagent_with_status(name: str, slug: str, use_cache: bool) -> tuple[str, dict, bool]:
+    """Wrapper that emits status events around a subagent run. Returns (name, result, was_cached)."""
+    _write_status("phase2", f"Running {name}...", subagent=name, subagent_status="running")
+    try:
+        result, was_cached = run_subagent(name, slug, use_cache=use_cache)
+        status = result.get("status", "ok")
+        if was_cached:
+            print(f"    {SYM_CACHED} {name:<22} [cached subagent]", flush=True)
+            _write_status("phase2", f"{name} cached", subagent=name, subagent_status="cached")
+        elif status in ("insufficient_data", "parse_error"):
+            print(f"    {SYM_INSUF} {name:<22} {status}: {result.get('reason', result.get('raw', '')[:60])}", flush=True)
+            _write_status("phase2", f"{name} {status}", subagent=name, subagent_status="error")
+        else:
+            print(f"    {SYM_OK} {name:<22} ok", flush=True)
+            _write_status("phase2", f"{name} complete", subagent=name, subagent_status="complete")
+        return name, result, was_cached
+    except Exception as e:
+        print(f"    {SYM_ERROR} {name:<22} {str(e)[:60]}", flush=True)
+        _write_status("phase2", f"{name} error: {str(e)[:60]}", subagent=name, subagent_status="error")
+        return name, {"status": "error", "reason": str(e)[:200]}, False
 
-    Sequential execution avoids rate-limit (429) errors that occur when
-    3 Sonnet calls fire simultaneously. Total runtime ~120s vs ~60s
-    parallel, but near-zero failure rate — critical for live demo runs.
+
+def run_phase2(slug: str, *, use_cache: bool = True, parallel: bool = True) -> dict:
+    """Run 3 subagents in parallel (default) or sequentially.
+
+    Parallel execution cuts Phase 2 from ~165s to ~60s on fresh runs.
+    Use parallel=False (--sequential flag) as fallback if rate limits occur.
 
     If use_cache=True, checks for cached subagent outputs matching the current
     source fingerprint before making API calls.
     """
-    print("\n  Phase 2 — Subagent Synthesis (Sonnet)")
+    mode = "parallel" if parallel else "sequential"
+    print(f"\n  Phase 2 — Subagent Synthesis (Sonnet, {mode})")
     print("  " + "─" * 50)
 
     agents = ["company-bg", "tech-and-pain", "hiring-signals"]
     results = {}
 
-    for i, name in enumerate(agents):
-        if i > 0 and not results.get(agents[i-1], {}).get("_was_cached"):
-            time.sleep(2)  # Only pause after actual API calls
-        _write_status("phase2", f"Running {name}...", subagent=name, subagent_status="running")
-        try:
-            result, was_cached = run_subagent(name, slug, use_cache=use_cache)
-            status = result.get("status", "ok")
-            if was_cached:
-                print(f"    {SYM_CACHED} {name:<22} [cached subagent]", flush=True)
-                _write_status("phase2", f"{name} cached", subagent=name, subagent_status="cached")
-            elif status in ("insufficient_data", "parse_error"):
-                print(f"    {SYM_INSUF} {name:<22} {status}: {result.get('reason', result.get('raw', '')[:60])}", flush=True)
-                _write_status("phase2", f"{name} {status}", subagent=name, subagent_status="error")
-            else:
-                print(f"    {SYM_OK} {name:<22} ok", flush=True)
-                _write_status("phase2", f"{name} complete", subagent=name, subagent_status="complete")
+    if parallel:
+        with ThreadPoolExecutor(max_workers=3) as pool:
+            futures = {
+                pool.submit(_run_subagent_with_status, name, slug, use_cache): name
+                for name in agents
+            }
+            for future in as_completed(futures):
+                name, result, was_cached = future.result()
+                result["_was_cached"] = was_cached
+                results[name] = result
+    else:
+        for i, name in enumerate(agents):
+            if i > 0:
+                time.sleep(2)
+            name, result, was_cached = _run_subagent_with_status(name, slug, use_cache)
             result["_was_cached"] = was_cached
             results[name] = result
-        except Exception as e:
-            print(f"    {SYM_ERROR} {name:<22} {str(e)[:60]}", flush=True)
-            results[name] = {"status": "error", "reason": str(e)[:200]}
-            _write_status("phase2", f"{name} error: {str(e)[:60]}", subagent=name, subagent_status="error")
 
     # Write subagent outputs to sources/{slug}/ (strip internal _was_cached flag)
     sources_dir = SOURCES_DIR / slug
@@ -861,7 +878,7 @@ def run_phase3(slug: str, subagent_outputs: dict) -> dict:
         client = anthropic.Anthropic()
         try:
             text = _stream_anthropic_with_retry(
-                client, model=OPUS_MODEL, max_tokens=12000,
+                client, model=OPUS_MODEL, max_tokens=16000,
                 system=cached_system, messages=[{"role": "user", "content": user_msg}],
                 label="synthesizer",
             )
@@ -881,6 +898,19 @@ def run_phase3(slug: str, subagent_outputs: dict) -> dict:
         brief = _parse_json_robust(text, raw_path)
         if brief is None:
             return {"status": "parse_error", "raw": text[:2000], "subagent_outputs": subagent_outputs}
+
+        # Validate required top-level sections
+        REQUIRED_SECTIONS = [
+            "tldr", "entity_type", "snapshot", "cooperative_purchasing",
+            "champion_candidates", "discovery_questions_by_persona",
+            "meddic_qualification", "verkada_gtm_strategy",
+        ]
+        missing = [s for s in REQUIRED_SECTIONS
+                    if not brief.get(s) or brief.get(s) == "insufficient_data"]
+        if missing:
+            warning = f"Missing brief sections: {', '.join(missing)}"
+            print(f"    \033[33m⚠\033[0m  {warning}", flush=True)
+            _write_status("phase3", warning, missing_sections=missing)
 
         print(f"    {SYM_OK} synthesizer complete", flush=True)
         return brief
@@ -923,7 +953,7 @@ def run_phase4(brief_json_path: Path, open_browser: bool) -> Path | None:
 # Main pipeline
 # ---------------------------------------------------------------------------
 
-def research(company: str, *, force: bool = False, open_browser: bool = False, use_cache: bool = True):
+def research(company: str, *, force: bool = False, open_browser: bool = False, use_cache: bool = True, parallel: bool = True):
     """Full /research pipeline."""
     global _status_path
     # Reset token usage for this run
@@ -985,7 +1015,7 @@ def research(company: str, *, force: bool = False, open_browser: bool = False, u
 
     # Phase 2 — Subagent synthesis
     t2 = time.time()
-    subagent_outputs = run_phase2(slug, use_cache=use_cache)
+    subagent_outputs = run_phase2(slug, use_cache=use_cache, parallel=parallel)
     t2_elapsed = time.time() - t2
     print(f"  Phase 2 elapsed: {t2_elapsed:.1f}s")
 
@@ -1080,18 +1110,19 @@ def research(company: str, *, force: bool = False, open_browser: bool = False, u
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python orchestrator.py <company_name> [--force] [--open] [--no-cache]", file=sys.stderr)
+        print("Usage: python orchestrator.py <company_name> [--force] [--open] [--no-cache] [--sequential]", file=sys.stderr)
         print("  e.g.: python orchestrator.py 'Atlanta Public Schools'", file=sys.stderr)
         print("        python orchestrator.py 'Georgia Tech' --force --open", file=sys.stderr)
-        print("        python orchestrator.py 'City of Atlanta' --no-cache", file=sys.stderr)
+        print("        python orchestrator.py 'City of Atlanta' --no-cache --sequential", file=sys.stderr)
         sys.exit(1)
 
     company = sys.argv[1]
     force = "--force" in sys.argv
     open_browser = "--open" in sys.argv
     use_cache = "--no-cache" not in sys.argv
+    parallel = "--sequential" not in sys.argv
 
-    research(company, force=force, open_browser=open_browser, use_cache=use_cache)
+    research(company, force=force, open_browser=open_browser, use_cache=use_cache, parallel=parallel)
 
 
 if __name__ == "__main__":

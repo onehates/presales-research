@@ -80,11 +80,25 @@ When asked about discovery questions, reference the trigger-sourced questions fr
 @app.post("/chat")
 async def chat(req: ChatRequest):
     brief_path = BRIEFS_DIR / f"{req.slug}-{req.date}.json"
-    if not brief_path.exists():
-        return {"error": f"Brief not found: {brief_path.name}"}
 
-    brief_data = json.loads(brief_path.read_text())
+    # Load and validate brief
+    try:
+        if not brief_path.exists():
+            raise FileNotFoundError(brief_path.name)
+        brief_data = json.loads(brief_path.read_text())
+        if not isinstance(brief_data, dict) or not brief_data.get("snapshot"):
+            raise ValueError("Brief missing required 'snapshot' field")
+    except Exception as e:
+        error_msg = f"Brief data is unavailable or corrupted for this account. Try re-running /research, or check briefs/{req.slug}-{req.date}.json. ({e})"
+        def error_stream():
+            yield f"data: {json.dumps({'text': error_msg})}\n\n"
+            yield "data: [DONE]\n\n"
+        return StreamingResponse(error_stream(), media_type="text/event-stream")
+
     company_name = brief_data.get("snapshot", {}).get("name", req.slug)
+    brief_size = len(json.dumps(brief_data))
+    key_count = len(brief_data)
+    print(f"[chat] loaded brief: {req.slug}-{req.date}.json ({brief_size} bytes, {key_count} keys)", flush=True)
 
     system_prompt = SYSTEM_TEMPLATE.format(
         company_name=company_name,
@@ -94,17 +108,22 @@ async def chat(req: ChatRequest):
     messages = [{"role": m.role, "content": m.content} for m in req.history]
     messages.append({"role": "user", "content": req.message})
 
-    client = anthropic.Anthropic()
+    client = anthropic.Anthropic(timeout=60.0)
 
     def generate():
-        with client.messages.stream(
-            model=SONNET_MODEL,
-            max_tokens=2000,
-            system=system_prompt,
-            messages=messages,
-        ) as stream:
-            for text in stream.text_stream:
-                yield f"data: {json.dumps({'text': text})}\n\n"
+        try:
+            with client.messages.stream(
+                model=SONNET_MODEL,
+                max_tokens=2000,
+                system=system_prompt,
+                messages=messages,
+            ) as stream:
+                for text in stream.text_stream:
+                    yield f"data: {json.dumps({'text': text})}\n\n"
+        except anthropic.APITimeoutError:
+            yield f"data: {json.dumps({'text': '\n\nRequest timed out -- try a shorter question or retry.'})}\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'text': f'\n\nChat error: {str(e)[:100]}'})}\n\n"
         yield "data: [DONE]\n\n"
 
     return StreamingResponse(generate(), media_type="text/event-stream")

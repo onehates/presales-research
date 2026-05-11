@@ -624,3 +624,7 @@ The brief can be generated with 2 of 3 subagents, but NOT without company-bg.
 16. **Generate TL;DR** — 3 bullets max, company-specific, priority-ordered.
 17. **Run specificity rewrite pass** — final check on every text string in the output.
 18. Output the final JSON object. No wrapper, no markdown, no explanation text.
+
+## CRITICAL: Output Completeness
+
+OUTPUT MUST BE VALID JSON WITH ALL TOP-LEVEL SECTIONS PRESENT. If approaching the token limit, prioritize completing these sections in order: cooperative_purchasing > meddic_qualification > verkada_gtm_strategy > champion_candidates > discovery_questions_by_persona > pain_hypotheses. NEVER truncate mid-string. NEVER omit closing brackets. Better to write a SHORT but complete brief than a long but truncated one. Every section must have its closing brace/bracket. Every string must be terminated. If a section would push you past the limit, write a minimal valid version (e.g. a single-sentence summary) rather than omitting it entirely.
