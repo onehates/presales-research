@@ -12,9 +12,110 @@
     .badge { font-size: 0.6rem; letter-spacing: 0.05em; }
     .section-card { border-left: 3px solid #e5e7eb; }
     .section-card:hover { border-left-color: #3b82f6; }
+
+    /* Side nav */
+    #side-nav { scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
+    #side-nav a { transition: all 0.15s; }
+    #side-nav a.active { color: #2563eb; border-left-color: #2563eb; font-weight: 600; }
+    #side-nav a:hover { color: #1d4ed8; background: #f1f5f9; }
+
+    /* Champion progress bar */
+    .champion-bar { height: 8px; border-radius: 4px; background: #e5e7eb; overflow: hidden; }
+    .champion-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+
+    /* Score dots */
+    .score-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+    /* Timeline */
+    .timeline-item { position: relative; padding-left: 28px; }
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 24px;
+      bottom: -20px;
+      width: 2px;
+      background: #e5e7eb;
+    }
+    .timeline-item:last-child::before { display: none; }
+    .timeline-dot {
+      position: absolute;
+      left: 0;
+      top: 6px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid #e5e7eb;
+      background: white;
+    }
+    .timeline-dot.relevant { border-color: #3b82f6; background: #dbeafe; }
+
+    /* Ask button */
+    .ask-btn {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    .ask-btn:hover { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
+
+    /* Drag behavior */
+    #chat-toggle, #chat-panel {
+      transition: opacity 0.2s, box-shadow 0.2s;
+      will-change: transform;
+    }
+    #chat-toggle.animate-pos, #chat-panel.animate-pos {
+      transition: transform 200ms ease, opacity 0.2s, box-shadow 0.2s;
+    }
+    #chat-toggle.dragging, #chat-panel.dragging {
+      opacity: 0.85;
+      cursor: grabbing !important;
+    }
+    #chat-toggle.dragging { box-shadow: 0 8px 24px rgba(37,99,235,0.5); }
+    #chat-panel.dragging { box-shadow: 0 24px 80px rgba(0,0,0,0.22); }
+    #chat-header button { cursor: pointer; }
+
+    /* Mobile: disable drag, standard positioning */
+    @media (max-width: 639px) {
+      #chat-toggle {
+        top: auto !important; left: auto !important;
+        bottom: 16px !important; right: 16px !important;
+        transform: none !important;
+      }
+      #chat-panel {
+        top: auto !important; left: 0 !important;
+        right: 0 !important; bottom: 0 !important;
+        width: auto !important; height: 85vh !important;
+        border-radius: 16px 16px 0 0 !important;
+        transform: none !important;
+      }
+      #chat-header { cursor: default !important; }
+    }
+
+    /* Print */
     @media print {
-      .no-print { display: none; }
-      .section-card { break-inside: avoid; }
+      .no-print, #side-nav, #chat-toggle, #chat-panel { display: none !important; }
+      body { background: white !important; }
+      .section-card { break-inside: avoid; border-left-color: #d1d5db !important; box-shadow: none !important; }
+      main { margin-left: 0 !important; max-width: 100% !important; padding: 0 24px !important; }
+      footer { margin-left: 0 !important; max-width: 100% !important; }
+      header { position: relative !important; }
+      .ask-btn { display: none !important; }
+      section { page-break-inside: avoid; }
+      h2 { page-break-after: avoid; }
+      table { font-size: 11px; }
+      a { color: inherit !important; text-decoration: none !important; }
+      .source-chip { background: #f3f4f6 !important; color: #374151 !important; }
+      .source-chip::after { content: " (" attr(href) ")"; font-size: 8px; color: #9ca3af; word-break: break-all; }
+      @page { margin: 1.5cm; size: A4; }
     }
   </style>
 </head>
@@ -22,7 +123,7 @@
 
   <!-- Header -->
   <header class="bg-white border-b border-gray-200 sticky top-0 z-10 no-print">
-    <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
       <div>
         <h1 class="text-xl font-bold text-gray-900">{{ data.snapshot.name }}</h1>
         <p class="text-sm text-gray-500">{{ data.snapshot.vertical }} · {{ data.entity_type | default(data.snapshot.ticker or 'Private') | replace('_', ' ') }} · {{ data.snapshot.headquarters_state }}</p>
@@ -34,15 +135,58 @@
     </div>
   </header>
 
-  <main class="max-w-5xl mx-auto px-6 py-8 space-y-8">
+  <!-- Side Navigation -->
+  <nav id="side-nav" class="hidden lg:block fixed top-[73px] left-0 w-52 h-[calc(100vh-73px)] overflow-y-auto bg-white border-r border-gray-200 py-4 px-2 z-10 no-print">
+    <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider px-3 mb-2">Sections</div>
+    <a href="#sec-tldr" class="nav-link block text-xs text-gray-500 py-1.5 px-3 rounded border-l-2 border-transparent">TL;DR</a>
+    <a href="#sec-snapshot" class="nav-link block text-xs text-gray-500 py-1.5 px-3 rounded border-l-2 border-transparent">Snapshot</a>
+    {% if data.federal_funding_profile %}
+    <a href="#sec-funding" class="nav-link block text-xs text-gray-500 py-1.5 px-3 rounded border-l-2 border-transparent">Federal Funding</a>
+    {% endif %}
+    <a href="#sec-vertical" class="nav-link block text-xs text-gray-500 py-1.5 px-3 rounded border-l-2 border-transparent">Vertical Match</a>
+    <a href="#sec-leadership" class="nav-link block text-xs text-gray-500 py-1.5 px-3 rounded border-l-2 border-transparent">Leadership</a>
+    {% if data.champion_candidates %}
+    <a href="#sec-champions" class="nav-link block text-xs text-gray-500 py-1.5 px-3 rounded border-l-2 border-transparent">Champions</a>
+    {% endif %}
+    {% if data.meddic_qualification %}
+    <a href="#sec-meddic" class="nav-link block text-xs text-gray-500 py-1.5 px-3 rounded border-l-2 border-transparent">MEDDIC</a>
+    {% endif %}
+    <a href="#sec-events" class="nav-link block text-xs text-gray-500 py-1.5 px-3 rounded border-l-2 border-transparent">Events</a>
+    {% if data.technical_footprint %}
+    <a href="#sec-tech" class="nav-link block text-xs text-gray-500 py-1.5 px-3 rounded border-l-2 border-transparent">Tech Footprint</a>
+    {% endif %}
+    {% if data.pain_hypotheses %}
+    <a href="#sec-pain" class="nav-link block text-xs text-gray-500 py-1.5 px-3 rounded border-l-2 border-transparent">Pain Hypotheses</a>
+    {% endif %}
+    {% if data.hiring_signals %}
+    <a href="#sec-hiring" class="nav-link block text-xs text-gray-500 py-1.5 px-3 rounded border-l-2 border-transparent">Hiring Signals</a>
+    {% endif %}
+    {% if data.displacement_intel %}
+    <a href="#sec-displacement" class="nav-link block text-xs text-gray-500 py-1.5 px-3 rounded border-l-2 border-transparent">Displacement</a>
+    {% endif %}
+    {% if data.verkada_gtm_strategy %}
+    <a href="#sec-gtm" class="nav-link block text-xs text-gray-500 py-1.5 px-3 rounded border-l-2 border-transparent">GTM Strategy</a>
+    {% endif %}
+    {% if data.discovery_questions_by_persona %}
+    <a href="#sec-discovery" class="nav-link block text-xs text-gray-500 py-1.5 px-3 rounded border-l-2 border-transparent">Discovery Qs</a>
+    {% endif %}
+  </nav>
+
+  <main class="lg:ml-52 max-w-5xl mx-auto px-6 py-8 space-y-8">
 
     <!-- TL;DR Card -->
-    <section class="bg-blue-50 border border-blue-200 rounded-lg p-6">
-      <div class="flex items-center gap-2 mb-3">
-        <h2 class="text-sm font-semibold text-blue-800 uppercase tracking-wide">TL;DR — 30-Second Skim</h2>
-        {% if data.tldr.confidence %}
-        {{ confidence_badge(data.tldr.confidence) }}
-        {% endif %}
+    <section id="sec-tldr" class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <h2 class="text-sm font-semibold text-blue-800 uppercase tracking-wide">TL;DR — 30-Second Skim</h2>
+          {% if data.tldr.confidence %}
+          {{ confidence_badge(data.tldr.confidence) }}
+          {% endif %}
+        </div>
+        <button class="ask-btn no-print" onclick="askAbout('TL;DR summary')">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          Ask
+        </button>
       </div>
       <ul class="space-y-3">
         {% for bullet in data.tldr.bullets %}
@@ -51,9 +195,36 @@
       </ul>
     </section>
 
+    <!-- Quick Stats Banner -->
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-white rounded-lg border border-gray-200 p-4 text-center">
+        <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Vertical</div>
+        <div class="text-lg font-bold text-gray-900">{{ data.vertical_match.matched_vertical }}</div>
+      </div>
+      <div class="bg-white rounded-lg border border-gray-200 p-4 text-center">
+        <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Scale</div>
+        <div class="text-sm font-bold text-gray-900 leading-tight">{{ data.snapshot.size_indicator }}</div>
+      </div>
+      <div class="bg-white rounded-lg border border-gray-200 p-4 text-center">
+        <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Top Champion</div>
+        {% if data.champion_candidates %}
+        {% set top = data.champion_candidates[0] %}
+        <div class="text-lg font-bold {{ 'text-green-700' if top.champion_fit_score >= 0.6 else 'text-amber-700' if top.champion_fit_score >= 0.3 else 'text-gray-600' }}">{{ (top.champion_fit_score * 100) | int }}%</div>
+        <div class="text-[10px] text-gray-500 truncate">{{ top.name }}</div>
+        {% else %}
+        <div class="text-lg font-bold text-gray-400">—</div>
+        {% endif %}
+      </div>
+      <div class="bg-white rounded-lg border border-gray-200 p-4 text-center">
+        <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Key Drivers</div>
+        <div class="text-lg font-bold text-gray-900">{{ data.vertical_match.key_drivers_present | length }}</div>
+        <div class="text-[10px] text-gray-500">signals matched</div>
+      </div>
+    </section>
+
     <!-- Disqualifier Flags -->
     {% if data.disqualifier_flags %}
-    <section class="bg-red-50 border border-red-300 rounded-lg p-6">
+    <section id="sec-disqualifiers" class="bg-red-50 border border-red-300 rounded-lg p-6">
       <h2 class="text-sm font-semibold text-red-800 uppercase tracking-wide mb-3">Disqualifier Flags</h2>
       {% for flag in data.disqualifier_flags %}
       <div class="flex items-start gap-2 mb-2">
@@ -68,8 +239,14 @@
     {% endif %}
 
     <!-- Company Snapshot -->
-    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
-      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Company Snapshot</h2>
+    <section id="sec-snapshot" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Company Snapshot</h2>
+        <button class="ask-btn no-print" onclick="askAbout('company snapshot and background')">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          Ask
+        </button>
+      </div>
       <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
         <div>
           <dt class="text-gray-500 text-xs uppercase">Legal Name</dt>
@@ -103,8 +280,14 @@
 
     <!-- Federal Funding Profile -->
     {% if data.federal_funding_profile %}
-    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
-      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Federal Funding Profile</h2>
+    <section id="sec-funding" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Federal Funding Profile</h2>
+        <button class="ask-btn no-print" onclick="askAbout('federal funding profile and NDAA exposure')">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          Ask
+        </button>
+      </div>
       <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm mb-4">
         <div>
           <dt class="text-gray-500 text-xs uppercase">Federal Funding</dt>
@@ -148,8 +331,14 @@
     {% endif %}
 
     <!-- Vertical Match -->
-    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
-      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Vertical Match</h2>
+    <section id="sec-vertical" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Vertical Match</h2>
+        <button class="ask-btn no-print" onclick="askAbout('vertical match and key drivers')">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          Ask
+        </button>
+      </div>
       <div class="flex items-center gap-3 mb-3">
         <span class="text-lg font-bold text-gray-900">{{ data.vertical_match.matched_vertical }}</span>
         {{ confidence_badge(data.vertical_match.match_confidence) }}
@@ -176,8 +365,14 @@
     </section>
 
     <!-- Leadership -->
-    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
-      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Leadership</h2>
+    <section id="sec-leadership" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Leadership</h2>
+        <button class="ask-btn no-print" onclick="askAbout('leadership team and key contacts')">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          Ask
+        </button>
+      </div>
       {% if data.leadership is string %}
       <p class="text-sm text-gray-500 italic">{{ data.leadership }}</p>
       {% elif data.leadership == "insufficient_data" %}
@@ -204,8 +399,14 @@
 
     <!-- Projected Champion Candidates -->
     {% if data.champion_candidates %}
-    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
-      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">Projected Champion Candidates</h2>
+    <section id="sec-champions" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Projected Champion Candidates</h2>
+        <button class="ask-btn no-print" onclick="askAbout('champion candidates and who to engage first')">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          Ask
+        </button>
+      </div>
       <p class="text-xs text-gray-400 italic mb-4">These are projections based on public signals about each candidate. Validate via discovery.</p>
       <div class="space-y-5">
         {% for cand in data.champion_candidates[:3] %}
@@ -216,30 +417,35 @@
               <span class="text-gray-500 text-sm"> — {{ cand.title }}</span>
             </div>
             <div class="flex items-center gap-2 flex-shrink-0 ml-3">
-              {% set score_pct = (cand.champion_fit_score * 100) | int %}
-              <span class="inline-block px-2 py-0.5 rounded text-xs font-bold {{ 'bg-green-100 text-green-800' if cand.champion_fit_score >= 0.6 else 'bg-amber-100 text-amber-800' if cand.champion_fit_score >= 0.3 else 'bg-gray-100 text-gray-600' }}">{{ score_pct }}%</span>
               {% set role_colors = {'champion': 'bg-blue-100 text-blue-700', 'economic_buyer': 'bg-purple-100 text-purple-700', 'influencer': 'bg-teal-100 text-teal-700'} %}
               <span class="inline-block px-2 py-0.5 rounded text-xs font-medium {{ role_colors.get(cand.meddic_role, 'bg-gray-100 text-gray-600') }}">{{ cand.meddic_role | replace('_', ' ') }}</span>
               {{ confidence_badge(cand.confidence) }}
             </div>
           </div>
 
-          <!-- Score breakdown bar -->
+          <!-- Champion score progress bar -->
+          {% set score_pct = (cand.champion_fit_score * 100) | int %}
+          <div class="flex items-center gap-3 mb-2 mt-1">
+            <div class="champion-bar flex-1 max-w-[200px]">
+              <div class="champion-bar-fill {{ 'bg-green-500' if cand.champion_fit_score >= 0.6 else 'bg-amber-500' if cand.champion_fit_score >= 0.3 else 'bg-gray-400' }}" style="width: {{ score_pct }}%"></div>
+            </div>
+            <span class="text-xs font-bold {{ 'text-green-700' if cand.champion_fit_score >= 0.6 else 'text-amber-700' if cand.champion_fit_score >= 0.3 else 'text-gray-500' }}">{{ score_pct }}%</span>
+          </div>
+
+          <!-- Score breakdown dots -->
           {% if cand.score_breakdown %}
-          <div class="flex items-center gap-1 mb-2 mt-1">
+          <div class="flex items-center gap-3 mb-2">
             {% set factors = [
-              ('Role', cand.score_breakdown.role_fit, 'bg-blue-400'),
-              ('Recency', cand.score_breakdown.recency, 'bg-emerald-400'),
-              ('Arc', cand.score_breakdown.career_arc, 'bg-violet-400'),
-              ('Voice', cand.score_breakdown.public_voice, 'bg-amber-400'),
-              ('Topic', cand.score_breakdown.topic_affinity, 'bg-rose-400'),
-              ('Auth', cand.score_breakdown.authority, 'bg-slate-400')
+              ('Role', cand.score_breakdown.role_fit, '#3b82f6'),
+              ('Recency', cand.score_breakdown.recency, '#10b981'),
+              ('Arc', cand.score_breakdown.career_arc, '#8b5cf6'),
+              ('Voice', cand.score_breakdown.public_voice, '#f59e0b'),
+              ('Topic', cand.score_breakdown.topic_affinity, '#f43f5e'),
+              ('Auth', cand.score_breakdown.authority, '#64748b')
             ] %}
             {% for label, val, color in factors %}
-            <div class="flex flex-col items-center" style="min-width: 44px;">
-              <div class="w-full bg-gray-100 rounded-full h-1.5 mb-0.5">
-                <div class="{{ color }} rounded-full h-1.5" style="width: {{ (val * 100) | int }}%"></div>
-              </div>
+            <div class="flex items-center gap-1" title="{{ label }}: {{ (val * 100) | int }}%">
+              <span class="score-dot" style="background: {{ color }}; opacity: {{ 0.25 + val * 0.75 }};"></span>
               <span class="text-[9px] text-gray-400">{{ label }}</span>
             </div>
             {% endfor %}
@@ -286,48 +492,63 @@
     </section>
     {% endif %}
 
-    <!-- MEDDIC Qualification -->
+    <!-- MEDDIC Qualification (Summary) -->
     {% if data.meddic_qualification and data.meddic_qualification is mapping %}
-    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
-      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">MEDDIC Qualification</h2>
+    <section id="sec-meddic" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">MEDDIC Qualification</h2>
+        <button class="ask-btn no-print" onclick="askAbout('MEDDIC qualification and gaps to close')">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          Ask
+        </button>
+      </div>
       {% if data.meddic_qualification is string %}
       <p class="text-sm text-gray-500 italic">{{ data.meddic_qualification }}</p>
       {% else %}
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
-            <tr class="border-b border-gray-200 text-left">
-              <th class="py-2 pr-3 text-xs font-semibold text-gray-500 uppercase w-24">Letter</th>
-              <th class="py-2 pr-3 text-xs font-semibold text-gray-500 uppercase">Value</th>
-              <th class="py-2 pr-3 text-xs font-semibold text-gray-500 uppercase">Evidence</th>
-              <th class="py-2 pr-3 text-xs font-semibold text-gray-500 uppercase w-20">Confidence</th>
-              <th class="py-2 text-xs font-semibold text-gray-500 uppercase">Gap</th>
+            <tr class="border-b border-gray-200">
+              <th class="text-left py-2 px-3 text-xs font-semibold text-gray-500 uppercase w-1/6">Element</th>
+              <th class="text-left py-2 px-3 text-xs font-semibold text-gray-500 uppercase w-2/5">Assessment</th>
+              <th class="text-left py-2 px-3 text-xs font-semibold text-gray-500 uppercase w-1/4">Gap to Close</th>
+              <th class="text-left py-2 px-3 text-xs font-semibold text-gray-500 uppercase w-1/6">Confidence</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-100">
-            {% set meddic_labels = [
-              ("metrics", "M — Metrics"),
-              ("economic_buyer", "E — Economic Buyer"),
-              ("decision_criteria", "D — Decision Criteria"),
-              ("decision_process", "D — Decision Process"),
-              ("identify_pain", "I — Identify Pain"),
-              ("champion", "C — Champion"),
-              ("competition", "C — Competition")
-            ] %}
-            {% for key, label in meddic_labels %}
-            {% set field = data.meddic_qualification[key] if data.meddic_qualification[key] is mapping else {} %}
-            <tr>
-              <td class="py-2.5 pr-3 font-medium text-gray-700 whitespace-nowrap">{{ label }}</td>
-              <td class="py-2.5 pr-3 text-gray-800">{{ field.value or '—' }}</td>
-              <td class="py-2.5 pr-3 text-gray-600">
-                {{ field.evidence or '—' }}
-                {% if field.source %}
-                <span class="ml-1">{{ source_chip(field.source) }}</span>
+          <tbody>
+            {% set meddic_labels = {'metrics': 'Metrics', 'economic_buyer': 'Economic Buyer', 'decision_criteria': 'Decision Criteria', 'decision_process': 'Decision Process', 'identify_pain': 'Identify Pain', 'champion': 'Champion', 'competition': 'Competition'} %}
+            {% set meddic_colors = {'metrics': 'blue', 'economic_buyer': 'purple', 'decision_criteria': 'green', 'decision_process': 'amber', 'identify_pain': 'red', 'champion': 'indigo', 'competition': 'orange'} %}
+            {% for key, label in meddic_labels.items() %}
+            {% set field = data.meddic_qualification[key] %}
+            {% if field %}
+            <tr class="border-b border-gray-100 hover:bg-gray-50">
+              <td class="py-3 px-3">
+                <span class="inline-block bg-{{ meddic_colors[key] }}-100 text-{{ meddic_colors[key] }}-800 px-2 py-0.5 rounded text-xs font-bold">{{ label[0] }}</span>
+                <span class="text-xs text-gray-600 ml-1">{{ label }}</span>
+              </td>
+              <td class="py-3 px-3">
+                <p class="text-gray-800">{{ field.value }}</p>
+                {% if field.evidence %}
+                <div class="mt-1 space-y-0.5">
+                  {% for ev in field.evidence %}
+                  <p class="text-xs text-gray-500 pl-2 border-l border-gray-200">{{ ev }}</p>
+                  {% endfor %}
+                </div>
                 {% endif %}
               </td>
-              <td class="py-2.5 pr-3">{{ confidence_badge(field.confidence or 'low') }}</td>
-              <td class="py-2.5 text-gray-500 italic text-xs">{{ field.gap or '—' }}</td>
+              <td class="py-3 px-3">
+                {% if field.gap %}
+                <p class="text-xs text-amber-700 bg-amber-50 rounded px-2 py-1">{{ field.gap }}</p>
+                {% else %}
+                <span class="text-xs text-gray-400">—</span>
+                {% endif %}
+              </td>
+              <td class="py-3 px-3">
+                {{ confidence_badge(field.confidence) }}
+                {{ quality_badge(field.source_quality) }}
+              </td>
             </tr>
+            {% endif %}
             {% endfor %}
           </tbody>
         </table>
@@ -336,17 +557,24 @@
     </section>
     {% endif %}
 
-    <!-- Recent Material Events -->
-    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
-      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Recent Material Events</h2>
+    <!-- Recent Material Events (Timeline) -->
+    <section id="sec-events" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Recent Material Events</h2>
+        <button class="ask-btn no-print" onclick="askAbout('recent material events and their sales relevance')">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          Ask
+        </button>
+      </div>
       {% if data.recent_material_events is string %}
       <p class="text-sm text-gray-500 italic">{{ data.recent_material_events }}</p>
       {% else %}
-      <div class="space-y-4">
+      <div class="space-y-5 ml-1">
         {% for event in data.recent_material_events %}
-        <div class="border-l-2 {{ 'border-blue-400' if event.verkada_relevant else 'border-gray-200' }} pl-4">
+        <div class="timeline-item">
+          <div class="timeline-dot {{ 'relevant' if event.verkada_relevant else '' }}"></div>
           <div class="flex items-center gap-2 mb-1">
-            <span class="text-xs text-gray-400">{{ event.date or 'Date unknown' }}</span>
+            <span class="text-xs font-medium text-gray-500">{{ event.date or 'Date unknown' }}</span>
             <span class="inline-block bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs">{{ event.category }}</span>
             {% if event.verkada_relevant %}
             <span class="inline-block bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-medium">Verkada-relevant</span>
@@ -367,8 +595,14 @@
 
     <!-- Technical Footprint -->
     {% if data.technical_footprint %}
-    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
-      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Technical Footprint</h2>
+    <section id="sec-tech" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Technical Footprint</h2>
+        <button class="ask-btn no-print" onclick="askAbout('technical footprint and infrastructure signals')">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          Ask
+        </button>
+      </div>
 
       <!-- Scale bar -->
       {% if data.technical_footprint.scale_indicators %}
@@ -457,8 +691,14 @@
 
     <!-- Pain Hypotheses -->
     {% if data.pain_hypotheses %}
-    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
-      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Pain Hypotheses</h2>
+    <section id="sec-pain" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Pain Hypotheses</h2>
+        <button class="ask-btn no-print" onclick="askAbout('pain hypotheses and how to validate them')">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          Ask
+        </button>
+      </div>
       <div class="space-y-5">
         {% for pain in data.pain_hypotheses %}
         <div class="border-l-2 border-amber-400 pl-4">
@@ -486,8 +726,14 @@
 
     <!-- Practitioner Sentiment -->
     {% if data.practitioner_sentiment and data.practitioner_sentiment != "insufficient_data" %}
-    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
-      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Practitioner Sentiment (Reddit)</h2>
+    <section id="sec-sentiment" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Practitioner Sentiment (Reddit)</h2>
+        <button class="ask-btn no-print" onclick="askAbout('practitioner sentiment and vendor mentions')">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          Ask
+        </button>
+      </div>
       <p class="text-xs text-gray-400 mb-4">{{ data.practitioner_sentiment.total_posts_analyzed }} posts analyzed from {{ data.practitioner_sentiment.source_subreddits | join(', ') }}</p>
 
       {% if data.practitioner_sentiment.top_pain_themes %}
@@ -533,8 +779,14 @@
 
     <!-- Incident History -->
     {% if data.incident_history %}
-    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
-      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Incident History</h2>
+    <section id="sec-incidents" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Incident History</h2>
+        <button class="ask-btn no-print" onclick="askAbout('incident history and regulatory exposure')">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          Ask
+        </button>
+      </div>
       <div class="grid grid-cols-3 gap-4 mb-4 text-sm">
         <div>
           <dt class="text-gray-500 text-xs uppercase">Total Breaches</dt>
@@ -565,8 +817,14 @@
 
     <!-- Cooperative Purchasing -->
     {% if data.cooperative_purchasing %}
-    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
-      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Cooperative Purchasing</h2>
+    <section id="sec-coop" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Cooperative Purchasing</h2>
+        <button class="ask-btn no-print" onclick="askAbout('cooperative purchasing vehicles and procurement path')">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          Ask
+        </button>
+      </div>
       {% if data.cooperative_purchasing.procurement_signal %}
       <p class="text-sm text-gray-700 mb-4">{{ data.cooperative_purchasing.procurement_signal }}</p>
       {% endif %}
@@ -604,8 +862,14 @@
 
     <!-- Displacement Intel -->
     {% if data.displacement_intel %}
-    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
-      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Displacement Intel</h2>
+    <section id="sec-displacement" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Displacement Intel</h2>
+        <button class="ask-btn no-print" onclick="askAbout('competitive displacement strategy and incumbent vendors')">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          Ask
+        </button>
+      </div>
       {% if data.displacement_intel.vendor_hits %}
       <div class="space-y-3 mb-4">
         {% for hit in data.displacement_intel.vendor_hits %}
@@ -636,8 +900,14 @@
 
     <!-- Hiring Signals -->
     {% if data.hiring_signals %}
-    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
-      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Hiring Signals</h2>
+    <section id="sec-hiring" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Hiring Signals</h2>
+        <button class="ask-btn no-print" onclick="askAbout('hiring signals and security team build-out')">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          Ask
+        </button>
+      </div>
 
       <!-- Intensity -->
       {% set hi = data.hiring_signals.hiring_intensity %}
@@ -713,65 +983,16 @@
     </section>
     {% endif %}
 
-    <!-- MEDDIC Qualification -->
-    {% if data.meddic_qualification %}
-    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
-      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">MEDDIC Qualification</h2>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead>
-            <tr class="border-b border-gray-200">
-              <th class="text-left py-2 px-3 text-xs font-semibold text-gray-500 uppercase w-1/6">Element</th>
-              <th class="text-left py-2 px-3 text-xs font-semibold text-gray-500 uppercase w-2/5">Assessment</th>
-              <th class="text-left py-2 px-3 text-xs font-semibold text-gray-500 uppercase w-1/4">Gap to Close</th>
-              <th class="text-left py-2 px-3 text-xs font-semibold text-gray-500 uppercase w-1/6">Confidence</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% set meddic_labels = {'metrics': 'Metrics', 'economic_buyer': 'Economic Buyer', 'decision_criteria': 'Decision Criteria', 'decision_process': 'Decision Process', 'identify_pain': 'Identify Pain', 'champion': 'Champion', 'competition': 'Competition'} %}
-            {% set meddic_colors = {'metrics': 'blue', 'economic_buyer': 'purple', 'decision_criteria': 'green', 'decision_process': 'amber', 'identify_pain': 'red', 'champion': 'indigo', 'competition': 'orange'} %}
-            {% for key, label in meddic_labels.items() %}
-            {% set field = data.meddic_qualification[key] %}
-            {% if field %}
-            <tr class="border-b border-gray-100 hover:bg-gray-50">
-              <td class="py-3 px-3">
-                <span class="inline-block bg-{{ meddic_colors[key] }}-100 text-{{ meddic_colors[key] }}-800 px-2 py-0.5 rounded text-xs font-bold">{{ label[0] }}</span>
-                <span class="text-xs text-gray-600 ml-1">{{ label }}</span>
-              </td>
-              <td class="py-3 px-3">
-                <p class="text-gray-800">{{ field.value }}</p>
-                {% if field.evidence %}
-                <div class="mt-1 space-y-0.5">
-                  {% for ev in field.evidence %}
-                  <p class="text-xs text-gray-500 pl-2 border-l border-gray-200">{{ ev }}</p>
-                  {% endfor %}
-                </div>
-                {% endif %}
-              </td>
-              <td class="py-3 px-3">
-                {% if field.gap %}
-                <p class="text-xs text-amber-700 bg-amber-50 rounded px-2 py-1">{{ field.gap }}</p>
-                {% else %}
-                <span class="text-xs text-gray-400">—</span>
-                {% endif %}
-              </td>
-              <td class="py-3 px-3">
-                {{ confidence_badge(field.confidence) }}
-                {{ quality_badge(field.source_quality) }}
-              </td>
-            </tr>
-            {% endif %}
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </section>
-    {% endif %}
-
     <!-- Verkada GTM Strategy -->
     {% if data.verkada_gtm_strategy %}
-    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
-      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Verkada GTM Strategy</h2>
+    <section id="sec-gtm" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Verkada GTM Strategy</h2>
+        <button class="ask-btn no-print" onclick="askAbout('Verkada GTM strategy and recommended approach')">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          Ask
+        </button>
+      </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
 
         <!-- Land Play -->
@@ -899,8 +1120,14 @@
 
     <!-- Discovery Questions by Persona -->
     {% if data.discovery_questions_by_persona %}
-    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
-      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Discovery Questions by Persona</h2>
+    <section id="sec-discovery" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Discovery Questions by Persona</h2>
+        <button class="ask-btn no-print" onclick="askAbout('discovery questions and which persona to lead with')">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          Ask
+        </button>
+      </div>
       <div class="space-y-6">
         {% for persona, questions in data.discovery_questions_by_persona.items() %}
         <div>
@@ -933,8 +1160,14 @@
 
     <!-- Open Questions -->
     {% if data.open_questions %}
-    <section class="bg-white rounded-lg border border-gray-200 p-6 section-card">
-      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Open Questions</h2>
+    <section id="sec-openquestions" class="bg-white rounded-lg border border-gray-200 p-6 section-card">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Open Questions</h2>
+        <button class="ask-btn no-print" onclick="askAbout('open questions and what to validate in discovery')">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          Ask
+        </button>
+      </div>
       <div class="space-y-4">
         {% for oq in data.open_questions %}
         <div class="border-l-2 {{ 'border-red-300' if oq.priority == 'high' else 'border-amber-300' if oq.priority == 'medium' else 'border-gray-200' }} pl-4">
@@ -953,7 +1186,7 @@
   </main>
 
   <!-- Footer -->
-  <footer class="max-w-5xl mx-auto px-6 py-6 text-xs text-gray-400 border-t border-gray-200">
+  <footer class="lg:ml-52 max-w-5xl mx-auto px-6 py-6 text-xs text-gray-400 border-t border-gray-200">
     <div class="flex justify-between">
       <span>Pre-Sales Research Brief · {{ data.metadata.company_slug }}</span>
       <span>
@@ -965,18 +1198,19 @@
   </footer>
 
   <!-- Chat Panel -->
-  <div id="chat-toggle" onclick="toggleChat()" style="position:fixed;bottom:24px;right:24px;width:56px;height:56px;background:#2563eb;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(37,99,235,0.4);z-index:50;transition:transform 0.15s;" onmouseenter="this.style.transform='scale(1.1)'" onmouseleave="this.style.transform='scale(1)'">
+  <div id="chat-toggle" style="position:fixed;top:0;left:0;width:56px;height:56px;background:#2563eb;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(37,99,235,0.4);z-index:50;touch-action:none;" class="no-print">
     <svg width="24" height="24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
   </div>
 
-  <div id="chat-panel" style="display:none;position:fixed;bottom:24px;right:24px;width:420px;height:600px;background:white;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.15);z-index:50;flex-direction:column;overflow:hidden;">
-    <!-- Chat Header -->
-    <div style="padding:16px 20px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;background:#f8fafc;">
-      <div>
+  <div id="chat-panel" class="no-print" style="display:none;position:fixed;top:0;left:0;width:420px;height:600px;background:white;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.15);z-index:50;flex-direction:column;overflow:hidden;touch-action:none;">
+    <!-- Chat Header (drag handle) -->
+    <div id="chat-header" style="padding:16px 20px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;background:#f8fafc;cursor:move;user-select:none;touch-action:none;">
+      <div style="pointer-events:none;">
         <div style="font-weight:700;font-size:14px;color:#0f172a;">Brief Chat</div>
         <div style="font-size:11px;color:#64748b;">Grounded in {{ data.snapshot.name }} brief data</div>
       </div>
       <div style="display:flex;gap:8px;">
+        <button onclick="resetChatPosition()" style="background:none;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:13px;color:#94a3b8;cursor:pointer;line-height:1;" title="Reset chat position">&#8635;</button>
         <button onclick="clearChat()" style="background:none;border:1px solid #e2e8f0;border-radius:6px;padding:4px 10px;font-size:11px;color:#64748b;cursor:pointer;" title="Clear conversation">Clear</button>
         <button onclick="toggleChat()" style="background:none;border:none;cursor:pointer;font-size:18px;color:#94a3b8;line-height:1;">&times;</button>
       </div>
@@ -1024,6 +1258,45 @@
         history.forEach(m => appendMessage(m.role, m.content));
       }
     } catch(e) {}
+
+    // --- Scroll-spy with IntersectionObserver ---
+    const navLinks = document.querySelectorAll('#side-nav a.nav-link');
+    const sections = [];
+    navLinks.forEach(link => {
+      const id = link.getAttribute('href').slice(1);
+      const el = document.getElementById(id);
+      if (el) sections.push({id, el, link});
+    });
+
+    if (sections.length > 0 && 'IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          const item = sections.find(s => s.el === entry.target);
+          if (item) item.visible = entry.isIntersecting;
+        });
+        // Find the first visible section
+        const first = sections.find(s => s.visible);
+        if (first) {
+          navLinks.forEach(l => l.classList.remove('active'));
+          first.link.classList.add('active');
+        }
+      }, {rootMargin: '-80px 0px -60% 0px', threshold: 0});
+      sections.forEach(s => observer.observe(s.el));
+    }
+
+    // --- Ask about section ---
+    window.askAbout = function(topic) {
+      const panel = document.getElementById('chat-panel');
+      const toggle = document.getElementById('chat-toggle');
+      panel.style.display = 'flex';
+      toggle.style.display = 'none';
+      const input = document.getElementById('chat-input');
+      input.value = '';
+      input.focus();
+      const starters = document.getElementById('chat-starters');
+      if (starters) starters.style.display = 'none';
+      doSend('Tell me more about the ' + topic + ' for this account. What should I know going into a call?');
+    };
 
     window.toggleChat = function() {
       const panel = document.getElementById('chat-panel');
@@ -1265,6 +1538,152 @@
     function saveHistory() {
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(history)); } catch(e) {}
     }
+
+    // --- Draggable FAB + Panel ---
+    const DRAG_THRESHOLD = 5;
+    const POS_STORAGE = 'brief-chat-position';
+    const FAB_W = 56, FAB_H = 56;
+    const PANEL_W = 420, PANEL_H = 600;
+    const fab = document.getElementById('chat-toggle');
+    const panelEl = document.getElementById('chat-panel');
+    const chatHeader = document.getElementById('chat-header');
+
+    let fabPos, panelPos;
+
+    function isMobile() { return window.innerWidth < 640; }
+
+    function defaultFabPos() {
+      return { x: window.innerWidth - FAB_W - 24, y: window.innerHeight - FAB_H - 24 };
+    }
+    function defaultPanelPos() {
+      return { x: window.innerWidth - PANEL_W - 24, y: window.innerHeight - PANEL_H - 24 };
+    }
+
+    function clampPos(pos, w, h) {
+      return {
+        x: Math.max(0, Math.min(pos.x, window.innerWidth - w)),
+        y: Math.max(0, Math.min(pos.y, window.innerHeight - h))
+      };
+    }
+
+    function applyTransform(el, pos) {
+      el.style.transform = `translate(${Math.round(pos.x)}px, ${Math.round(pos.y)}px)`;
+    }
+
+    function loadSavedPositions() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(POS_STORAGE));
+        if (saved) {
+          fabPos = saved.fab ? clampPos(saved.fab, FAB_W, FAB_H) : defaultFabPos();
+          panelPos = saved.panel ? clampPos(saved.panel, PANEL_W, PANEL_H) : defaultPanelPos();
+          return;
+        }
+      } catch (e) {}
+      fabPos = defaultFabPos();
+      panelPos = defaultPanelPos();
+    }
+
+    function saveDragPositions() {
+      try {
+        localStorage.setItem(POS_STORAGE, JSON.stringify({ fab: fabPos, panel: panelPos }));
+      } catch (e) {}
+    }
+
+    // Initialize positions
+    loadSavedPositions();
+    if (!isMobile()) {
+      applyTransform(fab, fabPos);
+      applyTransform(panelEl, panelPos);
+    }
+
+    // Re-clamp on resize
+    window.addEventListener('resize', () => {
+      if (isMobile()) {
+        fab.style.transform = '';
+        panelEl.style.transform = '';
+        return;
+      }
+      fabPos = clampPos(fabPos, FAB_W, FAB_H);
+      panelPos = clampPos(panelPos, PANEL_W, PANEL_H);
+      applyTransform(fab, fabPos);
+      applyTransform(panelEl, panelPos);
+      saveDragPositions();
+    });
+
+    // Generic drag setup: handle=pointerdown target, target=element to move
+    function setupDrag(handle, target, getPos, setPos, tw, th, onClick) {
+      let startX, startY, startPos, moved;
+
+      function onDown(e) {
+        if (isMobile()) return;
+        if (e.target.closest('button')) return;
+        e.preventDefault();
+        startX = e.clientX;
+        startY = e.clientY;
+        startPos = { ...getPos() };
+        moved = false;
+        target.classList.remove('animate-pos');
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+      }
+
+      function onMove(e) {
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        if (!moved && Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
+        moved = true;
+        target.classList.add('dragging');
+        const np = clampPos({ x: startPos.x + dx, y: startPos.y + dy }, tw, th);
+        setPos(np);
+        applyTransform(target, np);
+      }
+
+      function onUp() {
+        document.removeEventListener('pointermove', onMove);
+        document.removeEventListener('pointerup', onUp);
+        target.classList.remove('dragging');
+        if (moved) {
+          saveDragPositions();
+        } else if (onClick) {
+          onClick();
+        }
+      }
+
+      handle.addEventListener('pointerdown', onDown);
+    }
+
+    // FAB: drag to reposition, click to open
+    setupDrag(
+      fab, fab,
+      () => fabPos, (p) => { fabPos = p; },
+      FAB_W, FAB_H,
+      () => toggleChat()
+    );
+
+    // Panel header: drag to reposition panel
+    if (chatHeader) {
+      setupDrag(
+        chatHeader, panelEl,
+        () => panelPos, (p) => { panelPos = p; },
+        PANEL_W, PANEL_H,
+        null
+      );
+    }
+
+    // Reset position button
+    window.resetChatPosition = function() {
+      localStorage.removeItem(POS_STORAGE);
+      fabPos = defaultFabPos();
+      panelPos = defaultPanelPos();
+      fab.classList.add('animate-pos');
+      panelEl.classList.add('animate-pos');
+      applyTransform(fab, fabPos);
+      applyTransform(panelEl, panelPos);
+      setTimeout(() => {
+        fab.classList.remove('animate-pos');
+        panelEl.classList.remove('animate-pos');
+      }, 250);
+    };
   })();
   </script>
 
