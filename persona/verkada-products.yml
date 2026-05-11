@@ -1,0 +1,814 @@
+# =============================================================================
+# verkada-products.yml — Verkada Product Catalog for Recommendation Engine
+# =============================================================================
+# Curated from verkada.com public product pages.
+# Used by render/product_recommender.py to match products to account signals.
+# =============================================================================
+
+products:
+
+  # ---------------------------------------------------------------------------
+  # CAMERAS — D-Series (Dome)
+  # ---------------------------------------------------------------------------
+
+  - id: cd42-dome
+    name: "CD42 Dome Camera"
+    category: cameras
+    line: "D-Series"
+    form_factor: dome
+    description: "Indoor dome with AI analytics for hallways, lobbies, and offices"
+    tagline: "Smart indoor surveillance, simplified"
+    key_features:
+      - "5MP resolution, 30 fps"
+      - "Onboard people/vehicle detection"
+      - "Up to 365 days cloud-backed storage"
+      - "NDAA Section 889 compliant"
+      - "Built-in IR for low-light"
+    target_verticals:
+      - K-12
+      - HigherEd
+      - Healthcare
+      - Retail
+      - CRE_Hospitality
+      - Manufacturing
+    pain_solved:
+      - aging_analog_cameras_with_no_remote_view
+      - no_centralized_security_operations
+      - fragmented_systems_across_school_sites
+      - legacy_NVR_at_each_facility
+      - high_camera_count_low_usability
+    compliance:
+      ndaa: true
+      fips: false
+      fedramp_in_process: false
+    image_url: ""
+    datasheet_url: "https://www.verkada.com/security-cameras/dome/cd42/"
+    local_image: "static/product-images/camera-generic.svg"
+    typical_deployment:
+      - "Hallways and corridors"
+      - "Lobbies and reception areas"
+      - "Classrooms and common areas"
+    pricing_tier: entry
+
+  - id: cd52-dome
+    name: "CD52 Dome Camera"
+    category: cameras
+    line: "D-Series"
+    form_factor: dome
+    description: "Versatile indoor/outdoor dome with enhanced AI and wider field of view"
+    tagline: "Versatile dome for any environment"
+    key_features:
+      - "5MP resolution, 30 fps"
+      - "Indoor/outdoor rated (IP67, IK10)"
+      - "Onboard people/vehicle/license plate detection"
+      - "Up to 365 days cloud-backed storage"
+      - "NDAA Section 889 compliant"
+    target_verticals:
+      - K-12
+      - HigherEd
+      - Healthcare
+      - Retail
+      - CRE_Hospitality
+      - Manufacturing
+    pain_solved:
+      - aging_analog_cameras_with_no_remote_view
+      - no_centralized_security_operations
+      - fragmented_systems_across_school_sites
+      - legacy_NVR_at_each_facility
+      - high_camera_count_low_usability
+      - inconsistent_systems_across_stores
+    compliance:
+      ndaa: true
+      fips: false
+      fedramp_in_process: false
+    image_url: ""
+    datasheet_url: "https://www.verkada.com/security-cameras/dome/cd52/"
+    local_image: "static/product-images/camera-generic.svg"
+    typical_deployment:
+      - "Building entrances and lobbies"
+      - "Parking structures"
+      - "Outdoor courtyards"
+    pricing_tier: mid
+
+  - id: cd62-dome
+    name: "CD62 Dome Camera"
+    category: cameras
+    line: "D-Series"
+    form_factor: dome
+    description: "4K outdoor-rated dome with advanced onboard analytics"
+    tagline: "4K outdoor dome with AI built in"
+    key_features:
+      - "4K resolution (8MP), 30 fps"
+      - "Indoor/outdoor rated (IP67, IK10)"
+      - "Onboard people/vehicle/license plate detection"
+      - "Up to 365 days cloud-backed storage"
+      - "NDAA Section 889 compliant"
+      - "Advanced edge-based analytics"
+    target_verticals:
+      - K-12
+      - HigherEd
+      - Healthcare
+      - Retail
+      - CRE_Hospitality
+      - Manufacturing
+    pain_solved:
+      - aging_analog_cameras_with_no_remote_view
+      - no_centralized_security_operations
+      - fragmented_systems_across_school_sites
+      - legacy_NVR_at_each_facility
+      - high_camera_count_low_usability
+      - air_gapped_DVR_systems_no_remote_access
+    compliance:
+      ndaa: true
+      fips: true
+      fedramp_in_process: true
+    image_url: ""
+    datasheet_url: "https://www.verkada.com/security-cameras/dome/cd62/"
+    local_image: "static/product-images/camera-generic.svg"
+    typical_deployment:
+      - "Building entrances and perimeter"
+      - "Parking lots"
+      - "Loading docks"
+      - "Campus exterior walkways"
+    pricing_tier: premium
+
+  # ---------------------------------------------------------------------------
+  # CAMERAS — B-Series (Bullet)
+  # ---------------------------------------------------------------------------
+
+  - id: cb52-bullet
+    name: "CB52 Bullet Camera"
+    category: cameras
+    line: "B-Series"
+    form_factor: bullet
+    description: "Outdoor bullet camera with long-range IR and AI analytics"
+    tagline: "Long-range outdoor coverage"
+    key_features:
+      - "5MP resolution, 30 fps"
+      - "Outdoor rated (IP67)"
+      - "Long-range IR up to 50m"
+      - "Onboard people/vehicle detection"
+      - "NDAA Section 889 compliant"
+    target_verticals:
+      - K-12
+      - HigherEd
+      - Manufacturing
+      - CRE_Hospitality
+    pain_solved:
+      - aging_analog_cameras_with_no_remote_view
+      - air_gapped_DVR_systems_no_remote_access
+      - no_centralized_security_operations
+    compliance:
+      ndaa: true
+      fips: false
+      fedramp_in_process: false
+    image_url: ""
+    datasheet_url: "https://www.verkada.com/security-cameras/bullet/cb52/"
+    local_image: "static/product-images/camera-generic.svg"
+    typical_deployment:
+      - "Perimeter fencing"
+      - "Parking lots"
+      - "Building exteriors"
+    pricing_tier: mid
+
+  - id: cb62-bullet
+    name: "CB62 Bullet Camera"
+    category: cameras
+    line: "B-Series"
+    form_factor: bullet
+    description: "4K outdoor bullet with advanced analytics and extended IR range"
+    tagline: "4K bullet for critical perimeter coverage"
+    key_features:
+      - "4K resolution (8MP), 30 fps"
+      - "Outdoor rated (IP67)"
+      - "Long-range IR up to 80m"
+      - "Onboard people/vehicle/license plate detection"
+      - "NDAA Section 889 compliant"
+    target_verticals:
+      - K-12
+      - HigherEd
+      - Manufacturing
+      - CRE_Hospitality
+    pain_solved:
+      - aging_analog_cameras_with_no_remote_view
+      - air_gapped_DVR_systems_no_remote_access
+      - no_centralized_security_operations
+    compliance:
+      ndaa: true
+      fips: true
+      fedramp_in_process: true
+    image_url: ""
+    datasheet_url: "https://www.verkada.com/security-cameras/bullet/cb62/"
+    local_image: "static/product-images/camera-generic.svg"
+    typical_deployment:
+      - "Long-range perimeter monitoring"
+      - "Highway-adjacent properties"
+      - "Critical infrastructure perimeter"
+    pricing_tier: premium
+
+  # ---------------------------------------------------------------------------
+  # CAMERAS — Specialty
+  # ---------------------------------------------------------------------------
+
+  - id: ch52-ptz
+    name: "CH52 PTZ Camera"
+    category: cameras
+    line: "H-Series"
+    form_factor: ptz
+    description: "Pan-tilt-zoom camera with 20x optical zoom for active monitoring"
+    tagline: "Active monitoring with 20x zoom"
+    key_features:
+      - "2MP resolution with 20x optical zoom"
+      - "Pan 360 degrees, tilt 90 degrees"
+      - "Autotracking of people and vehicles"
+      - "Outdoor rated (IP66)"
+      - "NDAA Section 889 compliant"
+    target_verticals:
+      - K-12
+      - HigherEd
+      - Manufacturing
+      - Retail
+    pain_solved:
+      - no_centralized_security_operations
+      - aging_analog_cameras_with_no_remote_view
+      - air_gapped_DVR_systems_no_remote_access
+    compliance:
+      ndaa: true
+      fips: false
+      fedramp_in_process: false
+    image_url: ""
+    datasheet_url: "https://www.verkada.com/security-cameras/ptz/"
+    local_image: "static/product-images/camera-generic.svg"
+    typical_deployment:
+      - "Large open areas (stadiums, fields)"
+      - "Parking lots requiring active tracking"
+      - "Perimeter with variable zoom needs"
+    pricing_tier: premium
+
+  - id: cf82-fisheye
+    name: "CF82 Fisheye Camera"
+    category: cameras
+    line: "F-Series"
+    form_factor: fisheye
+    description: "360-degree fisheye with dewarping and AI analytics"
+    tagline: "Full-room coverage, one camera"
+    key_features:
+      - "12MP sensor, 360-degree field of view"
+      - "Digital dewarping in Command"
+      - "Onboard people counting"
+      - "Indoor rated"
+      - "NDAA Section 889 compliant"
+    target_verticals:
+      - Retail
+      - CRE_Hospitality
+      - Healthcare
+      - HigherEd
+    pain_solved:
+      - high_camera_count_low_usability
+      - no_centralized_security_operations
+    compliance:
+      ndaa: true
+      fips: false
+      fedramp_in_process: false
+    image_url: ""
+    datasheet_url: "https://www.verkada.com/security-cameras/fisheye/"
+    local_image: "static/product-images/camera-generic.svg"
+    typical_deployment:
+      - "Retail floor coverage"
+      - "Open-plan offices"
+      - "Lobbies and atriums"
+    pricing_tier: premium
+
+  - id: cm61-mini
+    name: "CM61 Mini Camera"
+    category: cameras
+    line: "M-Series"
+    form_factor: mini
+    description: "Compact indoor camera for discreet monitoring"
+    tagline: "Discreet indoor monitoring"
+    key_features:
+      - "5MP resolution"
+      - "Compact form factor"
+      - "Onboard AI analytics"
+      - "Built-in microphone"
+      - "NDAA Section 889 compliant"
+    target_verticals:
+      - Retail
+      - CRE_Hospitality
+      - Healthcare
+      - K-12
+    pain_solved:
+      - high_camera_count_low_usability
+      - no_centralized_security_operations
+    compliance:
+      ndaa: true
+      fips: false
+      fedramp_in_process: false
+    image_url: ""
+    datasheet_url: "https://www.verkada.com/security-cameras/mini/"
+    local_image: "static/product-images/camera-generic.svg"
+    typical_deployment:
+      - "Retail point-of-sale areas"
+      - "Office spaces"
+      - "Server rooms"
+    pricing_tier: entry
+
+  # ---------------------------------------------------------------------------
+  # ACCESS CONTROL
+  # ---------------------------------------------------------------------------
+
+  - id: ac62-controller
+    name: "AC62 Door Controller"
+    category: access_control
+    line: "Access Control"
+    description: "Cloud-managed door controller supporting up to 2 doors per unit"
+    tagline: "Cloud-managed access, no on-prem server"
+    key_features:
+      - "Supports 2 doors per controller"
+      - "Supports readers, REX, door contacts, electric locks"
+      - "Cloud-managed via Command platform"
+      - "No on-prem access control server required"
+      - "NDAA Section 889 compliant"
+      - "OSDP v2 support"
+    target_verticals:
+      - K-12
+      - HigherEd
+      - Healthcare
+      - CRE_Hospitality
+      - Manufacturing
+      - Retail
+    pain_solved:
+      - fragmented_systems_across_school_sites
+      - badge_management_across_campuses
+      - access_control_not_integrated_with_video
+      - separate_access_per_tenant_floor
+      - badge_access_not_unified_with_video
+      - manual_door_propping_detection
+    compliance:
+      ndaa: true
+      fips: true
+      fedramp_in_process: true
+    image_url: ""
+    datasheet_url: "https://www.verkada.com/access-control/"
+    local_image: "static/product-images/access-control-generic.svg"
+    typical_deployment:
+      - "Main entrances and lobbies"
+      - "Server rooms and restricted areas"
+      - "Classroom wings and dormitories"
+    pricing_tier: mid
+
+  - id: ad15-reader
+    name: "AD15 Card Reader"
+    category: access_control
+    line: "Access Control"
+    description: "Multi-technology card reader supporting mobile, card, and fob credentials"
+    tagline: "Modern credentials, one reader"
+    key_features:
+      - "Supports mobile, card, and fob credentials"
+      - "Bluetooth Low Energy for mobile unlock"
+      - "Multi-technology (13.56 MHz, 125 kHz)"
+      - "Sleek wall-mount design"
+      - "OSDP v2 encrypted communication"
+    target_verticals:
+      - K-12
+      - HigherEd
+      - Healthcare
+      - CRE_Hospitality
+      - Manufacturing
+      - Retail
+    pain_solved:
+      - badge_management_across_campuses
+      - access_control_not_integrated_with_video
+      - separate_access_per_tenant_floor
+    compliance:
+      ndaa: true
+      fips: false
+      fedramp_in_process: false
+    image_url: ""
+    datasheet_url: "https://www.verkada.com/access-control/"
+    local_image: "static/product-images/access-control-generic.svg"
+    typical_deployment:
+      - "Paired with AC62 at every controlled door"
+      - "Elevator access points"
+      - "Parking garage entries"
+    pricing_tier: entry
+
+  - id: ax11-lock
+    name: "AX11 Wireless Lock"
+    category: access_control
+    line: "Access Control"
+    description: "Wireless lock for interior doors — no wiring required"
+    tagline: "Wireless access for interior doors"
+    key_features:
+      - "No door wiring required"
+      - "Battery-powered (2+ year battery life)"
+      - "Mobile and card credential support"
+      - "Cloud-managed via Command"
+      - "Ideal for retrofitting existing doors"
+    target_verticals:
+      - K-12
+      - HigherEd
+      - Healthcare
+      - CRE_Hospitality
+    pain_solved:
+      - fragmented_systems_across_school_sites
+      - badge_management_across_campuses
+      - manual_door_propping_detection
+    compliance:
+      ndaa: true
+      fips: false
+      fedramp_in_process: false
+    image_url: ""
+    datasheet_url: "https://www.verkada.com/access-control/"
+    local_image: "static/product-images/access-control-generic.svg"
+    typical_deployment:
+      - "Interior offices and classrooms"
+      - "Supply closets and utility rooms"
+      - "Retrofit applications where wiring is impractical"
+    pricing_tier: entry
+
+  # ---------------------------------------------------------------------------
+  # ALARMS — BR-Series
+  # ---------------------------------------------------------------------------
+
+  - id: br33-alarm-panel
+    name: "BR33 Alarm Panel"
+    category: alarms
+    line: "BR-Series"
+    description: "Cloud-managed intrusion detection panel with cellular backup"
+    tagline: "Cloud-managed intrusion detection"
+    key_features:
+      - "Supports up to 80 wireless sensors"
+      - "Cellular backup connectivity"
+      - "Integrated with Command platform"
+      - "Real-time alerts with video verification"
+      - "No third-party monitoring contract required"
+      - "NDAA Section 889 compliant"
+    target_verticals:
+      - K-12
+      - Retail
+      - CRE_Hospitality
+      - Manufacturing
+    pain_solved:
+      - no_centralized_security_operations
+      - fragmented_systems_across_school_sites
+      - inconsistent_systems_across_stores
+    compliance:
+      ndaa: true
+      fips: false
+      fedramp_in_process: false
+    image_url: ""
+    datasheet_url: "https://www.verkada.com/alarms/"
+    local_image: "static/product-images/alarm-generic.svg"
+    typical_deployment:
+      - "School buildings after-hours"
+      - "Retail stores"
+      - "Warehouses and storage facilities"
+    pricing_tier: mid
+
+  - id: br22-panic-button
+    name: "BR22 Wireless Panic Button"
+    category: alarms
+    line: "BR-Series"
+    description: "Wireless panic button for emergency notification"
+    tagline: "One-press emergency notification"
+    key_features:
+      - "One-press emergency alert"
+      - "Wireless — place anywhere"
+      - "Integrates with Command alerts"
+      - "Triggers video recording and lockdown workflows"
+      - "Supports Alyssa's Law compliance"
+    target_verticals:
+      - K-12
+      - Healthcare
+      - Retail
+      - HigherEd
+    pain_solved:
+      - no_centralized_security_operations
+      - fragmented_systems_across_school_sites
+    compliance:
+      ndaa: true
+      fips: false
+      fedramp_in_process: false
+    image_url: ""
+    datasheet_url: "https://www.verkada.com/alarms/"
+    local_image: "static/product-images/alarm-generic.svg"
+    typical_deployment:
+      - "Teacher desks and front offices"
+      - "Hospital nursing stations"
+      - "Retail checkout counters"
+      - "Reception desks"
+    pricing_tier: entry
+
+  - id: bm21-motion-sensor
+    name: "BM21 Motion Sensor"
+    category: alarms
+    line: "BR-Series"
+    description: "Wireless PIR motion sensor for intrusion detection zones"
+    tagline: "Wireless motion detection"
+    key_features:
+      - "Passive infrared (PIR) detection"
+      - "Wireless — battery powered"
+      - "Pairs with BR33 alarm panel"
+      - "Adjustable sensitivity"
+      - "Pet-immune option available"
+    target_verticals:
+      - K-12
+      - Retail
+      - CRE_Hospitality
+      - Manufacturing
+    pain_solved:
+      - no_centralized_security_operations
+      - inconsistent_systems_across_stores
+    compliance:
+      ndaa: true
+      fips: false
+      fedramp_in_process: false
+    image_url: ""
+    datasheet_url: "https://www.verkada.com/alarms/"
+    local_image: "static/product-images/alarm-generic.svg"
+    typical_deployment:
+      - "Interior hallways after-hours"
+      - "Storage rooms"
+      - "Server rooms"
+    pricing_tier: entry
+
+  # ---------------------------------------------------------------------------
+  # ENVIRONMENTAL SENSORS — SV-Series
+  # ---------------------------------------------------------------------------
+
+  - id: sv23-sensor
+    name: "SV23 Environmental Sensor"
+    category: sensors
+    line: "SV-Series"
+    description: "Multi-sensor for air quality, vape detection, noise, temperature, and humidity"
+    tagline: "Air quality + vape detection in one device"
+    key_features:
+      - "Vape and smoke detection"
+      - "Temperature and humidity monitoring"
+      - "Particulate matter (PM2.5) measurement"
+      - "Sound level (dB) monitoring"
+      - "TVOCs and CO2 measurement"
+      - "Real-time alerts via Command"
+      - "NDAA Section 889 compliant"
+    target_verticals:
+      - K-12
+      - HigherEd
+      - Healthcare
+      - Manufacturing
+    pain_solved:
+      - no_centralized_security_operations
+      - fragmented_systems_across_school_sites
+      - no_environmental_sensors_tied_to_video
+    compliance:
+      ndaa: true
+      fips: false
+      fedramp_in_process: false
+    image_url: ""
+    datasheet_url: "https://www.verkada.com/environmental-sensors/"
+    local_image: "static/product-images/sensor-generic.svg"
+    typical_deployment:
+      - "School restrooms (vape detection)"
+      - "Hospital patient rooms (air quality)"
+      - "Server rooms (temperature alerts)"
+      - "Manufacturing floors (air quality compliance)"
+    pricing_tier: mid
+
+  - id: sv11-sensor
+    name: "SV11 Environmental Sensor"
+    category: sensors
+    line: "SV-Series"
+    description: "Basic environmental sensor for temperature and humidity monitoring"
+    tagline: "Temperature and humidity monitoring"
+    key_features:
+      - "Temperature monitoring"
+      - "Humidity monitoring"
+      - "Real-time alerts via Command"
+      - "Compact form factor"
+      - "NDAA Section 889 compliant"
+    target_verticals:
+      - Healthcare
+      - Manufacturing
+      - K-12
+    pain_solved:
+      - no_environmental_sensors_tied_to_video
+    compliance:
+      ndaa: true
+      fips: false
+      fedramp_in_process: false
+    image_url: ""
+    datasheet_url: "https://www.verkada.com/environmental-sensors/"
+    local_image: "static/product-images/sensor-generic.svg"
+    typical_deployment:
+      - "Server rooms and data closets"
+      - "Pharmaceutical storage"
+      - "Food storage areas"
+    pricing_tier: entry
+
+  # ---------------------------------------------------------------------------
+  # INTERCOMS — TD-Series
+  # ---------------------------------------------------------------------------
+
+  - id: td52-intercom
+    name: "TD52 Video Intercom"
+    category: intercoms
+    line: "TD-Series"
+    description: "Video intercom for visitor management at building entry points"
+    tagline: "Video-verified visitor management"
+    key_features:
+      - "HD video with two-way audio"
+      - "Built-in camera with person detection"
+      - "Remote unlock from Command or mobile app"
+      - "Integrates with access control"
+      - "Outdoor rated (IP65)"
+      - "NDAA Section 889 compliant"
+    target_verticals:
+      - K-12
+      - HigherEd
+      - CRE_Hospitality
+      - Healthcare
+    pain_solved:
+      - visitor_management_is_pen_and_paper
+      - no_centralized_security_operations
+      - fragmented_systems_across_school_sites
+    compliance:
+      ndaa: true
+      fips: false
+      fedramp_in_process: false
+    image_url: ""
+    datasheet_url: "https://www.verkada.com/intercoms/"
+    local_image: "static/product-images/intercom-generic.svg"
+    typical_deployment:
+      - "School main entrances"
+      - "Building lobbies and vestibules"
+      - "Gated parking entries"
+      - "Loading dock doors"
+    pricing_tier: mid
+
+  # ---------------------------------------------------------------------------
+  # SOFTWARE / PLATFORMS
+  # ---------------------------------------------------------------------------
+
+  - id: verkada-command
+    name: "Verkada Command"
+    category: software
+    line: "Platform"
+    description: "Central cloud management platform — included with all Verkada hardware"
+    tagline: "One platform for all physical security"
+    key_features:
+      - "Unified dashboard for cameras, access, alarms, sensors"
+      - "Browser and mobile app access"
+      - "Role-based access control"
+      - "REST API for integrations"
+      - "Automatic firmware updates"
+      - "Included with all hardware — no VMS license"
+    target_verticals:
+      - K-12
+      - HigherEd
+      - Healthcare
+      - Retail
+      - CRE_Hospitality
+      - Manufacturing
+    pain_solved:
+      - no_centralized_security_operations
+      - fragmented_systems_across_school_sites
+      - high_camera_count_low_usability
+      - legacy_NVR_at_each_facility
+      - inconsistent_systems_across_stores
+      - air_gapped_DVR_systems_no_remote_access
+      - no_centralized_view_for_property_management
+      - public_safety_office_lacks_live_view
+      - LP_team_cant_review_footage_remotely
+      - dozens_of_buildings_different_systems
+    compliance:
+      ndaa: true
+      fips: true
+      fedramp_in_process: true
+    image_url: ""
+    datasheet_url: "https://www.verkada.com/command/"
+    local_image: "static/product-images/software-generic.svg"
+    typical_deployment:
+      - "Included with every Verkada deployment"
+    pricing_tier: included
+
+  - id: verkada-guest
+    name: "Verkada Guest"
+    category: software
+    line: "Workplace"
+    description: "Visitor management system — digital sign-in, badge printing, host notifications"
+    tagline: "Modern visitor management"
+    key_features:
+      - "iPad-based visitor sign-in"
+      - "Badge printing with photo"
+      - "Host notification (SMS, email, Slack)"
+      - "Watchlist screening"
+      - "Integrates with access control"
+      - "Visitor analytics and reporting"
+    target_verticals:
+      - K-12
+      - HigherEd
+      - Healthcare
+      - CRE_Hospitality
+    pain_solved:
+      - visitor_management_is_pen_and_paper
+      - no_centralized_security_operations
+    compliance:
+      ndaa: true
+      fips: false
+      fedramp_in_process: false
+    image_url: ""
+    datasheet_url: "https://www.verkada.com/guest/"
+    local_image: "static/product-images/software-generic.svg"
+    typical_deployment:
+      - "School front offices"
+      - "Hospital reception"
+      - "Corporate lobbies"
+    pricing_tier: addon
+
+  - id: verkada-mailroom
+    name: "Verkada Mailroom"
+    category: software
+    line: "Workplace"
+    description: "Package and mail management — scan, notify, track deliveries"
+    tagline: "Package tracking, automated"
+    key_features:
+      - "Scan-to-notify package logging"
+      - "Recipient notification (email, SMS)"
+      - "Chain-of-custody tracking"
+      - "Analytics and reporting"
+      - "Integrates with Command platform"
+    target_verticals:
+      - CRE_Hospitality
+      - HigherEd
+      - Healthcare
+    pain_solved:
+      - no_centralized_security_operations
+    compliance:
+      ndaa: true
+      fips: false
+      fedramp_in_process: false
+    image_url: ""
+    datasheet_url: "https://www.verkada.com/mailroom/"
+    local_image: "static/product-images/software-generic.svg"
+    typical_deployment:
+      - "Corporate mailrooms"
+      - "University dorm mail centers"
+      - "Hospital supply receiving"
+    pricing_tier: addon
+
+  - id: verkada-workplace
+    name: "Verkada Workplace"
+    category: software
+    line: "Workplace"
+    description: "Employee experience bundle — desk booking, space analytics, wayfinding"
+    tagline: "Smart workplace management"
+    key_features:
+      - "Desk and room booking"
+      - "Occupancy analytics"
+      - "Space utilization reporting"
+      - "Integrates with Command platform"
+    target_verticals:
+      - CRE_Hospitality
+    pain_solved:
+      - no_centralized_view_for_property_management
+    compliance:
+      ndaa: true
+      fips: false
+      fedramp_in_process: false
+    image_url: ""
+    datasheet_url: "https://www.verkada.com/workplace/"
+    local_image: "static/product-images/software-generic.svg"
+    typical_deployment:
+      - "Corporate offices"
+      - "Co-working spaces"
+    pricing_tier: addon
+
+# =============================================================================
+# Category metadata — used for display and filtering
+# =============================================================================
+
+categories:
+  cameras:
+    display_name: "Cameras"
+    icon: "camera-generic.svg"
+    color: "blue"
+  access_control:
+    display_name: "Access Control"
+    icon: "access-control-generic.svg"
+    color: "green"
+  alarms:
+    display_name: "Alarms"
+    icon: "alarm-generic.svg"
+    color: "red"
+  sensors:
+    display_name: "Environmental Sensors"
+    icon: "sensor-generic.svg"
+    color: "purple"
+  intercoms:
+    display_name: "Intercoms"
+    icon: "intercom-generic.svg"
+    color: "amber"
+  software:
+    display_name: "Software"
+    icon: "software-generic.svg"
+    color: "indigo"

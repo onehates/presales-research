@@ -1029,8 +1029,12 @@ def run_phase4(brief_json_path: Path, open_browser: bool) -> Path | None:
     print("  " + "─" * 50)
 
     try:
-        # Import render module directly
+        # Inject recommended products before rendering
         sys.path.insert(0, str(PROJECT_ROOT / "render"))
+        from product_recommender import inject_into_brief
+        if inject_into_brief(brief_json_path):
+            print(f"    {SYM_OK} injected recommended_products", flush=True)
+
         from render import render_brief
         sys.path.pop(0)
 

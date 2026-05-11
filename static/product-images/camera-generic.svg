@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <rect width="200" height="200" rx="12" fill="#f1f5f9"/>
+  <g transform="translate(100,90)" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="0" cy="0" r="28" fill="#e2e8f0"/>
+    <circle cx="0" cy="0" r="18"/>
+    <circle cx="0" cy="0" r="8" fill="#94a3b8"/>
+    <rect x="-40" y="-36" width="80" height="72" rx="8" fill="none"/>
+    <line x1="-34" y1="-30" x2="-26" y2="-30"/>
+  </g>
+  <text x="100" y="150" text-anchor="middle" fill="#94a3b8" font-family="Inter,system-ui,sans-serif" font-size="12" font-weight="500">Camera</text>
+</svg>

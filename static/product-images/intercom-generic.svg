@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <rect width="200" height="200" rx="12" fill="#f1f5f9"/>
+  <g transform="translate(100,85)" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="-24" y="-32" width="48" height="64" rx="6" fill="#e2e8f0"/>
+    <circle cx="0" cy="-12" r="12" fill="#94a3b8" opacity="0.3"/>
+    <circle cx="0" cy="-12" r="6" fill="#94a3b8"/>
+    <rect x="-12" y="8" width="24" height="12" rx="3" fill="#94a3b8" opacity="0.5"/>
+    <line x1="-6" y1="14" x2="6" y2="14" stroke="#64748b"/>
+  </g>
+  <text x="100" y="155" text-anchor="middle" fill="#94a3b8" font-family="Inter,system-ui,sans-serif" font-size="12" font-weight="500">Intercom</text>
+</svg>

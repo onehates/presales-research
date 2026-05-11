@@ -22,6 +22,8 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+import yaml
+
 import anthropic
 from fastapi import FastAPI, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -40,6 +42,7 @@ TEMPLATES_DIR = PROJECT_ROOT / "templates"
 SOURCES_DIR = PROJECT_ROOT / "sources"
 CLIENTS_DIR = PROJECT_ROOT / "clients"
 STATIC_DIR = PROJECT_ROOT / "static"
+PRODUCTS_PATH = PROJECT_ROOT / "persona" / "verkada-products.yml"
 SONNET_MODEL = "claude-sonnet-4-6"
 PORT = int(os.environ.get("PORT", 8000))
 STATUS_DIR = Path("/tmp")
@@ -309,6 +312,44 @@ async def docs_page():
 
     template = _jinja_env.get_template("docs.html")
     return template.render(clients=clients)
+
+
+# ---------------------------------------------------------------------------
+# Product catalog page
+# ---------------------------------------------------------------------------
+
+@app.get("/products", response_class=HTMLResponse)
+async def products_page():
+    products = []
+    categories = {}
+    if PRODUCTS_PATH.exists():
+        try:
+            data = yaml.safe_load(PRODUCTS_PATH.read_text())
+            products = data.get("products", [])
+            categories = data.get("categories", {})
+        except Exception:
+            pass
+    template = _jinja_env.get_template("products.html")
+    return template.render(products=products, categories=categories)
+
+
+# ---------------------------------------------------------------------------
+# Battlecard page
+# ---------------------------------------------------------------------------
+
+@app.get("/briefs/{slug}-{date}.battlecard.html", response_class=HTMLResponse)
+async def battlecard_page(slug: str, date: str):
+    if ".." in slug or ".." in date:
+        return HTMLResponse("<h1>Invalid</h1>", status_code=400)
+    brief_path = BRIEFS_DIR / f"{slug}-{date}.json"
+    if not brief_path.exists():
+        return HTMLResponse("<h1>Brief not found</h1>", status_code=404)
+    try:
+        brief_data = json.loads(brief_path.read_text())
+    except Exception:
+        return HTMLResponse("<h1>Brief corrupted</h1>", status_code=500)
+    template = _jinja_env.get_template("battlecard.html")
+    return template.render(data=brief_data, slug=slug, date=date)
 
 
 # ---------------------------------------------------------------------------

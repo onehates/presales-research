@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ data.snapshot.name }} — Battlecard</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .no-print { display: none !important; }
+      @page { margin: 0.4in; size: letter landscape; }
+    }
+    .product-img { width: 52px; height: 52px; object-fit: contain; border-radius: 4px; background: #f8fafc; }
+  </style>
+</head>
+<body class="bg-white text-gray-900 p-6">
+  <!-- Print button (auto-trigger) -->
+  <div class="no-print fixed top-4 right-4 flex gap-2 z-50">
+    <a href="/briefs/{{ slug }}-{{ date }}.html" class="px-3 py-1.5 text-xs bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 border border-gray-200">Back to Brief</a>
+    <button onclick="window.print()" class="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700">Print</button>
+  </div>
+
+  <!-- Header -->
+  <div class="flex items-start justify-between border-b border-gray-200 pb-3 mb-4">
+    <div>
+      <h1 class="text-lg font-bold text-gray-900">{{ data.snapshot.name }}</h1>
+      <p class="text-xs text-gray-500">{{ data.snapshot.vertical }} | {{ data.snapshot.size_indicator[:60] if data.snapshot.size_indicator else '' }} | {{ date }}</p>
+    </div>
+    <div class="text-right">
+      <p class="text-[10px] text-gray-400 uppercase font-semibold">Pre-Sales Battlecard</p>
+      <p class="text-[10px] text-gray-400">Generated {{ data.metadata.generated_at[:10] if data.metadata else date }}</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-3 gap-4 text-xs">
+    <!-- Column 1: TL;DR + Pain + Champions -->
+    <div class="space-y-3">
+      <!-- TL;DR -->
+      <div class="bg-blue-50 border border-blue-200 rounded p-3">
+        <h2 class="text-[10px] font-bold text-blue-700 uppercase mb-1">TL;DR</h2>
+        {% if data.tldr and data.tldr.bullets %}
+        <ul class="space-y-1">
+          {% for bullet in data.tldr.bullets %}
+          <li class="text-[11px] text-blue-900 leading-tight">{{ bullet[:150] }}{% if bullet|length > 150 %}...{% endif %}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </div>
+
+      <!-- Top Pain Hypotheses -->
+      <div>
+        <h2 class="text-[10px] font-bold text-gray-600 uppercase mb-1">Pain Hypotheses</h2>
+        {% if data.pain_hypotheses is iterable and data.pain_hypotheses is not string %}
+        {% for pain in data.pain_hypotheses[:3] %}
+        <div class="mb-1.5 border-l-2 border-amber-400 pl-2">
+          <p class="text-[11px] text-gray-800 leading-tight">{{ pain.hypothesis[:120] }}{% if pain.hypothesis|length > 120 %}...{% endif %}</p>
+          <p class="text-[9px] text-gray-400">{{ pain.linked_persona_pain }}</p>
+        </div>
+        {% endfor %}
+        {% endif %}
+      </div>
+
+      <!-- Champions -->
+      <div>
+        <h2 class="text-[10px] font-bold text-gray-600 uppercase mb-1">Champion Candidates</h2>
+        {% if data.champion_candidates %}
+        {% for champ in data.champion_candidates[:3] %}
+        <div class="mb-1 flex items-center gap-2">
+          <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px] font-bold flex-shrink-0">{{ champ.name[0] if champ.name else '?' }}</div>
+          <div>
+            <p class="text-[11px] font-medium text-gray-800">{{ champ.name }}</p>
+            <p class="text-[9px] text-gray-500">{{ champ.title }} | Score: {{ '%.0f' | format(champ.champion_fit_score * 100) }}%</p>
+          </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Column 2: Displacement + Procurement + GTM -->
+    <div class="space-y-3">
+      <!-- Displacement -->
+      {% if data.displacement_intel %}
+      <div>
+        <h2 class="text-[10px] font-bold text-gray-600 uppercase mb-1">Displacement Intel</h2>
+        {% if data.displacement_intel.vendor_hits is iterable %}
+        {% for hit in data.displacement_intel.vendor_hits[:3] %}
+        <div class="mb-1 border-l-2 border-red-400 pl-2">
+          <p class="text-[11px] font-medium text-red-800">{{ hit.vendor if hit is mapping else hit }}</p>
+          {% if hit is mapping and hit.evidence %}
+          <p class="text-[9px] text-gray-600">{{ hit.evidence[:80] }}...</p>
+          {% endif %}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% if data.displacement_intel.vendor_absence_finding %}
+        <p class="text-[9px] text-gray-400 italic">{{ data.displacement_intel.vendor_absence_finding[:100] }}</p>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <!-- Procurement Path -->
+      {% if data.verkada_gtm_strategy is mapping and data.verkada_gtm_strategy.procurement_path %}
+      <div class="bg-emerald-50 border border-emerald-200 rounded p-2">
+        <h2 class="text-[10px] font-bold text-emerald-700 uppercase mb-1">Procurement Path</h2>
+        <p class="text-[11px] text-emerald-900">{{ data.verkada_gtm_strategy.procurement_path.recommended }}</p>
+      </div>
+      {% endif %}
+
+      <!-- GTM Strategy -->
+      {% if data.verkada_gtm_strategy is mapping %}
+      <div>
+        <h2 class="text-[10px] font-bold text-gray-600 uppercase mb-1">GTM Strategy</h2>
+        {% if data.verkada_gtm_strategy.land_play %}
+        <div class="mb-1">
+          <span class="text-[9px] font-bold text-blue-600 uppercase">Land:</span>
+          <span class="text-[11px] text-gray-800">{{ data.verkada_gtm_strategy.land_play.recommendation[:120] }}...</span>
+        </div>
+        {% endif %}
+        {% if data.verkada_gtm_strategy.expansion_motion %}
+        <div class="mb-1">
+          <span class="text-[9px] font-bold text-indigo-600 uppercase">Expand:</span>
+          <span class="text-[11px] text-gray-800">{{ data.verkada_gtm_strategy.expansion_motion.phase_1[:100] }}...</span>
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <!-- Top Discovery Questions -->
+      {% if data.discovery_questions_by_persona is mapping %}
+      <div>
+        <h2 class="text-[10px] font-bold text-gray-600 uppercase mb-1">Key Discovery Questions</h2>
+        {% set questions_shown = [] %}
+        {% for persona, pdata in data.discovery_questions_by_persona.items() %}
+          {% if pdata is mapping and pdata.questions is iterable %}
+            {% for q in pdata.questions %}
+              {% if questions_shown | length < 3 %}
+                {% if questions_shown.append(1) %}{% endif %}
+                <p class="text-[11px] text-gray-700 mb-1 leading-tight border-l-2 border-gray-300 pl-2">{{ q.question[:120] if q is mapping else q[:120] }}...</p>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Column 3: Recommended Products -->
+    <div class="space-y-3">
+      <h2 class="text-[10px] font-bold text-gray-600 uppercase mb-1">Recommended Products</h2>
+      {% if data.recommended_products and data.recommended_products.primary_bundle %}
+      <table class="w-full text-[11px]">
+        <thead>
+          <tr class="border-b border-gray-200">
+            <th class="text-left text-[9px] text-gray-500 uppercase pb-1 w-14"></th>
+            <th class="text-left text-[9px] text-gray-500 uppercase pb-1">Product</th>
+            <th class="text-left text-[9px] text-gray-500 uppercase pb-1">Pain Solved</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for prod in (data.recommended_products.primary_bundle + data.recommended_products.secondary_bundle)[:5] %}
+          {% set cat_colors = {'cameras': 'blue', 'access_control': 'green', 'alarms': 'red', 'sensors': 'purple', 'intercoms': 'amber', 'software': 'indigo'} %}
+          {% set c = cat_colors.get(prod.category, 'gray') %}
+          <tr class="border-b border-gray-100">
+            <td class="py-1.5 pr-2">
+              {% if prod.local_image %}
+              <img src="/{{ prod.local_image }}" alt="{{ prod.name }}" class="product-img"
+                   onerror="this.src='/static/product-images/camera-generic.svg'">
+              {% else %}
+              <div class="w-[52px] h-[52px] bg-gray-100 rounded flex items-center justify-center">
+                <span class="text-[9px] text-gray-400">{{ prod.category[:3] }}</span>
+              </div>
+              {% endif %}
+            </td>
+            <td class="py-1.5">
+              <p class="font-semibold text-gray-900">{{ prod.name }}</p>
+              <span class="inline-block px-1 py-0 rounded text-[8px] font-bold uppercase bg-{{ c }}-100 text-{{ c }}-700">{{ prod.category | replace('_', ' ') }}</span>
+            </td>
+            <td class="py-1.5 text-gray-600">
+              <p class="leading-tight">{{ prod.reasoning[:100] }}{% if prod.reasoning|length > 100 %}...{% endif %}</p>
+              {% if prod.matched_triggers %}
+              <div class="flex flex-wrap gap-0.5 mt-0.5">
+                {% for t in prod.matched_triggers[:2] %}
+                <span class="text-[8px] text-gray-400">{{ t | replace('_', ' ') }}</span>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+
+      <!-- Vertical Fit -->
+      {% if data.recommended_products and data.recommended_products.vertical_fit_notes %}
+      <div class="bg-gray-50 border border-gray-200 rounded p-2 mt-2">
+        <p class="text-[10px] text-gray-600 leading-tight">{{ data.recommended_products.vertical_fit_notes }}</p>
+      </div>
+      {% endif %}
+
+      <!-- Bundle Recommendation -->
+      {% if data.verkada_gtm_strategy is mapping and data.verkada_gtm_strategy.bundle_recommendation %}
+      <div class="bg-amber-50 border border-amber-200 rounded p-2 mt-1">
+        <h3 class="text-[9px] font-bold text-amber-700 uppercase mb-0.5">Bundle</h3>
+        <div class="flex flex-wrap gap-1 mb-1">
+          {% for p in data.verkada_gtm_strategy.bundle_recommendation.primary_products %}
+          <span class="inline-block bg-amber-200 text-amber-900 px-1.5 py-0 rounded text-[10px] font-bold">{{ p }}</span>
+          {% endfor %}
+          {% for p in data.verkada_gtm_strategy.bundle_recommendation.secondary_products %}
+          <span class="inline-block bg-amber-100 text-amber-700 px-1.5 py-0 rounded text-[10px]">+{{ p }}</span>
+          {% endfor %}
+        </div>
+        <p class="text-[9px] text-amber-800">{{ data.verkada_gtm_strategy.bundle_recommendation.rationale[:120] }}...</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Auto-print if ?print=auto -->
+  <script>
+    if (new URLSearchParams(window.location.search).get('print') === 'auto') {
+      window.addEventListener('load', () => setTimeout(() => window.print(), 500));
+    }
+  </script>
+</body>
+</html>
