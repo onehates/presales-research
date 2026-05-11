@@ -4,7 +4,7 @@ Orchestrator — /research pipeline entry point.
 
 Phase 1: Run all 18 source clients in parallel (ThreadPoolExecutor).
 Phase 2: Run 3 subagents (company-bg, tech-and-pain, hiring-signals) in parallel.
-Phase 3: Run synthesizer (Opus) reading all 3 subagent outputs + persona.
+Phase 3: Run synthesizer (Sonnet + extended thinking) reading all 3 subagent outputs + persona.
 Phase 4: Render brief JSON → HTML via render/render.py.
 
 Usage:
@@ -62,9 +62,9 @@ _PRICING = {
 
 
 def _estimate_cost() -> float:
-    """Estimate total cost from accumulated token usage using blended rates."""
-    # Use Opus rates as conservative estimate (synthesizer dominates cost)
-    p = _PRICING[OPUS_MODEL]
+    """Estimate total cost from accumulated token usage using Sonnet rates."""
+    # All phases (subagents + synthesizer) now use Sonnet
+    p = _PRICING[SONNET_MODEL]
     return (
         _token_usage["input"] * p["input"]
         + _token_usage["output"] * p["output"]
@@ -356,14 +356,25 @@ def run_phase1(company: str, slug: str, force: bool) -> dict:
             for name in client_names
         }
 
-        for future in as_completed(futures):
-            name, symbol, detail = future.result()
-            results[name] = (symbol, detail)
-            # Live update
-            print(f"    {symbol} {name:<22} {detail}", flush=True)
-            # Map symbol to dashboard status
-            sym_map = {SYM_OK: "ok", SYM_CACHED: "cached", SYM_INSUF: "insufficient_data", SYM_ERROR: "error"}
-            _write_status("phase1", f"{name}: {detail}", source=name, source_status=sym_map.get(symbol, "unknown"))
+        try:
+            for future in as_completed(futures, timeout=20):
+                name = futures[future]
+                try:
+                    _, symbol, detail = future.result()
+                except Exception as e:
+                    symbol, detail = SYM_ERROR, str(e)[:80]
+                results[name] = (symbol, detail)
+                print(f"    {symbol} {name:<22} {detail}", flush=True)
+                sym_map = {SYM_OK: "ok", SYM_CACHED: "cached", SYM_INSUF: "insufficient_data", SYM_ERROR: "error"}
+                _write_status("phase1", f"{name}: {detail}", source=name, source_status=sym_map.get(symbol, "unknown"))
+        except TimeoutError:
+            # Mark any unfinished futures as timed out
+            for future, name in futures.items():
+                if name not in results:
+                    future.cancel()
+                    results[name] = (SYM_ERROR, "timeout (>20s)")
+                    print(f"    {SYM_ERROR} {name:<22} timeout (>20s)", flush=True)
+                    _write_status("phase1", f"{name}: timeout", source=name, source_status="error")
 
     # Summary line
     ok_count = sum(1 for s, _ in results.values() if s in (SYM_OK, SYM_CACHED))
@@ -453,28 +464,35 @@ def _build_cached_system(agent_prompt: str, persona_text: str | None = None) -> 
 
 def _stream_anthropic_with_retry(client, *, model: str, max_tokens: int,
                                   system: str | list, messages: list,
-                                  label: str) -> str:
+                                  label: str, thinking: dict | None = None) -> str:
     """Stream an Anthropic API call with exponential backoff on 429/529.
 
     Uses client.messages.stream() to avoid the SDK's 10-minute timeout
-    on non-streaming calls (Opus + large prompts + high max_tokens).
+    on non-streaming calls (large prompts + high max_tokens).
     Returns the accumulated response text.
 
     system can be a plain string or a list of content blocks (for prompt caching).
     When a list is passed, the prompt-caching beta header is included.
+
+    thinking: optional dict like {"type": "enabled", "budget_tokens": 8000}
+    to enable extended thinking (Sonnet 4.6).
     """
     use_cache = isinstance(system, list)
     extra_headers = PROMPT_CACHE_HEADERS if use_cache else None
 
+    call_kwargs = dict(
+        model=model,
+        max_tokens=max_tokens,
+        system=system,
+        messages=messages,
+        extra_headers=extra_headers,
+    )
+    if thinking:
+        call_kwargs["thinking"] = thinking
+
     for attempt in range(len(RETRY_DELAYS) + 1):
         try:
-            with client.messages.stream(
-                model=model,
-                max_tokens=max_tokens,
-                system=system,
-                messages=messages,
-                extra_headers=extra_headers,
-            ) as stream:
+            with client.messages.stream(**call_kwargs) as stream:
                 chunks = []
                 for text in stream.text_stream:
                     chunks.append(text)
@@ -781,7 +799,7 @@ def _parse_json_robust(text: str, raw_path: Path) -> dict | None:
 
 def run_phase3(slug: str, subagent_outputs: dict) -> dict:
     """Run the synthesizer with all 3 subagent outputs."""
-    print("\n  Phase 3 — Synthesizer (Opus)")
+    print("\n  Phase 3 — Synthesizer (Sonnet + extended thinking)")
     print("  " + "─" * 50)
 
     if not anthropic or not os.environ.get("ANTHROPIC_API_KEY"):
@@ -869,7 +887,7 @@ def run_phase3(slug: str, subagent_outputs: dict) -> dict:
     user_msg = "\n\n".join(user_parts) + f"\n\nCompany slug: {slug}"
 
     print(f"    {SYM_RUN} running synthesizer...", flush=True)
-    _write_status("phase3", "Running synthesizer (Opus)...")
+    _write_status("phase3", "Running synthesizer (Sonnet + thinking)...")
 
     # Use structured system with cache_control for prompt caching
     cached_system = _build_cached_system(system_prompt, persona_text)
@@ -878,9 +896,10 @@ def run_phase3(slug: str, subagent_outputs: dict) -> dict:
         client = anthropic.Anthropic()
         try:
             text = _stream_anthropic_with_retry(
-                client, model=OPUS_MODEL, max_tokens=16000,
+                client, model=SONNET_MODEL, max_tokens=16000,
                 system=cached_system, messages=[{"role": "user", "content": user_msg}],
                 label="synthesizer",
+                thinking={"type": "enabled", "budget_tokens": 8000},
             )
         except (anthropic.RateLimitError, anthropic.APIStatusError):
             print(f"    {SYM_ERROR} synthesizer rate limited after 3 retries", flush=True)
@@ -1007,6 +1026,15 @@ def research(company: str, *, force: bool = False, open_browser: bool = False, u
         print(f"\n  Phase 1b — Deferred Clients")
         print("  " + "─" * 50)
         for name in DEFERRED_CLIENTS:
+            # Skip champion_signals if leadership.json was fetched within 24h
+            if name == "champion_signals":
+                leadership_cache = SOURCES_DIR / slug / "leadership.json"
+                if leadership_cache.exists():
+                    age_hours = (time.time() - leadership_cache.stat().st_mtime) / 3600
+                    if age_hours < 24:
+                        print(f"    {SYM_CACHED} {'champion_signals':<22} skipping — leadership.json from same day, using cache", flush=True)
+                        phase1_results[name] = (SYM_CACHED, "cached (leadership <24h)")
+                        continue
             cname, sym, detail = run_client(name, company, slug, force)
             phase1_results[cname] = (sym, detail)
             print(f"    {sym} {cname:<22} {detail}", flush=True)
