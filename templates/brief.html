@@ -996,9 +996,11 @@
     </div>
 
     <!-- Chat Input -->
-    <div style="padding:12px 16px;border-top:1px solid #e2e8f0;background:#f8fafc;">
+    <div style="padding:12px 16px;border-top:1px solid #e2e8f0;background:#f8fafc;position:relative;">
+      <!-- Slash Command Menu -->
+      <div id="slash-menu" style="display:none;position:absolute;bottom:100%;left:0;right:0;background:white;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 -8px 24px rgba(0,0,0,0.12);max-height:280px;overflow-y:auto;z-index:60;margin-bottom:4px;"></div>
       <div style="display:flex;gap:8px;">
-        <input id="chat-input" type="text" placeholder="Ask about this brief..." style="flex:1;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:13px;outline:none;font-family:Inter,sans-serif;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}" />
+        <input id="chat-input" type="text" placeholder="Ask about this brief... (type / for commands)" style="flex:1;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:13px;outline:none;font-family:Inter,sans-serif;" onkeydown="handleInputKeydown(event)" oninput="handleInputChange()" />
         <button onclick="sendMessage()" style="background:#2563eb;color:white;border:none;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">Send</button>
       </div>
     </div>
@@ -1067,10 +1069,124 @@
       doSend(text);
     };
 
+    // Slash commands
+    const SLASH_COMMANDS = [
+      {cmd: '/?',          label: 'Show this help list'},
+      {cmd: '/meddic',     label: 'Walk me through the MEDDIC qualification'},
+      {cmd: '/champions',  label: 'Who are the projected champion candidates and why?'},
+      {cmd: '/competitors', label: 'Who are the competitors and what\'s the competitive landscape?'},
+      {cmd: '/gtm',        label: 'What\'s the recommended Verkada GTM strategy?'},
+      {cmd: '/discovery',  label: 'Show me the discovery questions for the IT Director'},
+      {cmd: '/coop',       label: 'What cooperative purchasing vehicles can we use?'},
+      {cmd: '/pain',       label: 'What are the pain hypotheses and supporting evidence?'},
+      {cmd: '/events',     label: 'Summarize the recent material events'},
+      {cmd: '/risks',      label: 'What are the risks and blockers for this deal?'},
+      {cmd: '/tldr',       label: 'Give me the 30-second skim of this account'},
+      {cmd: '/reset',      label: 'Clear chat history'},
+      {cmd: '/sources',    label: 'What sources did we pull from for this brief?'},
+    ];
+    let slashHighlight = 0;
+
+    function showSlashMenu(filter) {
+      const menu = document.getElementById('slash-menu');
+      const query = filter.slice(1).toLowerCase();
+      const matches = query === '' || query === '?'
+        ? SLASH_COMMANDS
+        : SLASH_COMMANDS.filter(c => c.cmd.slice(1).startsWith(query));
+      if (matches.length === 0) { menu.style.display = 'none'; return; }
+      slashHighlight = 0;
+      menu.innerHTML = matches.map((c, i) =>
+        `<div class="slash-item" data-idx="${i}" style="padding:8px 14px;cursor:pointer;display:flex;gap:10px;align-items:baseline;font-size:13px;${i === 0 ? 'background:#f1f5f9;' : ''}" onmouseenter="highlightSlash(${i})" onclick="executeSlash('${c.cmd}')">` +
+        `<span style="font-weight:600;color:#2563eb;min-width:90px;font-family:monospace;font-size:12px;">${c.cmd}</span>` +
+        `<span style="color:#64748b;">${c.label}</span></div>`
+      ).join('');
+      menu.style.display = 'block';
+    }
+
+    function hideSlashMenu() {
+      document.getElementById('slash-menu').style.display = 'none';
+    }
+
+    window.highlightSlash = function(idx) {
+      slashHighlight = idx;
+      document.querySelectorAll('.slash-item').forEach((el, i) => {
+        el.style.background = i === idx ? '#f1f5f9' : '';
+      });
+    };
+
+    window.executeSlash = function(cmd) {
+      hideSlashMenu();
+      const input = document.getElementById('chat-input');
+      input.value = '';
+      if (cmd === '/reset' || cmd === '/?') {
+        if (cmd === '/reset') clearChat();
+        return;
+      }
+      const match = SLASH_COMMANDS.find(c => c.cmd === cmd);
+      if (match) {
+        const starters = document.getElementById('chat-starters');
+        if (starters) starters.style.display = 'none';
+        doSend(match.label);
+      }
+    };
+
+    window.handleInputChange = function() {
+      const input = document.getElementById('chat-input');
+      const val = input.value;
+      if (val.startsWith('/') && !val.includes(' ')) {
+        showSlashMenu(val);
+      } else {
+        hideSlashMenu();
+      }
+    };
+
+    window.handleInputKeydown = function(event) {
+      const menu = document.getElementById('slash-menu');
+      const menuVisible = menu.style.display !== 'none';
+      if (menuVisible) {
+        const items = menu.querySelectorAll('.slash-item');
+        if (event.key === 'ArrowDown') {
+          event.preventDefault();
+          slashHighlight = Math.min(slashHighlight + 1, items.length - 1);
+          highlightSlash(slashHighlight);
+          items[slashHighlight]?.scrollIntoView({block: 'nearest'});
+        } else if (event.key === 'ArrowUp') {
+          event.preventDefault();
+          slashHighlight = Math.max(slashHighlight - 1, 0);
+          highlightSlash(slashHighlight);
+          items[slashHighlight]?.scrollIntoView({block: 'nearest'});
+        } else if (event.key === 'Enter') {
+          event.preventDefault();
+          const selected = items[slashHighlight];
+          if (selected) selected.click();
+        } else if (event.key === 'Escape') {
+          event.preventDefault();
+          hideSlashMenu();
+        } else if (event.key === 'Tab') {
+          event.preventDefault();
+          const selected = items[slashHighlight];
+          if (selected) {
+            const cmd = SLASH_COMMANDS.find((_, i) => i === parseInt(selected.dataset.idx));
+          }
+        }
+        return;
+      }
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+      }
+    };
+
     window.sendMessage = function() {
       const input = document.getElementById('chat-input');
       const text = input.value.trim();
       if (!text) return;
+      hideSlashMenu();
+      // Check if it's a slash command typed directly
+      if (text.startsWith('/') && !text.includes(' ')) {
+        const match = SLASH_COMMANDS.find(c => c.cmd === text);
+        if (match) { input.value = ''; executeSlash(match.cmd); return; }
+      }
       input.value = '';
       const starters = document.getElementById('chat-starters');
       if (starters) starters.style.display = 'none';
