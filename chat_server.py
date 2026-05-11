@@ -163,6 +163,25 @@ async def status_html():
 
 
 # ---------------------------------------------------------------------------
+# Brief file serving
+# ---------------------------------------------------------------------------
+
+@app.get("/briefs/{filename}")
+async def serve_brief(filename: str):
+    """Serve brief HTML/JSON files with path traversal protection."""
+    if ".." in filename or "/" in filename or "\\" in filename:
+        return JSONResponse({"error": "Invalid filename"}, status_code=400)
+    if not filename.endswith((".html", ".json")):
+        return JSONResponse({"error": "Only .html and .json files allowed"}, status_code=403)
+    path = BRIEFS_DIR / filename
+    if not path.exists():
+        return JSONResponse({"error": f"Brief not found: {filename}"}, status_code=404)
+    if filename.endswith(".html"):
+        return FileResponse(path, media_type="text/html")
+    return JSONResponse(json.loads(path.read_text()))
+
+
+# ---------------------------------------------------------------------------
 # Health check
 # ---------------------------------------------------------------------------
 
