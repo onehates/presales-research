@@ -43,7 +43,7 @@ products:
       fedramp_in_process: false
     image_url: ""
     datasheet_url: "https://www.verkada.com/security-cameras/dome/cd42/"
-    local_image: "static/product-images/camera-generic.svg"
+    local_image: "static/product-images/dome-camera.png"
     typical_deployment:
       - "Hallways and corridors"
       - "Lobbies and reception areas"
@@ -83,7 +83,7 @@ products:
       fedramp_in_process: false
     image_url: ""
     datasheet_url: "https://www.verkada.com/security-cameras/dome/cd52/"
-    local_image: "static/product-images/camera-generic.svg"
+    local_image: "static/product-images/dome-camera.png"
     typical_deployment:
       - "Building entrances and lobbies"
       - "Parking structures"
@@ -124,7 +124,7 @@ products:
       fedramp_in_process: true
     image_url: ""
     datasheet_url: "https://www.verkada.com/security-cameras/dome/cd62/"
-    local_image: "static/product-images/camera-generic.svg"
+    local_image: "static/product-images/dome-camera.png"
     typical_deployment:
       - "Building entrances and perimeter"
       - "Parking lots"
@@ -164,7 +164,7 @@ products:
       fedramp_in_process: false
     image_url: ""
     datasheet_url: "https://www.verkada.com/security-cameras/bullet/cb52/"
-    local_image: "static/product-images/camera-generic.svg"
+    local_image: "static/product-images/bullet-camera.png"
     typical_deployment:
       - "Perimeter fencing"
       - "Parking lots"
@@ -199,7 +199,7 @@ products:
       fedramp_in_process: true
     image_url: ""
     datasheet_url: "https://www.verkada.com/security-cameras/bullet/cb62/"
-    local_image: "static/product-images/camera-generic.svg"
+    local_image: "static/product-images/bullet-camera.png"
     typical_deployment:
       - "Long-range perimeter monitoring"
       - "Highway-adjacent properties"
@@ -238,7 +238,7 @@ products:
       fedramp_in_process: false
     image_url: ""
     datasheet_url: "https://www.verkada.com/security-cameras/ptz/"
-    local_image: "static/product-images/camera-generic.svg"
+    local_image: "static/product-images/ptz-camera.png"
     typical_deployment:
       - "Large open areas (stadiums, fields)"
       - "Parking lots requiring active tracking"
@@ -272,7 +272,7 @@ products:
       fedramp_in_process: false
     image_url: ""
     datasheet_url: "https://www.verkada.com/security-cameras/fisheye/"
-    local_image: "static/product-images/camera-generic.svg"
+    local_image: "static/product-images/fisheye-camera.png"
     typical_deployment:
       - "Retail floor coverage"
       - "Open-plan offices"
@@ -306,7 +306,7 @@ products:
       fedramp_in_process: false
     image_url: ""
     datasheet_url: "https://www.verkada.com/security-cameras/mini/"
-    local_image: "static/product-images/camera-generic.svg"
+    local_image: "static/product-images/mini-camera.png"
     typical_deployment:
       - "Retail point-of-sale areas"
       - "Office spaces"
@@ -350,7 +350,7 @@ products:
       fedramp_in_process: true
     image_url: ""
     datasheet_url: "https://www.verkada.com/access-control/"
-    local_image: "static/product-images/access-control-generic.svg"
+    local_image: "static/product-images/access-controller.png"
     typical_deployment:
       - "Main entrances and lobbies"
       - "Server rooms and restricted areas"
@@ -386,7 +386,7 @@ products:
       fedramp_in_process: false
     image_url: ""
     datasheet_url: "https://www.verkada.com/access-control/"
-    local_image: "static/product-images/access-control-generic.svg"
+    local_image: "static/product-images/door-reader.png"
     typical_deployment:
       - "Paired with AC62 at every controlled door"
       - "Elevator access points"
@@ -420,7 +420,7 @@ products:
       fedramp_in_process: false
     image_url: ""
     datasheet_url: "https://www.verkada.com/access-control/"
-    local_image: "static/product-images/access-control-generic.svg"
+    local_image: "static/product-images/wireless-lock.png"
     typical_deployment:
       - "Interior offices and classrooms"
       - "Supply closets and utility rooms"
@@ -459,7 +459,7 @@ products:
       fedramp_in_process: false
     image_url: ""
     datasheet_url: "https://www.verkada.com/alarms/"
-    local_image: "static/product-images/alarm-generic.svg"
+    local_image: "static/product-images/alarm-panel.png"
     typical_deployment:
       - "School buildings after-hours"
       - "Retail stores"
@@ -492,7 +492,7 @@ products:
       fedramp_in_process: false
     image_url: ""
     datasheet_url: "https://www.verkada.com/alarms/"
-    local_image: "static/product-images/alarm-generic.svg"
+    local_image: "static/product-images/alarm-keypad.png"
     typical_deployment:
       - "Teacher desks and front offices"
       - "Hospital nursing stations"
@@ -526,7 +526,7 @@ products:
       fedramp_in_process: false
     image_url: ""
     datasheet_url: "https://www.verkada.com/alarms/"
-    local_image: "static/product-images/alarm-generic.svg"
+    local_image: "static/product-images/alarm-sensor.png"
     typical_deployment:
       - "Interior hallways after-hours"
       - "Storage rooms"
@@ -566,7 +566,7 @@ products:
       fedramp_in_process: false
     image_url: ""
     datasheet_url: "https://www.verkada.com/environmental-sensors/"
-    local_image: "static/product-images/sensor-generic.svg"
+    local_image: "static/product-images/sensor-sv23.png"
     typical_deployment:
       - "School restrooms (vape detection)"
       - "Hospital patient rooms (air quality)"
@@ -598,7 +598,7 @@ products:
       fedramp_in_process: false
     image_url: ""
     datasheet_url: "https://www.verkada.com/environmental-sensors/"
-    local_image: "static/product-images/sensor-generic.svg"
+    local_image: "static/product-images/sensor-sv21.png"
     typical_deployment:
       - "Server rooms and data closets"
       - "Pharmaceutical storage"
@@ -637,7 +637,7 @@ products:
       fedramp_in_process: false
     image_url: ""
     datasheet_url: "https://www.verkada.com/intercoms/"
-    local_image: "static/product-images/intercom-generic.svg"
+    local_image: "static/product-images/intercom.png"
     typical_deployment:
       - "School main entrances"
       - "Building lobbies and vestibules"
@@ -686,7 +686,7 @@ products:
       fedramp_in_process: true
     image_url: ""
     datasheet_url: "https://www.verkada.com/command/"
-    local_image: "static/product-images/software-generic.svg"
+    local_image: "static/product-images/command-platform.png"
     typical_deployment:
       - "Included with every Verkada deployment"
     pricing_tier: included
@@ -718,7 +718,7 @@ products:
       fedramp_in_process: false
     image_url: ""
     datasheet_url: "https://www.verkada.com/guest/"
-    local_image: "static/product-images/software-generic.svg"
+    local_image: "static/product-images/command-guest.png"
     typical_deployment:
       - "School front offices"
       - "Hospital reception"
@@ -749,7 +749,7 @@ products:
       fedramp_in_process: false
     image_url: ""
     datasheet_url: "https://www.verkada.com/mailroom/"
-    local_image: "static/product-images/software-generic.svg"
+    local_image: "static/product-images/command-mailroom.png"
     typical_deployment:
       - "Corporate mailrooms"
       - "University dorm mail centers"
@@ -777,7 +777,7 @@ products:
       fedramp_in_process: false
     image_url: ""
     datasheet_url: "https://www.verkada.com/workplace/"
-    local_image: "static/product-images/software-generic.svg"
+    local_image: "static/product-images/command-platform.png"
     typical_deployment:
       - "Corporate offices"
       - "Co-working spaces"

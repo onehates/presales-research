@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:verkada.com)",
+      "WebFetch(domain:www.verkada.com)"
+    ]
+  }
+}
