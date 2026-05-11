@@ -121,109 +121,9 @@ Output ONLY valid JSON. No markdown fences, no prose, no preamble. The JSON must
       "source_urls": ["string"]
     }
   ],
-  "discovery_questions_by_persona": {
-    "IT_Director": [
-      {
-        "question": "string — filled template from persona triggers",
-        "source_trigger": "string — trigger_id from persona",
-        "evidence": "string — the specific fact from subagent output that made this trigger fire",
-        "confidence": "high|medium|inference"
-      }
-    ],
-    "Director_of_Facilities": [],
-    "CSO": [],
-    "VP_of_Operations": [],
-    "Loss_Prevention_Director": [],
-    "Superintendent_K12": []
-  },
-  "meddic_qualification": {
-    "metrics": {
-      "value": "string — quantifiable business impact Verkada can deliver, derived from snapshot/pain data (e.g., 'Consolidate {site_count} sites onto one platform, eliminating per-site NVR maintenance')",
-      "evidence": ["string — specific facts from subagent outputs supporting this metric"],
-      "confidence": "high|medium|inference",
-      "gap": "string|null — what discovery must confirm to validate this metric",
-      "source_quality": "primary|secondary|weak"
-    },
-    "economic_buyer": {
-      "value": "string — identified or hypothesized economic buyer title and name if known",
-      "evidence": ["string — from leadership, hiring signals, or persona meddic_role mappings"],
-      "confidence": "high|medium|inference",
-      "gap": "string|null — e.g., 'Confirm budget authority — CSO vs CFO vs Superintendent'",
-      "source_quality": "primary|secondary|weak"
-    },
-    "decision_criteria": {
-      "value": "string — what this buyer will evaluate on, derived from vertical_match + pain_hypotheses + technical_footprint",
-      "evidence": ["string — specific signals: e.g., 'NDAA compliance required (100% Title I)', 'Cloud-native preference (46 API subdomains)'"],
-      "confidence": "high|medium|inference",
-      "gap": "string|null — e.g., 'Confirm whether RFP scoring weights technical vs price'",
-      "source_quality": "primary|secondary|weak"
-    },
-    "decision_process": {
-      "value": "string — hypothesized buying process from entity_type + procurement signals",
-      "evidence": ["string — e.g., 'Cooperative purchasing available via Sourcewell #041524-VRK', 'K-12 districts typically require board approval for >$50K'"],
-      "confidence": "high|medium|inference",
-      "gap": "string|null — e.g., 'Confirm procurement path: full RFP vs cooperative vs sole-source'",
-      "source_quality": "primary|secondary|weak"
-    },
-    "identify_pain": {
-      "value": "string — primary pain hypothesis from pain_hypotheses, prioritized by Verkada relevance",
-      "evidence": ["string — specific pain evidence from subagent outputs"],
-      "confidence": "high|medium|inference",
-      "gap": "string|null — what discovery must confirm",
-      "source_quality": "primary|secondary|weak"
-    },
-    "champion": {
-      "value": "string — MUST be a named individual when leadership.json has candidates with meddic_role=champion. Format: '{Name}, {Title} — {one-sentence reasoning}'. Fall back to role placeholder ONLY if no named individuals available.",
-      "evidence": ["string — from leadership.json named_individuals, hiring signals, company-bg leadership, persona meddic_role=champion mappings"],
-      "confidence": "high|medium|inference",
-      "gap": "string|null — e.g., 'Confirm Sarah Smith is the decision influencer, not just titular IT Director'",
-      "source_quality": "primary|secondary|weak"
-    },
-    "competition": {
-      "value": "string — known or hypothesized incumbent/competitor from displacement_intel + cooperative_purchasing competitor_landscape",
-      "evidence": ["string — specific vendor hits, tech stack mentions, cooperative vehicle competitor lists"],
-      "confidence": "high|medium|inference",
-      "gap": "string|null — e.g., 'Zero vendor names detected in OSINT — requires direct discovery'",
-      "source_quality": "primary|secondary|weak"
-    }
-  },
-  "verkada_gtm_strategy": {
-    "land_play": {
-      "recommendation": "string — specific first product to lead with and why (e.g., 'Lead with Cameras at 3 pilot schools — school_safety trigger fired, district has 86 sites with fragmented systems')",
-      "target_sites": "string|null — specific sites/buildings for initial deployment if identifiable from source data",
-      "estimated_scope": "string|null — rough scope from size_indicator (e.g., '86 schools, start with 3–5 highest-need campuses')"
-    },
-    "poc_strategy": {
-      "recommendation": "string — POC approach (e.g., 'Pelican case demo at district office + 1 high-school — show centralized Command view across 2 sites')",
-      "verkada_relevant_triggers": ["string — trigger_ids that make the POC compelling"],
-      "demo_modules": ["string — Command modules to highlight: e.g., 'People Analytics', 'License Plate Recognition', 'Environmental Sensors'"]
-    },
-    "channel_partner": {
-      "recommendation": "string — suggested channel partner strategy based on region/vertical (e.g., 'Engage Convergint for K-12 in Georgia — strong SLED practice')",
-      "evidence": ["string — why this partner: cooperative vehicle data, regional presence, vertical expertise"]
-    },
-    "bundle_recommendation": {
-      "primary_products": ["string — e.g., 'Cameras', 'Access Control'"],
-      "secondary_products": ["string — expansion products: e.g., 'Alarms', 'Intercoms', 'Guest'"],
-      "rationale": "string — why this bundle for this account, tied to pain_hypotheses and vertical_match"
-    },
-    "procurement_path": {
-      "recommended": "string — fastest procurement path (e.g., 'Sourcewell #041524-VRK — bypasses full RFP for K-12 in Georgia')",
-      "alternatives": ["string — other viable paths with trade-offs"],
-      "evidence": ["string — from cooperative_purchasing data"]
-    },
-    "expansion_motion": {
-      "phase_1": "string — initial deployment scope",
-      "phase_2": "string — expansion trigger (e.g., 'After successful POC at 3 schools, propose district-wide rollout to remaining 83 schools')",
-      "phase_3": "string|null — full platform play (e.g., 'Add Access Control to all schools during summer refresh cycle')",
-      "land_to_expand_ratio": "string|null — estimated expansion multiplier if calculable from size_indicator"
-    },
-    "competitive_displacement": {
-      "primary_target": "string|null — incumbent vendor to displace if known",
-      "displacement_playbook": "string — specific Verkada counter-positioning from persona displacement_targets (e.g., 'Hikvision rip-and-replace: NDAA non-compliance + FCC Covered List exposure. Federal funding at risk.')",
-      "proof_points": ["string — leverage_references relevant to this displacement"]
-    }
-  },
+  "discovery_questions_by_persona": "GENERATED BY deals-synthesizer (parallel call B) — merged at orchestrator level",
+  "meddic_qualification": "GENERATED BY deals-synthesizer (parallel call B) — merged at orchestrator level",
+  "verkada_gtm_strategy": "GENERATED BY deals-synthesizer (parallel call B) — merged at orchestrator level",
   "disqualifier_flags": [
     {
       "id": "string — from persona disqualifiers",
@@ -285,84 +185,9 @@ Most sections are propagated from subagent outputs, not re-synthesized. This pre
       - Geographic match with seller's `geographic_focus`? → "Geographic overlap: {city/region}"
       - If no overlap found, set to `null`.
     - Sort by `champion_fit_score` descending. Output top 5 maximum. If no named individuals available from any source, output empty array.
-15. **`meddic_qualification`** — Synthesize from ALL subagent outputs + persona file. This is NOT propagation — it's synthesis. For each MEDDIC field:
-    - **Metrics**: Derive from `snapshot.size_indicator` + `pain_hypotheses`. Quantify the business impact Verkada can deliver (e.g., consolidate N sites, eliminate NVR maintenance across N locations, comply with NDAA to protect $X federal funding).
-    - **Economic Buyer**: Map from `leadership` names + persona `meddic_role: economic_buyer` mappings. If leadership is `insufficient_data`, hypothesize from entity_type (K-12 → Superintendent, Corp → CSO/VP).
-    - **Decision Criteria**: Derive from `vertical_match.key_drivers_present` + `pain_hypotheses` + `federal_funding_profile.ndaa_exposure`. What will this buyer evaluate on?
-    - **Decision Process**: Derive from `entity_type` + `cooperative_purchasing` data. K-12 districts need board approval; government entities use cooperative purchasing vehicles; corporations have procurement departments.
-    - **Identify Pain**: Select the highest-confidence `pain_hypothesis` that maps to a Verkada product capability.
-    - **Champion**: MUST use named individuals from `leadership.json` → `champion_candidates` when available. Select the top-scoring champion candidate (highest `champion_fit_score` with `meddic_role=champion`). Format: `"{Name}, {Title} — {reasoning}"`. Only fall back to a role placeholder (e.g., "IT Director — role maps to champion") if `leadership.json` has no named individuals. This is the single highest-value MEDDIC field — a named champion is worth 10x a role placeholder.
-    - **Competition**: Merge from `displacement_intel.vendor_hits` + `cooperative_purchasing.competitor_landscape`. If no vendor identified, state that and cite the vendor_absence_finding.
-    - Every field MUST have `evidence` array citing specific subagent data. Every field MUST have `gap` explaining what discovery must confirm. `confidence` follows the same rules as all other sections.
-15. **`verkada_gtm_strategy`** — Synthesize from ALL subagent outputs + persona file. This is the SE's action plan. For each field:
-    - **land_play**: Pick the first Verkada product line to lead with based on `vertical_match.key_drivers_present` and `pain_hypotheses`. K-12 with school_safety → lead with Cameras. Healthcare with access_control_not_integrated_with_video → lead with Access Control + Cameras bundle.
-    - **poc_strategy**: Design around the highest-weight fired trigger. Reference specific sites or buildings from `snapshot.size_indicator` if available.
-    - **channel_partner**: Use regional knowledge from `snapshot.headquarters_state` + vertical. Georgia K-12 → Convergint or Pavion (both on HGACBuy). Reference `cooperative_purchasing` data for partner evidence.
-    - **bundle_recommendation**: Map `vertical_match.key_drivers_present` → Verkada product lines from `persona/verkada-se.yml product.lines`. Primary = immediate need, Secondary = expansion products.
-    - **procurement_path**: Recommend from `cooperative_purchasing.available_vehicles`. Prioritize vehicles where Verkada holds a contract. Reference specific contract numbers.
-    - **expansion_motion**: Design land-and-expand from `snapshot.size_indicator`. Phase 1 = POC scope, Phase 2 = initial rollout, Phase 3 = full platform. Calculate `land_to_expand_ratio` from site count if available.
-    - **competitive_displacement**: Match `displacement_intel.vendor_hits` → `displacement_targets` in persona file. Use the specific `verkada_counter` text. Add `leverage_references` as proof points.
+**Do NOT re-interpret, re-summarize, or strip source attribution from propagated sections.** The subagents already applied anti-genericness rules. Your job is to assemble, not rewrite.
 
-**Do NOT re-interpret, re-summarize, or strip source attribution from propagated sections.** The subagents already applied anti-genericness rules. Your job is to assemble, not rewrite. The MEDDIC and GTM sections are exceptions — they require cross-subagent synthesis.
-
-## Discovery Question Generation (CRITICAL)
-
-This is the persona file's main leverage point. Every question must trace to a specific `trigger_id` and `discovery_template` in `persona/verkada-se.yml`. Free-form question generation is **PROHIBITED**.
-
-### Step-by-step flow:
-
-**Step 1: Collect fired triggers.** Scan all three subagent outputs for fired triggers:
-- company-bg: Check `recent_material_events` for events tagged `verkada_relevant: true` — these may map to triggers
-- tech-and-pain: Read `triggers_fired` array directly
-- hiring-signals: Read `trigger_evidence` (if not `insufficient_data`)
-
-Build a deduplicated list of `trigger_id` values that fired, with the evidence that fired each one.
-
-**Step 2: Look up templates.** For each fired `trigger_id`, find the matching trigger in `persona/verkada-se.yml` and retrieve its `discovery_templates` array.
-
-**Step 3: Fill placeholders.** Each template contains placeholders like `{company}`, `{vertical}`, `{project_name}`, `{incident_type}`, `{specific_signal}`, `{site_count}`, etc. Fill them with specific facts from the subagent outputs:
-- `{company}` → `snapshot.name` from company-bg
-- `{vertical}` → `vertical_match.matched_vertical`
-- `{project_name}` → specific project from material events or tech-and-pain triggers (e.g., "30+ new stores in 2026 including the 2,000th store in Fuquay-Varina, NC")
-- `{incident_type}` → specific incident from material events
-- `{specific_signal}` → specific evidence string from the trigger that fired
-- `{site_count}` → from snapshot.size_indicator if available
-- `{cloud_initiative}` → specific cloud evidence from tech-and-pain
-
-**If a placeholder cannot be filled with a specific fact, DROP that template.** Do not output a question with unfilled placeholders or generic fill text.
-
-**Step 4: Filter by persona.** For each generated question, determine which personas it's relevant to:
-
-1. Read the persona's `care_about` list from `persona/verkada-se.yml`.
-2. Read the persona's `skip_topics` list.
-3. Map the trigger's topic to care_about/skip_topics:
-   - `capital_project_signal` → relevant to personas who care about `capital_projects`, `multi_site_management`, `operational_efficiency`, `scalability`. Skip for personas with `pricing_per_unit` or `implementation_timeline_details` in skip_topics.
-   - `cloud_transformation_initiative` → relevant to `cloud_strategy`, `IT_burden`, `vendor_consolidation`. Skip for personas with `cloud_migration_strategy` in skip_topics (e.g., Loss_Prevention_Director).
-   - `multi_site_sprawl` → relevant to `multi_site_management`, `multi_site_visibility`, `operational_efficiency`, `remote_investigation`.
-   - `incident_recent_12mo` → relevant to `risk_posture`, `incident_response`, `shrink_reduction`, `student_safety`.
-   - `hiring_security_intensity` → relevant to `vendor_management`, `risk_posture`, `operational_efficiency`.
-   - `legacy_nvr_dvr_refresh` → relevant to `IT_burden`, `maintenance_reduction`, `total_cost_of_ownership`. Skip for personas with `cloud_migration_strategy` in skip_topics.
-   - `ndaa_compliance_pressure` → relevant to `regulatory`, `federal_funding_alignment`, `risk_posture`.
-   - `vendor_consolidation_signal` → relevant to `vendor_consolidation`, `total_cost_of_ownership`, `IT_burden`.
-   - `regulatory_compliance_expansion` → relevant to `regulatory`, `audit_trail`, `risk_posture`.
-   - `executive_leadership_change` → relevant to `vendor_management`, `risk_posture`, `operational_efficiency`.
-   - `insurance_or_risk_pressure` → relevant to `risk_posture`, `total_cost_of_ownership`. Skip for personas with `insurance_premiums` in skip_topics (e.g., IT_Director).
-   - `clery_crime_trend` → relevant to `campus_safety`, `regulatory`, `risk_posture`, `audit_trail`.
-   - `frpl_federal_funding` → relevant to `federal_funding_alignment`, `budget_justification`, `student_safety`.
-   - `campus_safety_compliance` → relevant to `student_safety`, `parent_communication`, `board_optics`, `risk_posture`.
-   - `active_security_rfp` → relevant to `vendor_management`, `capital_projects`, `total_cost_of_ownership`.
-   - `incumbent_contract_expiring` → relevant to `vendor_management`, `vendor_consolidation`, `total_cost_of_ownership`.
-   - `sole_source_opportunity` → relevant to `budget_justification`, `vendor_management`, `operational_efficiency`.
-
-4. Place each question under every persona whose `care_about` includes at least one relevant topic AND whose `skip_topics` does not include any topic the question touches.
-
-**Step 5: Attach metadata and leverage references.** For each placed question, record:
-- `source_trigger`: the trigger_id
-- `evidence`: the specific fact from the subagent output that fired the trigger
-- `confidence`: inherit from the trigger's confidence in the subagent output
-- `leverage_reference`: if the trigger_id has a matching entry in `persona/verkada-se.yml` → `leverage_references`, append the customer reference inline in the question text. Format: `"{question_text} (ref: {customer} — {context})"`. Choose the reference whose `vertical` matches the target account's vertical, or use any if no vertical match. If no leverage_reference exists for this trigger, omit.
-
-**Step 6: Empty personas are valid.** If no triggers fire that are relevant to a persona (e.g., Superintendent_K12 when the company is a retailer, not K-12), output an empty array for that persona. Do NOT generate filler questions.
+NOTE: `meddic_qualification`, `verkada_gtm_strategy`, and `discovery_questions_by_persona` are generated by the parallel deals-synthesizer agent and merged at the orchestrator level. Do NOT generate these 3 sections — output placeholder strings for them.
 
 ### Discovery Question Anti-Patterns (REJECTED):
 
@@ -447,16 +272,6 @@ These are non-negotiable. This is the final output — the last chance to catch 
     ],
     "confidence": "medium"
   },
-  "discovery_questions_by_persona": {
-    "IT_Director": [
-      {"question": "Tell me about your current security infrastructure", "source_trigger": null, "evidence": null, "confidence": "medium"},
-      {"question": "What challenges are you facing with physical security?", "source_trigger": null, "evidence": null, "confidence": "medium"},
-      {"question": "How are you thinking about cloud migration?", "source_trigger": null, "evidence": null, "confidence": "medium"}
-    ],
-    "CSO": [
-      {"question": "What's your risk posture like?", "source_trigger": null, "evidence": null, "confidence": "medium"}
-    ]
-  },
   "disqualifier_flags": [
     {"id": "active_verkada_customer", "evidence": "No mention of Verkada found in any source", "severity": "soft"}
   ]
@@ -465,7 +280,6 @@ These are non-negotiable. This is the final output — the last chance to catch 
 
 **What's wrong with this:**
 - `tldr`: "Major retailer facing operational challenges" — could be Walmart, Kroger, Costco, or any retailer. "Growth in capital projects" — which projects? How many? Where? "Potential security pain points" — the word "potential" with no specifics is filler.
-- `discovery_questions_by_persona`: Every question is free-form with no trigger linkage (`source_trigger: null`). "Tell me about your current security infrastructure" is the generic question every SE already asks — the tool adds zero value. None trace to a persona trigger template.
 - `disqualifier_flags`: "No mention of Verkada found" — absence of evidence is NOT evidence of anything. This flag should not exist.
 - No source attribution on anything. No `evidence` fields filled. No `open_questions`.
 
@@ -489,73 +303,6 @@ These are non-negotiable. This is the final output — the last chance to catch 
       "851 subdomains scanned, zero competitor vendor names exposed (Avigilon, Genetec, Milestone, Lenel, Hikvision, Dahua, March Networks, Brivo all absent) — incumbent vendor identification requires direct discovery, not OSINT."
     ],
     "confidence": "medium"
-  },
-  "discovery_questions_by_persona": {
-    "IT_Director": [
-      {
-        "question": "I see TARGET CORP is investing heavily in cloud — 46 API subdomains, Kubernetes tooling (impeller), PingIdentity SSO, AirWatch MDM. Has physical security been included in that cloud-first conversation, or is it still the last on-prem holdout?",
-        "source_trigger": "cloud_transformation_initiative",
-        "evidence": "tech-and-pain triggers_fired: 46 cloud/API subdomains, Kubernetes tooling (target/impeller), PingIdentity (pingone.pf.target.com), VMware AirWatch MDM (airwatch-as.target.com)",
-        "confidence": "high"
-      },
-      {
-        "question": "If IT is decommissioning on-prem servers for everything else, how do they feel about maintaining NVR servers just for cameras?",
-        "source_trigger": "cloud_transformation_initiative",
-        "evidence": "Camera subdomains (mrcam.target.com, rcam.target.com) operate separately from cloud API infrastructure — suggesting on-prem physical security silo",
-        "confidence": "medium"
-      }
-    ],
-    "Director_of_Facilities": [
-      {
-        "question": "TARGET CORP announced 30+ new store openings in 2026 with the 2,000th store in Fuquay-Varina, NC. Are security infrastructure decisions for those sites already locked in, or still in design?",
-        "source_trigger": "capital_project_signal",
-        "evidence": "company-bg material event: Target announced 30+ new stores in 2026 including 2,000th location in Fuquay-Varina, NC, backed by $5B capital investment plan (corporate.target.com press release, 2026-03-05)",
-        "confidence": "high"
-      },
-      {
-        "question": "New builds are a clean-sheet opportunity — is the security spec for the 30+ new 2026 stores being written by facilities, IT, or an integrator?",
-        "source_trigger": "capital_project_signal",
-        "evidence": "company-bg material event: $5B capital investment plan for 2026, 130+ remodels planned",
-        "confidence": "high"
-      },
-      {
-        "question": "TARGET CORP operates 1,956+ locations. Are those running the same security platform, or did each site choose its own over the years?",
-        "source_trigger": "multi_site_sprawl",
-        "evidence": "tech-and-pain triggers_fired: 2,000th store milestone, store-specific auth federation (stores.pf.target.com)",
-        "confidence": "high"
-      }
-    ],
-    "CSO": [
-      {
-        "question": "TARGET CORP operates 1,956+ locations. When there's an incident at a remote store, can your security team pull footage without calling someone on-site or VPN-ing into a local NVR?",
-        "source_trigger": "multi_site_sprawl",
-        "evidence": "Camera management subdomains (mrcam.target.com, rcam.target.com) exist separately from cloud infrastructure, suggesting per-site or regional camera access architecture",
-        "confidence": "medium"
-      }
-    ],
-    "VP_of_Operations": [
-      {
-        "question": "TARGET CORP announced 30+ new store openings in 2026 backed by a $5B capital investment plan. Are you standardizing the new sites on the same security platform as existing locations, or evaluating fresh?",
-        "source_trigger": "capital_project_signal",
-        "evidence": "company-bg material event: 30+ new stores, 130+ remodels, $5B capex (corporate.target.com, 2026-03-05)",
-        "confidence": "high"
-      },
-      {
-        "question": "Standardizing 1,956+ locations on one platform is a big project. What would need to be true for that to land on next year's budget?",
-        "source_trigger": "multi_site_sprawl",
-        "evidence": "Snapshot: 1,956+ stores across all 50 US states, large accelerated filer",
-        "confidence": "high"
-      }
-    ],
-    "Loss_Prevention_Director": [
-      {
-        "question": "TARGET CORP operates 1,956+ locations. When there's an incident at a remote store, can your LP team pull footage without calling someone on-site or VPN-ing into a local NVR?",
-        "source_trigger": "multi_site_sprawl",
-        "evidence": "Camera subdomains (mrcam.target.com, rcam.target.com) isolated from cloud infrastructure; Target Security Specialist hiring at frontline level ($17.50/hr, Roswell NM) — LP workforce present but infrastructure access unclear",
-        "confidence": "medium"
-      }
-    ],
-    "Superintendent_K12": []
   },
   "disqualifier_flags": [],
   "open_questions": [
@@ -585,8 +332,6 @@ These are non-negotiable. This is the final output — the last chance to catch 
 
 **Why this is correct:**
 - `tldr`: Each bullet has company-specific numbers — 1,956 stores, $5B capex, 30+ new stores, Fuquay-Varina NC, 986 stars, 851 subdomains, zero vendor hits naming all 8 vendors checked. No bullet could appear in another company's brief unchanged.
-- `discovery_questions_by_persona`: Every question traces to a `source_trigger` with specific `evidence`. Templates are filled with Target-specific facts ($5B capex, 30+ stores, Fuquay-Varina NC, mrcam.target.com, 1,956 locations). No free-form questions.
-- Persona filtering works: IT_Director gets cloud_transformation questions (care_about: cloud_strategy, IT_burden). Director_of_Facilities gets capital_project questions (care_about: capital_projects). Loss_Prevention_Director gets multi_site_sprawl questions relevant to remote_investigation but NOT cloud_transformation (skip_topics: cloud_migration_strategy). Superintendent_K12 gets empty array because Target is Retail, not K-12 — no relevant triggers.
 - `disqualifier_flags`: Empty array. No affirmative evidence of any disqualifier. Absence of evidence is correctly NOT flagged.
 - `open_questions`: Each names a specific gap, what source would resolve it, and priority. "Who is the incumbent vendor?" is high because it determines the displacement playbook.
 - Confidence propagation: TL;DR confidence is `medium` because the displacement intel bullet relies on crt.sh analysis (primary source, but the "zero vendor hits" conclusion is evidence-of-absence, inherently medium confidence).
@@ -605,26 +350,23 @@ The brief can be generated with 2 of 3 subagents, but NOT without company-bg.
 
 ## Execution Flow
 
-1. Parse `persona/verkada-se.yml` from the user message (includes `leverage_references` section, `meddic_role` per persona — cite these inline with discovery questions for matched triggers).
+1. Parse `persona/verkada-se.yml` from the system prompt.
 2. Parse `persona/seller-profile.yml` from the user message (SE's prior employers, networks, geographic focus for warm intro cross-referencing).
 3. Parse cooperative purchasing data from the user message: `sourcewell.json`, `tips.json`, `omnia.json`, `hgac.json`, `costars.json` (whichever are present).
 4. Parse `leadership.json` from the user message (named individuals with titles, role classifications, recent activity, LinkedIn URLs).
-4b. Parse `champion_signals.json` from the user message (per-individual signal enrichment: role_fit, tenure/recency, career_arc, public_voice, topic_affinity, authority scores with evidence). When present, this is the PRIMARY source for champion_fit_score and score_breakdown.
+4b. Parse `champion_signals.json` from the user message (per-individual signal enrichment). When present, this is the PRIMARY source for champion_fit_score and score_breakdown.
 5. Parse the three subagent outputs from the user message.
 6. Validate each subagent output — check for top-level `insufficient_data` status.
 7. Propagate sections: entity_type, snapshot, federal_funding_profile, leadership, material events, vertical match, technical footprint, practitioner_sentiment, incident_history, pain hypotheses, hiring signals, displacement intel.
-8. **Build cooperative_purchasing** from all available cooperative purchasing data (sourcewell.json, tips.json, omnia.json, hgac.json, costars.json). For each vehicle: filter for physical security relevance, surface Verkada contract numbers and products, note competitor manufacturers and discount tiers.
-9. **Build champion_candidates** from `champion_signals.json` (primary) + `leadership.json` + company-bg `leadership` + hiring-signals `security_team_signals`. When champion_signals.json is present, use its pre-computed scores and score_breakdowns. For each named individual: classify meddic_role, populate score_breakdown, write reasoning_summary (3 sentences), generate recommended_validation_question, cross-reference against seller-profile.yml for warm_intro_path. Sort by champion_fit_score descending, output top 5.
-10. **Collect fired triggers** from all subagent outputs into a deduplicated list. Include triggers from practitioner_sentiment.trigger_evidence and federal_funding_profile.
-11. **Generate discovery questions** per the 6-step flow above: collect triggers → look up templates → fill placeholders → filter by persona → attach metadata with leverage references → handle empty personas. When a trigger_id has a matching `leverage_references` entry in the persona file, append the customer reference inline in the question text using format: `"(ref: {customer} — {context})"`. Example: `"Has physical security been included in that cloud-first conversation? (ref: Waukesha SD — verkada.com/customers/waukesha)"`. This gives the SE a proof point to drop during discovery.
-12. **Build MEDDIC qualification** — synthesize across all subagent outputs + persona `meddic_role` mappings + `champion_candidates`. For the Champion field: USE the top-scoring named champion candidate from step 9. Format as `"{Name}, {Title} — {reasoning}"`. Only fall back to role placeholder if no named individuals exist. Every field must have a `gap`.
-13. **Build Verkada GTM strategy** — synthesize land play, POC strategy, channel partner, bundle recommendation, procurement path, expansion motion, and competitive displacement. Ground every recommendation in specific subagent data (site counts, trigger IDs, cooperative contract numbers, displacement targets).
-14. **Check disqualifiers** against all subagent data. Only flag with affirmative evidence.
-15. **Generate open_questions** from insufficient_data sections, unfilled templates, inference-tagged claims, vendor absence, and thin hiring data.
-16. **Generate TL;DR** — 3 bullets max, company-specific, priority-ordered.
-17. **Run specificity rewrite pass** — final check on every text string in the output.
-18. Output the final JSON object. No wrapper, no markdown, no explanation text.
+8. **Build cooperative_purchasing** from all available cooperative purchasing data. For each vehicle: filter for physical security relevance, surface Verkada contract numbers and products, note competitor manufacturers and discount tiers.
+9. **Build champion_candidates** from `champion_signals.json` (primary) + `leadership.json` + company-bg `leadership` + hiring-signals `security_team_signals`. Sort by champion_fit_score descending, output top 5.
+10. **Check disqualifiers** against all subagent data. Only flag with affirmative evidence.
+11. **Generate open_questions** from insufficient_data sections, inference-tagged claims, vendor absence, and thin hiring data.
+12. **Generate TL;DR** — 3 bullets max, company-specific, priority-ordered.
+13. **Run specificity rewrite pass** — final check on every text string in the output.
+14. Set `discovery_questions_by_persona`, `meddic_qualification`, and `verkada_gtm_strategy` to placeholder strings (these are generated by the parallel deals-synthesizer and merged by the orchestrator).
+15. Output the final JSON object. No wrapper, no markdown, no explanation text.
 
 ## CRITICAL: Output Completeness
 
-OUTPUT MUST BE VALID JSON WITH ALL TOP-LEVEL SECTIONS PRESENT. If approaching the token limit, prioritize completing these sections in order: cooperative_purchasing > meddic_qualification > verkada_gtm_strategy > champion_candidates > discovery_questions_by_persona > pain_hypotheses. NEVER truncate mid-string. NEVER omit closing brackets. Better to write a SHORT but complete brief than a long but truncated one. Every section must have its closing brace/bracket. Every string must be terminated. If a section would push you past the limit, write a minimal valid version (e.g. a single-sentence summary) rather than omitting it entirely.
+OUTPUT MUST BE VALID JSON WITH ALL TOP-LEVEL SECTIONS PRESENT. The 3 deal-strategy sections (meddic_qualification, verkada_gtm_strategy, discovery_questions_by_persona) can be placeholder strings since they are generated separately. All other sections must be fully populated. NEVER truncate mid-string. NEVER omit closing brackets. Better to write a SHORT but complete brief than a long but truncated one. Every section must have its closing brace/bracket. Every string must be terminated.

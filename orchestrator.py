@@ -799,29 +799,12 @@ def _parse_json_robust(text: str, raw_path: Path) -> dict | None:
     return None
 
 
-def run_phase3(slug: str, subagent_outputs: dict) -> dict:
-    """Run the synthesizer with all 3 subagent outputs."""
-    print("\n  Phase 3 — Synthesizer (Opus)")
-    print("  " + "─" * 50)
+def _build_phase3_context(slug: str, subagent_outputs: dict) -> tuple[list, str, str | None]:
+    """Build the shared user message and persona text for Phase 3 calls.
 
-    if not anthropic or not os.environ.get("ANTHROPIC_API_KEY"):
-        print(f"    {SYM_ERROR} ANTHROPIC_API_KEY not set — cannot run synthesizer", flush=True)
-        return {"status": "insufficient_data", "reason": "ANTHROPIC_API_KEY not set"}
-
-    # Check if company-bg is present (required)
-    company_bg = subagent_outputs.get("company-bg", {})
-    if company_bg.get("status") in ("insufficient_data", "error", "parse_error"):
-        print(f"    {SYM_ERROR} company-bg missing or failed — cannot synthesize", flush=True)
-        # Return partial data for debugging
-        return {
-            "status": "insufficient_data",
-            "reason": "company-bg subagent failed — cannot generate brief without company snapshot",
-            "subagent_outputs": subagent_outputs,
-        }
-
-    system_prompt = read_agent_prompt("synthesizer")
-
-    # Build user message with all 3 subagent outputs
+    Returns (user_parts, user_msg, persona_text).
+    Both Call A (main_brief) and Call B (deals_synthesizer) receive identical context.
+    """
     user_parts = []
     for name in ["company-bg", "tech-and-pain", "hiring-signals"]:
         data = subagent_outputs.get(name, {"status": "insufficient_data"})
@@ -834,7 +817,6 @@ def run_phase3(slug: str, subagent_outputs: dict) -> dict:
         if coop_path.exists():
             try:
                 coop_data = json.loads(coop_path.read_text())
-                # Skip empty or failed sources to save input tokens
                 if coop_data.get("status") in ("insufficient_data", "no_matches"):
                     coop_skipped += 1
                     continue
@@ -869,7 +851,7 @@ def run_phase3(slug: str, subagent_outputs: dict) -> dict:
         except (json.JSONDecodeError, OSError):
             pass
 
-    # Persona goes into cached system prompt (not user message) for prompt caching
+    # Persona goes into cached system prompt for prompt caching
     persona_text = None
     if PERSONA_PATH.exists():
         try:
@@ -887,57 +869,154 @@ def run_phase3(slug: str, subagent_outputs: dict) -> dict:
             pass
 
     user_msg = "\n\n".join(user_parts) + f"\n\nCompany slug: {slug}"
+    return user_parts, user_msg, persona_text
 
-    print(f"    {SYM_RUN} running synthesizer...", flush=True)
-    _write_status("phase3", "Running synthesizer (Opus)...")
 
-    # Use structured system with cache_control for prompt caching
-    cached_system = _build_cached_system(system_prompt, persona_text)
+def _run_synthesizer_call(client, *, agent_name: str, model: str, max_tokens: int,
+                          cached_system: list, user_msg: str, slug: str,
+                          label: str) -> dict | None:
+    """Run a single synthesizer API call. Returns parsed JSON or None on failure."""
+    try:
+        text = _stream_anthropic_with_retry(
+            client, model=model, max_tokens=max_tokens,
+            system=cached_system, messages=[{"role": "user", "content": user_msg}],
+            label=label,
+        )
+    except (anthropic.RateLimitError, anthropic.APIStatusError):
+        print(f"    {SYM_ERROR} {label} rate limited after 3 retries", flush=True)
+        return None
+
+    text = re.sub(r'^```(?:json)?\s*\n?', '', text.strip())
+    text = re.sub(r'\n?```\s*$', '', text.strip())
+
+    # Save raw output before parsing
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    BRIEFS_DIR.mkdir(parents=True, exist_ok=True)
+    raw_path = BRIEFS_DIR / f"{slug}-{today}.{label}.raw.txt"
+    raw_path.write_text(text)
+
+    result = _parse_json_robust(text, raw_path)
+    if result is None:
+        print(f"    {SYM_ERROR} {label} returned unparseable output", flush=True)
+    return result
+
+
+def run_phase3(slug: str, subagent_outputs: dict) -> dict:
+    """Run two synthesizer calls in parallel and merge results.
+
+    Call A (main_brief): Sonnet — generates the structural brief (all sections
+    except MEDDIC, GTM, Discovery Questions).
+    Call B (deals_synthesizer): Opus — generates ONLY meddic_qualification,
+    verkada_gtm_strategy, discovery_questions_by_persona.
+
+    Both calls receive identical input context. Prompt caching ensures the
+    second call gets ~90% input token savings on the shared context.
+    """
+    print("\n  Phase 3 — Synthesizer (parallel: main_brief + deals)")
+    print("  " + "─" * 50)
+
+    if not anthropic or not os.environ.get("ANTHROPIC_API_KEY"):
+        print(f"    {SYM_ERROR} ANTHROPIC_API_KEY not set — cannot run synthesizer", flush=True)
+        return {"status": "insufficient_data", "reason": "ANTHROPIC_API_KEY not set"}
+
+    # Check if company-bg is present (required)
+    company_bg = subagent_outputs.get("company-bg", {})
+    if company_bg.get("status") in ("insufficient_data", "error", "parse_error"):
+        print(f"    {SYM_ERROR} company-bg missing or failed — cannot synthesize", flush=True)
+        return {
+            "status": "insufficient_data",
+            "reason": "company-bg subagent failed — cannot generate brief without company snapshot",
+            "subagent_outputs": subagent_outputs,
+        }
+
+    # Build shared context
+    _, user_msg, persona_text = _build_phase3_context(slug, subagent_outputs)
+
+    # Read agent prompts
+    main_prompt = read_agent_prompt("synthesizer")
+    deals_prompt = read_agent_prompt("deals-synthesizer")
+
+    # Build cached system blocks (persona is cached, shared across both calls)
+    main_system = _build_cached_system(main_prompt, persona_text)
+    deals_system = _build_cached_system(deals_prompt, persona_text)
+
+    client = anthropic.Anthropic()
+
+    # Run both calls in parallel with 1.5s stagger
+    print(f"    {SYM_RUN} running main_brief (Sonnet) + deals_synthesizer (Opus)...", flush=True)
+    _write_status("phase3", "Running synthesizers in parallel...")
+
+    main_result = None
+    deals_result = None
 
     try:
-        client = anthropic.Anthropic()
-        try:
-            text = _stream_anthropic_with_retry(
-                client, model=OPUS_MODEL, max_tokens=16000,
-                system=cached_system, messages=[{"role": "user", "content": user_msg}],
-                label="synthesizer",
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            main_future = pool.submit(
+                _run_synthesizer_call, client,
+                agent_name="synthesizer", model=SONNET_MODEL, max_tokens=12000,
+                cached_system=main_system, user_msg=user_msg, slug=slug,
+                label="main_brief",
             )
-        except (anthropic.RateLimitError, anthropic.APIStatusError):
-            print(f"    {SYM_ERROR} synthesizer rate limited after 3 retries", flush=True)
-            return {"status": "insufficient_data", "reason": "rate_limited_after_3_retries",
-                    "subagent_outputs": subagent_outputs}
-        text = re.sub(r'^```(?:json)?\s*\n?', '', text.strip())
-        text = re.sub(r'\n?```\s*$', '', text.strip())
+            time.sleep(1.5)  # Stagger to avoid rate limits
+            deals_future = pool.submit(
+                _run_synthesizer_call, client,
+                agent_name="deals-synthesizer", model=OPUS_MODEL, max_tokens=8000,
+                cached_system=deals_system, user_msg=user_msg, slug=slug,
+                label="deals_synthesizer",
+            )
 
-        # Save raw output before parsing (debug artifact + recovery path)
-        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        BRIEFS_DIR.mkdir(parents=True, exist_ok=True)
-        raw_path = BRIEFS_DIR / f"{slug}-{today}.raw.txt"
-        raw_path.write_text(text)
-
-        brief = _parse_json_robust(text, raw_path)
-        if brief is None:
-            return {"status": "parse_error", "raw": text[:2000], "subagent_outputs": subagent_outputs}
-
-        # Validate required top-level sections
-        REQUIRED_SECTIONS = [
-            "tldr", "entity_type", "snapshot", "cooperative_purchasing",
-            "champion_candidates", "discovery_questions_by_persona",
-            "meddic_qualification", "verkada_gtm_strategy",
-        ]
-        missing = [s for s in REQUIRED_SECTIONS
-                    if not brief.get(s) or brief.get(s) == "insufficient_data"]
-        if missing:
-            warning = f"Missing brief sections: {', '.join(missing)}"
-            print(f"    \033[33m⚠\033[0m  {warning}", flush=True)
-            _write_status("phase3", warning, missing_sections=missing)
-
-        print(f"    {SYM_OK} synthesizer complete", flush=True)
-        return brief
-
+            main_result = main_future.result()
+            deals_result = deals_future.result()
     except Exception as e:
-        print(f"    {SYM_ERROR} synthesizer error: {str(e)[:80]}", flush=True)
-        return {"status": "error", "reason": str(e)[:200], "subagent_outputs": subagent_outputs}
+        print(f"    {SYM_ERROR} Phase 3 executor error: {str(e)[:80]}", flush=True)
+
+    # Call A failure = total failure (main brief is the spine)
+    if main_result is None:
+        _write_status("phase3", "main_brief failed — cannot generate brief")
+        return {"status": "parse_error", "reason": "main_brief synthesizer failed",
+                "subagent_outputs": subagent_outputs}
+
+    brief = main_result
+
+    # Merge Call B results into the brief
+    if deals_result is not None:
+        deals_sections = ["meddic_qualification", "verkada_gtm_strategy", "discovery_questions_by_persona"]
+        merged_count = 0
+        for section in deals_sections:
+            if section in deals_result and deals_result[section]:
+                brief[section] = deals_result[section]
+                merged_count += 1
+        print(f"    {SYM_OK} deals_synthesizer merged ({merged_count}/3 sections)", flush=True)
+        _write_status("phase3_deals", f"Merged {merged_count}/3 deal sections")
+    else:
+        # Call B failed — set fallback values, brief is still usable
+        print(f"    \033[33m⚠\033[0m  deals_synthesizer failed — MEDDIC/GTM/Discovery will be missing", flush=True)
+        _write_status("phase3_deals", "deals_synthesizer failed — sections missing")
+        for section in ["meddic_qualification", "verkada_gtm_strategy", "discovery_questions_by_persona"]:
+            if not brief.get(section) or isinstance(brief.get(section), str):
+                brief[section] = {"status": "synthesis_error", "reason": "deals_synthesizer failed"}
+
+    # Save merged raw output for debugging
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    raw_path = BRIEFS_DIR / f"{slug}-{today}.raw.txt"
+    raw_path.write_text(json.dumps(brief, indent=2, default=str))
+
+    # Validate required top-level sections
+    REQUIRED_SECTIONS = [
+        "tldr", "entity_type", "snapshot", "cooperative_purchasing",
+        "champion_candidates", "discovery_questions_by_persona",
+        "meddic_qualification", "verkada_gtm_strategy",
+    ]
+    missing = [s for s in REQUIRED_SECTIONS
+                if not brief.get(s) or brief.get(s) == "insufficient_data"
+                or (isinstance(brief.get(s), dict) and brief[s].get("status") == "synthesis_error")]
+    if missing:
+        warning = f"Missing brief sections: {', '.join(missing)}"
+        print(f"    \033[33m⚠\033[0m  {warning}", flush=True)
+        _write_status("phase3", warning, missing_sections=missing)
+
+    print(f"    {SYM_OK} Phase 3 complete", flush=True)
+    return brief
 
 
 # ---------------------------------------------------------------------------
