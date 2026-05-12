@@ -254,6 +254,7 @@ CLIENT_REGISTRY = {
     "crtsh":                ("clients.crtsh",             "fetch_crtsh_data",              _crtsh_args,    "ssl.json"),
     "github":               ("clients.github",            "fetch_github_data",             _company_args,  "github.json"),
     "news":                 ("clients.news",              "fetch_news_data",               _company_args,  "news.json"),
+    "website":              ("clients.website",           "fetch_website_data",            _company_args,  "website.json"),
     "nces":                 ("clients.nces",              "fetch_nces_data",               _nces_args,     "nces.json"),
     "clery":                ("clients.clery",             "fetch_clery_data",              _clery_args,    "clery.json"),
     "sam":                  ("clients.sam",               "fetch_sam_data",                _sam_args,      "sam.json"),
@@ -269,6 +270,12 @@ CLIENT_REGISTRY = {
     "hgac":                 ("clients.hgac",              "fetch_hgac_data",               _category_args, "hgac.json"),
     "leadership":           ("clients.leadership",        "fetch_leadership_data",         _leadership_args,  "leadership.json"),
     "champion_signals":     ("clients.champion_signals",  "fetch_champion_signals",        _champion_signals_args, "champion_signals.json"),
+}
+
+# Sources that work for ANY entity and ALWAYS run regardless of vertical
+UNIVERSAL_SOURCES = {
+    "sec", "github", "news", "indeed", "reddit", "crtsh",
+    "leadership", "champion_signals", "website",
 }
 
 
@@ -438,17 +445,103 @@ def detect_vertical_early(company: str, slug: str) -> str:
     return "unknown"
 
 
+HAIKU_MODEL = "claude-haiku-4-5-20251001"
+
+
+def llm_classify_vertical(company_name: str, slug: str) -> str:
+    """Use a cheap Haiku call to classify vertical from scraped data.
+
+    Called as a fallback when NAICS + name heuristics both fail,
+    AFTER Phase 1 has populated website.json and news.json.
+    Cost: ~$0.001 per classification.
+    """
+    if not anthropic or not os.environ.get("ANTHROPIC_API_KEY"):
+        return "unknown"
+
+    # Gather context from cached Phase 1 data
+    context_parts = []
+    sources_dir = SOURCES_DIR / slug
+
+    website_path = sources_dir / "website.json"
+    if website_path.exists():
+        try:
+            data = json.loads(website_path.read_text())
+            if data.get("status") == "ok":
+                pages = data.get("pages", {})
+                # Use homepage text, truncated
+                for url, text in pages.items():
+                    context_parts.append(f"Website ({url}):\n{text[:1500]}")
+                    break
+        except Exception:
+            pass
+
+    news_path = sources_dir / "news.json"
+    if news_path.exists():
+        try:
+            data = json.loads(news_path.read_text())
+            articles = data.get("articles", [])
+            if articles:
+                headlines = [a.get("title", "") for a in articles[:5]]
+                context_parts.append(f"Recent news: {'; '.join(headlines)}")
+        except Exception:
+            pass
+
+    sec_path = sources_dir / "sec.json"
+    if sec_path.exists():
+        try:
+            data = json.loads(sec_path.read_text())
+            if data.get("company"):
+                sic = data["company"].get("sic_description", "")
+                industry = data["company"].get("industry", "")
+                context_parts.append(f"SEC SIC: {sic}, Industry: {industry}")
+        except Exception:
+            pass
+
+    if not context_parts:
+        return "unknown"
+
+    valid_list = ", ".join(v for v in VALID_VERTICALS if v != "unknown")
+    prompt = (
+        f"Classify this company into ONE of these verticals:\n"
+        f"{valid_list}\n\n"
+        f"Company: {company_name}\n\n"
+        + "\n\n".join(context_parts)
+        + "\n\nOutput JUST the vertical string (one of the list above), nothing else.\n"
+        f"If genuinely unclear, output: unknown"
+    )
+
+    try:
+        client = anthropic.Anthropic()
+        response = client.messages.create(
+            model=HAIKU_MODEL,
+            max_tokens=50,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        result = response.content[0].text.strip().lower().replace(" ", "_")
+        # Track token usage
+        _token_usage["input"] += response.usage.input_tokens
+        _token_usage["output"] += response.usage.output_tokens
+
+        return _validate_vertical(result)
+    except Exception as e:
+        print(f"    \033[33m⚠\033[0m  LLM vertical classification failed: {str(e)[:60]}", flush=True)
+        return "unknown"
+
+
 def filter_sources_by_vertical(client_names: list[str], vertical: str) -> tuple[list[str], list[str]]:
     """Filter source client list by detected vertical.
 
     Returns (applicable_clients, skipped_clients).
+    UNIVERSAL_SOURCES always run regardless of vertical.
     If vertical is unknown, all clients run.
     """
     applicable_set = SOURCES_BY_VERTICAL.get(vertical)
     if applicable_set is None:
         return client_names, []
-    applicable = [n for n in client_names if n in applicable_set]
-    skipped = [n for n in client_names if n not in applicable_set]
+    # Merge vertical-specific sources with universal sources
+    combined = applicable_set | UNIVERSAL_SOURCES
+    applicable = [n for n in client_names if n in combined]
+    skipped = [n for n in client_names if n not in combined]
     return applicable, skipped
 
 
@@ -584,7 +677,7 @@ def run_phase1(company: str, slug: str, force: bool, vertical: str = "unknown") 
         }
 
         try:
-            for future in as_completed(futures, timeout=60):
+            for future in as_completed(futures, timeout=90):
                 name = futures[future]
                 try:
                     _, symbol, detail = future.result()
@@ -599,8 +692,8 @@ def run_phase1(company: str, slug: str, force: bool, vertical: str = "unknown") 
             for future, name in futures.items():
                 if name not in results:
                     future.cancel()
-                    results[name] = (SYM_ERROR, "timeout (>60s)")
-                    print(f"    {SYM_ERROR} {name:<22} timeout (>60s)", flush=True)
+                    results[name] = (SYM_ERROR, "timeout (>90s)")
+                    print(f"    {SYM_ERROR} {name:<22} timeout (>90s)", flush=True)
                     _write_status("phase1", f"{name}: timeout", source=name, source_status="error")
 
     # Summary line
@@ -635,7 +728,7 @@ def read_agent_prompt(agent_name: str) -> str:
 
 
 SUBAGENT_SOURCE_FILES = {
-    "company-bg": ["sec.json", "nces.json", "clery.json", "sam.json", "news.json"],
+    "company-bg": ["sec.json", "nces.json", "clery.json", "sam.json", "news.json", "website.json"],
     "tech-and-pain": ["ssl.json", "github.json", "news.json", "reddit.json", "hhs.json"],
     "hiring-signals": ["jobs.json"],
 }
@@ -1035,7 +1128,7 @@ def _build_company_bg_fallback(slug: str) -> dict:
 
     Used when the company-bg subagent fails (e.g., rate limited) but Phase 1
     data is available. Extracts basic info from sec.json, nces.json, sam.json,
-    and news.json so Phase 3 can still run with reduced quality.
+    website.json, and news.json so Phase 3 can still run with reduced quality.
     """
     fallback = {"_fallback": True, "status": "partial_fallback"}
     sources_dir = SOURCES_DIR / slug
@@ -1049,6 +1142,8 @@ def _build_company_bg_fallback(slug: str) -> dict:
                 fallback["company_name"] = sec["company"].get("name", "")
                 fallback["sic_code"] = sec["company"].get("sic", "")
                 fallback["state"] = sec["company"].get("state", "")
+                fallback["industry"] = sec["company"].get("industry", "")
+                fallback["ticker"] = sec["company"].get("ticker")
         except Exception:
             pass
 
@@ -1076,6 +1171,112 @@ def _build_company_bg_fallback(slug: str) -> dict:
         except Exception:
             pass
 
+    # Try website data — the universal floor
+    website_path = sources_dir / "website.json"
+    if website_path.exists():
+        try:
+            website = json.loads(website_path.read_text())
+            if website.get("status") == "ok":
+                fallback["domain"] = website.get("domain", "")
+                # Extract first 2000 chars of homepage as summary
+                pages = website.get("pages", {})
+                for url, text in pages.items():
+                    if url.endswith("/") or url.endswith(website.get("domain", "")):
+                        fallback["website_summary"] = text[:2000]
+                        break
+                if "website_summary" not in fallback and pages:
+                    fallback["website_summary"] = list(pages.values())[0][:2000]
+        except Exception:
+            pass
+
+    # Try news for recent summary
+    news_path = sources_dir / "news.json"
+    if news_path.exists():
+        try:
+            news = json.loads(news_path.read_text())
+            articles = news.get("articles", [])
+            if articles:
+                fallback["recent_headlines"] = [
+                    a.get("title", "") for a in articles[:5] if a.get("title")
+                ]
+        except Exception:
+            pass
+
+    # Try jobs for size indicator
+    jobs_path = sources_dir / "jobs.json"
+    if jobs_path.exists():
+        try:
+            jobs = json.loads(jobs_path.read_text())
+            if jobs.get("status") != "insufficient_data":
+                fallback["posting_count"] = jobs.get("total_postings", 0)
+        except Exception:
+            pass
+
+    fallback["_note"] = (
+        "Generated from raw Phase 1 sources due to subagent failure. "
+        "Re-run with --retry-phase-2 for full synthesis."
+    )
+    return fallback
+
+
+def _build_tech_pain_fallback(slug: str) -> dict:
+    """Build minimal tech-and-pain output from raw Phase 1 data."""
+    fallback = {"_fallback": True, "status": "partial_fallback"}
+    sources_dir = SOURCES_DIR / slug
+
+    # Reddit for practitioner sentiment
+    reddit_path = sources_dir / "reddit.json"
+    if reddit_path.exists():
+        try:
+            data = json.loads(reddit_path.read_text())
+            if data.get("status") != "insufficient_data":
+                fallback["reddit_themes"] = data.get("top_pain_themes", [])[:5]
+        except Exception:
+            pass
+
+    # SSL certs for tech stack hints
+    ssl_path = sources_dir / "ssl.json"
+    if ssl_path.exists():
+        try:
+            data = json.loads(ssl_path.read_text())
+            if data.get("status") != "insufficient_data":
+                fallback["domains_found"] = data.get("domain_count", 0)
+        except Exception:
+            pass
+
+    # GitHub for tech signals
+    github_path = sources_dir / "github.json"
+    if github_path.exists():
+        try:
+            data = json.loads(github_path.read_text())
+            if data.get("status") != "insufficient_data":
+                fallback["github_repos"] = data.get("repo_count", 0)
+        except Exception:
+            pass
+
+    fallback["_note"] = "Fallback from raw sources — re-run with --retry-phase-2 for full analysis."
+    return fallback
+
+
+def _build_hiring_fallback(slug: str) -> dict:
+    """Build minimal hiring-signals output from raw Phase 1 data."""
+    fallback = {"_fallback": True, "status": "partial_fallback"}
+    sources_dir = SOURCES_DIR / slug
+
+    jobs_path = sources_dir / "jobs.json"
+    if jobs_path.exists():
+        try:
+            data = json.loads(jobs_path.read_text())
+            if data.get("status") != "insufficient_data":
+                fallback["total_postings"] = data.get("total_postings", 0)
+                fallback["security_postings"] = data.get("security_related", 0)
+                fallback["sample_titles"] = [
+                    p.get("title", "") for p in data.get("postings", [])[:5]
+                ]
+        except Exception:
+            pass
+
+    fallback["_note"] = "Fallback from raw sources — re-run with --retry-phase-2 for full analysis."
     return fallback
 
 
@@ -1119,6 +1320,24 @@ def _build_phase3_context(slug: str, subagent_outputs: dict) -> tuple[list, str,
         try:
             leadership_data = json.loads(leadership_path.read_text())
             user_parts.append(f"=== leadership.json ===\n{json.dumps(leadership_data, indent=2, default=str)}")
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    # Include website data for universal company info
+    website_path = SOURCES_DIR / slug / "website.json"
+    if website_path.exists():
+        try:
+            ws_data = json.loads(website_path.read_text())
+            if ws_data.get("status") == "ok":
+                # Truncate page content to avoid token bloat
+                ws_summary = {
+                    "domain": ws_data.get("domain"),
+                    "pages_fetched": ws_data.get("pages_fetched"),
+                    "pages": {},
+                }
+                for url, text in ws_data.get("pages", {}).items():
+                    ws_summary["pages"][url] = text[:3000]
+                user_parts.append(f"=== website.json ===\n{json.dumps(ws_summary, indent=2, default=str)}")
         except (json.JSONDecodeError, OSError):
             pass
 
@@ -1210,13 +1429,12 @@ def run_phase3(slug: str, subagent_outputs: dict) -> dict:
             succeeded_agents.append(agent_name)
 
     if len(failed_agents) == 3:
-        # ALL subagents failed — cannot proceed
-        print(f"    {SYM_ERROR} all 3 subagents failed — cannot synthesize", flush=True)
-        return {
-            "status": "insufficient_data",
-            "reason": "all_subagents_failed",
-            "subagent_outputs": subagent_outputs,
-        }
+        # ALL subagents failed — build fallbacks from raw Phase 1 data
+        print(f"    \033[33m⚠\033[0m  all 3 subagents failed — building fallbacks from raw data", flush=True)
+        _write_status("phase3", "All subagents failed — using raw data fallbacks")
+        subagent_outputs["company-bg"] = _build_company_bg_fallback(slug)
+        subagent_outputs["tech-and-pain"] = _build_tech_pain_fallback(slug)
+        subagent_outputs["hiring-signals"] = _build_hiring_fallback(slug)
 
     if "company-bg" in failed_agents and len(succeeded_agents) >= 1:
         # company-bg failed but others succeeded — build fallback snapshot from Phase 1 cached data
@@ -1413,6 +1631,18 @@ def research(company: str, *, force: bool = False, open_browser: bool = False, u
     t1 = time.time()
     phase1_results = run_phase1(company, slug, force, vertical=vertical)
     print(f"  Phase 1 elapsed: {time.time() - t1:.1f}s")
+
+    # Post-Phase 1 vertical refinement: if still unknown, try LLM classification
+    # using the website/news/SEC data just collected
+    if vertical == "unknown":
+        refined = detect_vertical_early(company, slug)  # Re-check with fresh cached data
+        if refined == "unknown":
+            print(f"\n  Classifying vertical via LLM (Haiku)...", flush=True)
+            refined = llm_classify_vertical(company, slug)
+        if refined != "unknown":
+            vertical = refined
+            print(f"  Refined vertical: {vertical}")
+            _write_status("starting", f"Refined vertical: {vertical}", vertical=vertical)
 
     # Phase 1b — Deferred clients (depend on Phase 1 output)
     applicable_deferred = DEFERRED_CLIENTS

@@ -18,7 +18,8 @@ You receive a company slug (e.g., `target-corporation`) via the user message. Re
 3. `sources/{company}/clery.json` — Clery Act campus safety data (higher ed crime statistics)
 4. `sources/{company}/sam.json` — SAM.gov government contracting data (registrations, contracts)
 5. `sources/{company}/news.json` — Tavily news search results (articles, trigger matches)
-6. `persona/verkada-se.yml` — The persona rule engine (product lines, ICP verticals, triggers)
+6. `sources/{company}/website.json` — Company's own website (homepage + about/leadership pages, scraped text)
+7. `persona/verkada-se.yml` — The persona rule engine (product lines, ICP verticals, triggers)
 
 **The source data is injected into the user message below, prefixed with `=== sources/{company}/{filename} ===` headers. Parse the data directly from the message — do NOT attempt to use Read or Glob tools.**
 
@@ -30,14 +31,17 @@ Not all target accounts are SEC-registered corporations. The subagent MUST suppo
 
 **Detection order (first match wins):**
 1. **`public_corporation`** — `sec.json` exists and has valid filing data → use SEC as primary source
-2. **`k12_district`** — `nces.json` exists and has `district_metadata` → use NCES as primary source
+2. **`k12`** — `nces.json` exists and has `district_metadata` → use NCES as primary source
 3. **`higher_ed`** — `clery.json` exists and has crime data → use Clery as primary source
 4. **`government_entity`** — `sam.json` exists and has registration data → use SAM + news as primary sources
-5. **`healthcare`** — `news.json` exists and SIC/vertical analysis indicates healthcare → use news as primary source
+5. **`healthcare`** — `news.json` or `website.json` indicates healthcare → use news + website as primary sources
+6. **`unknown`** — None of the above match → use `website.json` + `news.json` as primary sources
 
-**Fallback chain:** If the primary source for an entity type is missing or `insufficient_data`, check the next type in order. If NO primary source produces valid data, output `insufficient_data` and stop.
+**Fallback chain:** If the primary source for an entity type is missing or `insufficient_data`, check the next type in order.
 
-**CRITICAL: Do NOT hard-stop when `sec.json` is missing.** Most SLED (State/Local/Education) accounts will not have SEC filings. Check NCES, Clery, SAM, and news before concluding insufficient_data.
+**CRITICAL: Do NOT output `insufficient_data` if `website.json` has content.** The website client provides a universal data floor. If sec/nces/clery/sam all miss, you can STILL build a useful snapshot from the company's own website text + news headlines. Only output `insufficient_data` if ALL sources (including website.json) are missing or empty.
+
+**CRITICAL: Do NOT hard-stop when `sec.json` is missing.** Most SLED (State/Local/Education) accounts will not have SEC filings. Check NCES, Clery, SAM, website, and news before concluding insufficient_data.
 
 ## No-Fetch Rule
 

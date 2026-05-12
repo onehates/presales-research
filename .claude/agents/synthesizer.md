@@ -353,13 +353,13 @@ These are non-negotiable. This is the final output — the last chance to catch 
 
 If any subagent output is missing or returned top-level `insufficient_data`:
 
-1. **company-bg missing:** Cannot generate brief — `snapshot`, `vertical_match`, `leadership`, and `recent_material_events` are all unavailable. Output `{"status": "insufficient_data", "reason": "company-bg output missing — cannot generate brief without company snapshot and vertical match."}`.
+1. **company-bg missing or fallback:** If company-bg has `"_fallback": true` or `"status": "partial_fallback"`, it contains minimal data extracted directly from raw Phase 1 sources (website, news, SEC). Use whatever fields are present (`entity_type`, `snapshot`, `leadership`) and propagate `"insufficient_data"` for any missing subsections. Do NOT abort the brief — a partial brief with sourced data is better than no brief. Only output `{"status": "insufficient_data"}` if company-bg is completely absent (null/undefined) AND no fallback was provided.
 
 2. **tech-and-pain missing:** Propagate `"insufficient_data"` for `technical_footprint`, `pain_hypotheses`, and `displacement_intel`. Discovery questions from tech-derived triggers (cloud_transformation_initiative, legacy_nvr_dvr_refresh) cannot be generated. Add to `open_questions`.
 
 3. **hiring-signals missing:** Propagate `"insufficient_data"` for `hiring_signals`. Discovery questions from hiring-derived triggers (hiring_security_intensity) cannot be generated. Add to `open_questions`.
 
-The brief can be generated with 2 of 3 subagents, but NOT without company-bg.
+The brief can be generated with ANY combination of subagent outputs, including all-fallback. Partial data with source attribution is always preferable to aborting.
 
 ## Execution Flow
 
