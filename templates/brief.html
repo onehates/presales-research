@@ -250,7 +250,7 @@
 
     /* Rich tooltip (data-tooltip, multiline, positioned by JS) */
     #tooltip-el { position: fixed; z-index: 200; background: #0f172a; color: #fff; font-size: 12px; line-height: 1.4; padding: 8px 12px; border-radius: 6px; max-width: 320px; box-shadow: 0 4px 16px rgba(0,0,0,0.25); pointer-events: none; opacity: 0; transition: opacity 150ms; }
-    #tooltip-el.visible { opacity: 1; }
+    #tooltip-el.visible { opacity: 1; pointer-events: auto; }
     .dark #tooltip-el { background: #1e293b; color: #e2e8f0; }
 
     /* Info icon next to section headers */
@@ -2706,18 +2706,20 @@
     el.id = 'tooltip-el';
     document.body.appendChild(el);
     var showTimer = null;
+    var hideTimer = null;
     document.addEventListener('mouseenter', function(e) {
       var target = e.target.closest('[data-tooltip]');
       if (!target) return;
       clearTimeout(showTimer);
+      clearTimeout(hideTimer);
       showTimer = setTimeout(function() {
         el.textContent = target.getAttribute('data-tooltip');
         el.classList.add('visible');
         var rect = target.getBoundingClientRect();
         var x = rect.left + rect.width / 2;
-        var y = rect.bottom + 8;
+        var y = rect.bottom + 4;
         el.style.left = Math.max(8, Math.min(x - el.offsetWidth / 2, window.innerWidth - el.offsetWidth - 8)) + 'px';
-        if (y + el.offsetHeight > window.innerHeight) y = rect.top - el.offsetHeight - 8;
+        if (y + el.offsetHeight > window.innerHeight) y = rect.top - el.offsetHeight - 4;
         el.style.top = y + 'px';
       }, 400);
     }, true);
@@ -2725,8 +2727,10 @@
       var target = e.target.closest('[data-tooltip]');
       if (!target) return;
       clearTimeout(showTimer);
-      el.classList.remove('visible');
+      hideTimer = setTimeout(function() { el.classList.remove('visible'); }, 300);
     }, true);
+    el.addEventListener('mouseenter', function() { clearTimeout(hideTimer); });
+    el.addEventListener('mouseleave', function() { hideTimer = setTimeout(function() { el.classList.remove('visible'); }, 300); });
   })();
 
   // === Annotate terms with tooltips (loaded from data/glossary.yml) ===
@@ -3015,6 +3019,7 @@
     var tip = null;
     var enterTimer = null;
     var leaveTimer = null;
+    var pendingRemoval = null;
 
     function esc(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
 
@@ -3023,24 +3028,41 @@
       return s.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
     }
 
-    function hideTip() {
-      if (tip) { tip.classList.remove('visible'); setTimeout(function() { if (tip) { tip.remove(); tip = null; } }, 160); }
+    function hideTipNow() {
+      if (pendingRemoval) { clearTimeout(pendingRemoval); pendingRemoval = null; }
+      if (tip) { tip.remove(); tip = null; }
+    }
+
+    function scheduleTipClose() {
+      if (leaveTimer) clearTimeout(leaveTimer);
+      leaveTimer = setTimeout(function() {
+        if (tip) {
+          tip.classList.remove('visible');
+          var old = tip;
+          tip = null;
+          pendingRemoval = setTimeout(function() { old.remove(); pendingRemoval = null; }, 160);
+        }
+      }, 300);
+    }
+
+    function cancelTipClose() {
+      if (leaveTimer) { clearTimeout(leaveTimer); leaveTimer = null; }
     }
 
     function showTip(anchor, html) {
-      hideTip();
+      hideTipNow();
       var el = document.createElement('div');
       el.className = 'count-detail-tip';
       el.innerHTML = html;
       document.body.appendChild(el);
-      el.addEventListener('mouseenter', function() { clearTimeout(leaveTimer); });
-      el.addEventListener('mouseleave', function() { leaveTimer = setTimeout(hideTip, 200); });
+      el.addEventListener('mouseenter', function() { cancelTipClose(); });
+      el.addEventListener('mouseleave', function() { scheduleTipClose(); });
       // Position below anchor
       var rect = anchor.getBoundingClientRect();
       var x = rect.left + rect.width / 2 - el.offsetWidth / 2;
-      var y = rect.bottom + 8;
+      var y = rect.bottom + 4;
       x = Math.max(8, Math.min(x, window.innerWidth - el.offsetWidth - 8));
-      if (y + el.offsetHeight > window.innerHeight - 8) y = rect.top - el.offsetHeight - 8;
+      if (y + el.offsetHeight > window.innerHeight - 8) y = rect.top - el.offsetHeight - 4;
       el.style.left = x + 'px';
       el.style.top = y + 'px';
       requestAnimationFrame(function() { el.classList.add('visible'); });
@@ -3056,7 +3078,7 @@
     function scrollTo(id) {
       var el = document.getElementById(id) || document.querySelector(id);
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      hideTip();
+      hideTipNow();
     }
 
     // Build tooltip content per ID
@@ -3192,24 +3214,25 @@
       var id = el.id;
       if (!id || !builders[id]) return;
       el.addEventListener('mouseenter', function() {
-        clearTimeout(leaveTimer);
+        cancelTipClose();
+        clearTimeout(enterTimer);
         enterTimer = setTimeout(function() { showTip(el, builders[id]()); }, 400);
       });
       el.addEventListener('mouseleave', function() {
         clearTimeout(enterTimer);
-        leaveTimer = setTimeout(hideTip, 200);
+        scheduleTipClose();
       });
       // Mobile: tap toggle
       el.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        if (tip) { hideTip(); } else { showTip(el, builders[id]()); }
+        if (tip) { hideTipNow(); } else { showTip(el, builders[id]()); }
       });
     });
 
     // Close on click outside
     document.addEventListener('click', function(e) {
-      if (tip && !tip.contains(e.target) && !e.target.classList.contains('count-detail')) hideTip();
+      if (tip && !tip.contains(e.target) && !e.target.classList.contains('count-detail')) hideTipNow();
     });
   })();
   </script>

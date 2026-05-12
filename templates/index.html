@@ -72,7 +72,7 @@
     .stat-card { cursor: help; transition: transform 0.15s, box-shadow 0.15s; }
     .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
     .dark .stat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
-    .stat-tooltip { position: absolute; z-index: 100; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); width: max-content; min-width: 220px; max-width: 320px; max-height: 400px; background: white; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 12px 40px rgba(0,0,0,0.12); opacity: 0; pointer-events: none; transition: opacity 150ms ease; overflow: hidden; }
+    .stat-tooltip { position: absolute; z-index: 100; top: calc(100% + 4px); left: 50%; transform: translateX(-50%); width: max-content; min-width: 220px; max-width: 320px; max-height: 400px; background: white; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 12px 40px rgba(0,0,0,0.12); opacity: 0; pointer-events: none; transition: opacity 150ms ease; overflow: hidden; }
     @media (max-width: 768px) { .stat-tooltip { left: 0; transform: none; } }
     .stat-tooltip.visible { opacity: 1; pointer-events: auto; }
     .dark .stat-tooltip { background: #1e293b; border-color: #334155; box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
@@ -836,20 +836,41 @@
     var enterTimer = null;
     var leaveTimer = null;
     var activeTooltip = null;
+    var pendingRemoval = null;
 
-    function hideActive() {
-      if (activeTooltip) { activeTooltip.classList.remove('visible'); setTimeout(function() { activeTooltip.remove(); }, 160); activeTooltip = null; }
+    function hideActiveNow() {
+      if (pendingRemoval) { clearTimeout(pendingRemoval); pendingRemoval = null; }
+      if (activeTooltip) { activeTooltip.remove(); activeTooltip = null; }
+    }
+
+    function scheduleClose() {
+      if (leaveTimer) clearTimeout(leaveTimer);
+      leaveTimer = setTimeout(function() {
+        if (activeTooltip) {
+          activeTooltip.classList.remove('visible');
+          var tip = activeTooltip;
+          activeTooltip = null;
+          pendingRemoval = setTimeout(function() { tip.remove(); pendingRemoval = null; }, 160);
+        }
+      }, 300);
+    }
+
+    function cancelClose() {
+      if (leaveTimer) { clearTimeout(leaveTimer); leaveTimer = null; }
+      // If tooltip is fading out, restore it
+      if (pendingRemoval && activeTooltip === null) {
+        // Already removed reference, can't restore — too late
+      }
     }
 
     function showTooltip(card, html) {
-      hideActive();
+      hideActiveNow();
       var tip = document.createElement('div');
       tip.className = 'stat-tooltip';
       tip.innerHTML = html;
       card.appendChild(tip);
-      // Prevent tooltip disappearing when mousing into it
-      tip.addEventListener('mouseenter', function() { clearTimeout(leaveTimer); });
-      tip.addEventListener('mouseleave', function() { leaveTimer = setTimeout(hideActive, 200); });
+      tip.addEventListener('mouseenter', function() { cancelClose(); });
+      tip.addEventListener('mouseleave', function() { scheduleClose(); });
       requestAnimationFrame(function() { tip.classList.add('visible'); });
       activeTooltip = tip;
     }
@@ -923,12 +944,13 @@
       var card = document.getElementById(id);
       if (!card) return;
       card.addEventListener('mouseenter', function() {
-        clearTimeout(leaveTimer);
+        cancelClose();
+        clearTimeout(enterTimer);
         enterTimer = setTimeout(function() { showTooltip(card, cards[id]()); }, 300);
       });
       card.addEventListener('mouseleave', function() {
         clearTimeout(enterTimer);
-        leaveTimer = setTimeout(hideActive, 200);
+        scheduleClose();
       });
     });
   })();
