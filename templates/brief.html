@@ -2527,32 +2527,37 @@
     }, true);
   })();
 
-  // === Annotate acronyms with tooltips ===
+  // === Annotate terms with tooltips (loaded from data/glossary.yml) ===
   (function() {
-    var acronyms = {
-      'NDAA': 'NDAA Section 889 — federal law banning certain Chinese-made surveillance equipment (Hikvision, Dahua). Federal funding recipients must comply or lose funding',
-      'FRPL': 'Free / Reduced Price Lunch — federal program eligibility used as a poverty indicator. High FRPL districts qualify for Title I funding',
-      'FedRAMP': 'FedRAMP — federal cloud security authorization. Verkada has FedRAMP Moderate In Process status',
-      'OMNIA': 'OMNIA Partners — cooperative purchasing program allowing public-sector buyers to procure without a full RFP',
-      'HGACBuy': 'HGACBuy — Houston-Galveston Area Council cooperative purchasing program',
-      'Sourcewell': 'Sourcewell — national cooperative purchasing program for government, education, and nonprofits',
-      'COSTARS': 'COSTARS — Pennsylvania cooperative purchasing program (statewide)',
-      'TIPS': 'TIPS (The Interlocal Purchasing System) — cooperative purchasing program for public-sector entities',
-      'SLED': 'SLED — State, Local, and Education sales segment',
-      'POC': 'POC — Proof of Concept, a hands-on trial deployment before purchase. Verkada offers 30-day pelican-case POCs',
-      'CIK': 'CIK — Central Index Key, the SEC\'s unique identifier for public filers',
-      'LEAID': 'LEAID — Local Education Agency Identifier, NCES\'s unique ID for school districts',
-      'MEDDIC': 'MEDDIC — Metrics, Economic Buyer, Decision Criteria, Decision Process, Identify Pain, Champion — sales qualification framework'
-    };
-    // Find text nodes containing acronyms in main content and wrap first occurrence per section
+    var glossary = {{ glossary_terms | default([]) | tojson }};
+    // Split into free-text acronyms (no context) and contextual labels
+    var acronyms = {};
+    var contextTerms = {};
+    glossary.forEach(function(t) {
+      if (t.context) {
+        contextTerms[t.label] = t.tooltip;
+      } else {
+        acronyms[t.label] = t.tooltip;
+      }
+    });
+    // Free-text acronym annotation: wrap first occurrence per element
     document.querySelectorAll('main p, main dd, main span, main td').forEach(function(el) {
       if (el.closest('[data-tooltip]') || el.closest('abbr') || el.querySelector('abbr')) return;
       for (var acr in acronyms) {
-        var re = new RegExp('\\b(' + acr + ')\\b');
+        var re = new RegExp('\\b(' + acr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')\\b');
         if (re.test(el.textContent) && !el.innerHTML.includes('<abbr')) {
-          el.innerHTML = el.innerHTML.replace(re, '<abbr title="' + acronyms[acr] + '">$1</abbr>');
-          break; // one per element
+          el.innerHTML = el.innerHTML.replace(re, '<abbr title="' + acronyms[acr].replace(/"/g, '&quot;') + '">$1</abbr>');
+          break;
         }
+      }
+    });
+    // Contextual label annotation: find badge/label spans whose text matches a contextual term
+    document.querySelectorAll('main span.badge, main span.inline-block, main span.text-xs, main td').forEach(function(el) {
+      if (el.hasAttribute('data-tooltip') || el.closest('abbr') || el.querySelector('abbr')) return;
+      var txt = el.textContent.trim();
+      if (contextTerms[txt]) {
+        el.setAttribute('data-tooltip', contextTerms[txt]);
+        el.style.cursor = 'help';
       }
     });
   })();

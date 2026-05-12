@@ -13,6 +13,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE_DIR = PROJECT_ROOT / "templates"
 BRIEFS_DIR = PROJECT_ROOT / "briefs"
 PERSONA_PATH = PROJECT_ROOT / "persona" / "verkada-se.yml"
+GLOSSARY_PATH = PROJECT_ROOT / "data" / "glossary.yml"
 
 
 def confidence_badge(confidence: str) -> str:
@@ -106,8 +107,15 @@ def render_brief(json_path: Path) -> Path:
             persona = yaml.safe_load(pf)
             chat_starter_prompts = persona.get("chat_starter_prompts", [])
 
+    # Load glossary terms
+    glossary_terms = []
+    if GLOSSARY_PATH.exists():
+        with open(GLOSSARY_PATH) as gf:
+            glossary_data = yaml.safe_load(gf)
+            glossary_terms = glossary_data.get("terms", [])
+
     template = env.get_template("brief.html")
-    html = template.render(data=data, chat_starter_prompts=chat_starter_prompts)
+    html = template.render(data=data, chat_starter_prompts=chat_starter_prompts, glossary_terms=glossary_terms)
 
     out_path = json_path.with_suffix(".html")
     out_path.write_text(html)
