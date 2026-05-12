@@ -192,10 +192,31 @@ Schema per question:
 {
   "question": "string — filled template with (ref: ...) callout if available",
   "source_trigger": "string — trigger_id from persona",
-  "evidence": "string — specific fact that fired this trigger",
-  "confidence": "high|medium|inference"
+  "trigger_definition": "string — 1-sentence definition of what this trigger detects, from persona file",
+  "trigger_template": "string — the raw discovery_template from persona file BEFORE placeholder fill",
+  "evidence_that_fired_trigger": [
+    {"source": "string — source client name (nces, news, sec, jobs, etc.)", "fact": "string — the specific data point"}
+  ],
+  "leverage_reference": {
+    "customer": "string|null — reference customer name",
+    "story": "string|null — the proof point",
+    "vertical_fit": "string|null — why this reference was selected"
+  },
+  "confidence": "high|medium|inference",
+  "priority": "high|medium|low",
+  "customization_applied": "string — 1-sentence explanation of what was changed from the template to produce the final question"
 }
 ```
+
+For `evidence_that_fired_trigger`: cite EVERY source data point that contributed to firing this trigger. Include the source client name and the specific fact. This is what makes the methodology panel useful — the SE can see exactly what data informed the question.
+
+For `trigger_template`: copy the EXACT template string from persona/verkada-se.yml. Do not paraphrase.
+
+For `customization_applied`: explain what you changed. Example: "Inserted '86 schools' from NCES; tailored to Fulton County context."
+
+For `leverage_reference`: if no matching reference exists, output `null` for all sub-fields. Do not invent references.
+
+For `priority`: `high` = ask in first call, `medium` = follow-up, `low` = nice-to-have context question.
 
 Persona keys: `IT_Director`, `Director_of_Facilities`, `CSO`, `VP_of_Operations`, `Loss_Prevention_Director`, `Superintendent_K12`
 
