@@ -123,7 +123,7 @@ For each field:
 - **procurement_path**: Recommend from cooperative_purchasing available_vehicles. Prioritize vehicles where Verkada holds a contract. Reference specific contract numbers.
 
   **PROCUREMENT PATH RULES BY VERTICAL:**
-  - **SLED verticals** (k12_district, higher_education, government, government_local, government_state): Primary path is cooperative purchasing (Sourcewell, OMNIA, HGACBuy, TIPS, COSTARS). Reference the specific vehicle and contract number. If multiple vehicles are available, recommend the one with the best discount tier or broadest product coverage.
+  - **SLED verticals** (k12, higher_ed, state_local_gov, federal): Primary path is cooperative purchasing (Sourcewell, OMNIA, HGACBuy, TIPS, COSTARS). Reference the specific vehicle and contract number. If multiple vehicles are available, recommend the one with the best discount tier or broadest product coverage.
   - **COMMERCIAL verticals** (retail, healthcare, manufacturing, hospitality, senior_living, transportation, critical_infrastructure, corporate): Primary path is direct purchase via Verkada AE or commercial reseller. Cooperative purchasing is NOT the primary path for commercial accounts — only mention it as an alternative if the account has a public-sector parent or hybrid procurement model. Do NOT default to cooperative purchasing for commercial accounts.
   - **Federal** (federal): Primary path is GSA Schedule or agency-specific contract vehicle. Mention cooperative purchasing only as a fallback.
 

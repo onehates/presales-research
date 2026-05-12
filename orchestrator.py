@@ -52,6 +52,17 @@ PROMPT_CACHE_HEADERS = {"anthropic-beta": "prompt-caching-2024-07-31"}
 # Subagent cache TTL (24 hours)
 SUBAGENT_CACHE_TTL = 86400
 
+# ---------------------------------------------------------------------------
+# Canonical vertical enum — ALL detection paths MUST return one of these
+# ---------------------------------------------------------------------------
+
+VALID_VERTICALS = [
+    "k12", "higher_ed", "healthcare", "senior_living",
+    "state_local_gov", "federal", "public_safety", "transportation",
+    "critical_infrastructure", "manufacturing", "retail", "hospitality",
+    "unknown",
+]
+
 # Token usage accumulator (populated by _stream_anthropic_with_retry)
 _token_usage = {"input": 0, "output": 0, "cache_creation": 0, "cache_read": 0}
 
@@ -167,7 +178,7 @@ def _leadership_args(company, slug):
         try:
             nces = json.loads(nces_path.read_text())
             if nces.get("district_metadata"):
-                entity_type = "k12_district"
+                entity_type = "k12"
         except (json.JSONDecodeError, OSError):
             pass
     if entity_type == "unknown":
@@ -185,10 +196,12 @@ def _leadership_args(company, slug):
             try:
                 sec = json.loads(sec_path.read_text())
                 if sec.get("status") != "insufficient_data" and sec.get("company"):
-                    entity_type = "public_corporation"
+                    # Name heuristics may identify a more specific vertical
+                    name_vert = detect_vertical_from_name(company)
+                    entity_type = name_vert or "unknown"
             except (json.JSONDecodeError, OSError):
                 pass
-    return {"company_name": company, "entity_type": entity_type}
+    return {"company_name": company, "entity_type": _validate_vertical(entity_type)}
 
 
 CLIENT_REGISTRY = {
@@ -246,13 +259,11 @@ DEFERRED_CLIENTS = {"champion_signals"}
 
 SOURCES_BY_VERTICAL = {
     "k12": {"github", "news", "nces", "clery", "sam", "sourcewell", "tips", "hhs", "reddit", "ga_procurement", "atlanta_procurement", "sled_procurement", "omnia", "costars", "hgac", "leadership", "champion_signals", "crtsh", "indeed"},
-    "k12_district": {"github", "news", "nces", "clery", "sam", "sourcewell", "tips", "hhs", "reddit", "ga_procurement", "atlanta_procurement", "sled_procurement", "omnia", "costars", "hgac", "leadership", "champion_signals", "crtsh", "indeed"},
     "higher_ed": {"sec", "github", "news", "clery", "sam", "sourcewell", "reddit", "sled_procurement", "omnia", "leadership", "champion_signals", "crtsh", "indeed"},
     "healthcare": {"sec", "github", "news", "hhs", "sam", "reddit", "leadership", "champion_signals", "crtsh", "indeed"},
     "state_local_gov": {"github", "news", "sam", "sourcewell", "ga_procurement", "atlanta_procurement", "sled_procurement", "omnia", "leadership", "champion_signals", "crtsh", "indeed"},
     "federal": {"github", "news", "sam", "leadership", "champion_signals", "crtsh", "indeed"},
     "retail": {"sec", "github", "news", "reddit", "leadership", "champion_signals", "crtsh", "indeed", "hhs"},
-    "public_corporation": {"sec", "github", "news", "reddit", "leadership", "champion_signals", "crtsh", "indeed"},
     "manufacturing": {"sec", "github", "news", "reddit", "leadership", "champion_signals", "crtsh", "indeed"},
     "hospitality": {"sec", "github", "news", "reddit", "leadership", "champion_signals", "crtsh", "indeed"},
     "critical_infrastructure": {"sec", "github", "news", "sam", "reddit", "leadership", "champion_signals", "crtsh", "indeed"},
@@ -262,17 +273,82 @@ SOURCES_BY_VERTICAL = {
 }
 
 # Name-based heuristics for early vertical detection (before any sources run)
-_K12_KEYWORDS = {"public schools", "school district", "unified school", "independent school district", "isd", "county schools", "parish schools", "city schools", "school board"}
-_HIGHER_ED_KEYWORDS = {"university", "college", "community college", "institute of technology", "polytechnic"}
-_HEALTHCARE_KEYWORDS = {"hospital", "medical center", "health system", "healthcare", "health care", "clinic", "ambulatory"}
-_GOV_KEYWORDS = {"city of", "county of", "state of", "department of", "bureau of", "agency", "commission", "authority"}
-_SENIOR_KEYWORDS = {"senior living", "assisted living", "memory care", "nursing", "retirement"}
+# Order matters: check most specific first (public_safety before state_local_gov,
+# healthcare before state_local_gov, etc.)
+_HEALTHCARE_KEYWORDS = [
+    "hospital", "medical center", "health system", "clinic",
+    "memorial hospital", "regional medical", "healthcare", "health care",
+    "ambulatory",
+]
+_K12_KEYWORDS = [
+    "public schools", "school district", "isd", "unified school",
+    "school dept", "schools", "independent school district",
+    "county schools", "parish schools", "city schools", "school board",
+]
+_HIGHER_ED_KEYWORDS = [
+    "university", "college", "institute of technology",
+    "polytechnic", "community college", "u of", "state university",
+]
+_SENIOR_KEYWORDS = [
+    "senior living", "assisted living", "nursing home",
+    "memory care", "retirement community", "elder care",
+]
+_PUBLIC_SAFETY_KEYWORDS = [
+    "police department", "sheriff", "fire department",
+    "fire & rescue", "fire dept", "police dept",
+]
+_TRANSPORTATION_KEYWORDS = [
+    "airport", "airlines", "transit authority", "port of",
+    "marta", "rail",
+]
+_HOSPITALITY_KEYWORDS = [
+    "hotel", "resort", "marriott", "hilton", "hyatt", "ihg",
+    "wyndham", "casino", "resorts",
+]
+_STATE_LOCAL_GOV_KEYWORDS = [
+    "city of", "county of", "department of", "state of",
+    "bureau of", "agency", "commission", "authority",
+]
+
+# Ordered list: (keywords, vertical) — most specific first
+_KEYWORD_VERTICAL_MAP = [
+    (_HEALTHCARE_KEYWORDS, "healthcare"),
+    (_PUBLIC_SAFETY_KEYWORDS, "public_safety"),
+    (_TRANSPORTATION_KEYWORDS, "transportation"),
+    (_K12_KEYWORDS, "k12"),
+    (_HIGHER_ED_KEYWORDS, "higher_ed"),
+    (_SENIOR_KEYWORDS, "senior_living"),
+    (_HOSPITALITY_KEYWORDS, "hospitality"),
+    (_STATE_LOCAL_GOV_KEYWORDS, "state_local_gov"),
+]
+
+
+def _validate_vertical(vertical: str) -> str:
+    """Ensure vertical is one of VALID_VERTICALS. Returns 'unknown' with warning if not."""
+    if vertical in VALID_VERTICALS:
+        return vertical
+    print(f"    \033[33m⚠\033[0m  Invalid vertical '{vertical}' — forcing 'unknown'", flush=True)
+    return "unknown"
+
+
+def detect_vertical_from_name(company: str) -> str | None:
+    """Detect vertical from company name keywords only.
+
+    Returns a VALID_VERTICALS string or None if name is ambiguous.
+    Exported for testing.
+    """
+    name_lower = company.lower()
+    for keywords, vertical in _KEYWORD_VERTICAL_MAP:
+        for kw in keywords:
+            if kw in name_lower:
+                return vertical
+    return None
 
 
 def detect_vertical_early(company: str, slug: str) -> str:
     """Guess vertical from company name heuristics and any pre-existing cached data.
 
-    Returns an entity_type string or 'unknown'.
+    Returns a VALID_VERTICALS string or 'unknown'. All paths are validated.
     """
     name_lower = company.lower()
 
@@ -282,7 +358,7 @@ def detect_vertical_early(company: str, slug: str) -> str:
         try:
             nces = json.loads(nces_path.read_text())
             if nces.get("district_metadata"):
-                return "k12_district"
+                return _validate_vertical("k12")
         except Exception:
             pass
 
@@ -291,35 +367,30 @@ def detect_vertical_early(company: str, slug: str) -> str:
         try:
             clery = json.loads(clery_path.read_text())
             if clery.get("status") != "insufficient_data":
-                return "higher_ed"
+                return _validate_vertical("higher_ed")
         except Exception:
             pass
 
+    # SEC data indicates public corporation — but name heuristics may override
+    # (e.g., "HCA Healthcare" is SEC-listed but vertical is healthcare, not generic)
+    sec_detected = False
     sec_path = SOURCES_DIR / slug / "sec.json"
     if sec_path.exists():
         try:
             sec = json.loads(sec_path.read_text())
             if sec.get("status") != "insufficient_data" and sec.get("company"):
-                return "public_corporation"
+                sec_detected = True
         except Exception:
             pass
 
-    # Name-based heuristics
-    for kw in _K12_KEYWORDS:
-        if kw in name_lower:
-            return "k12_district"
-    for kw in _HIGHER_ED_KEYWORDS:
-        if kw in name_lower:
-            return "higher_ed"
-    for kw in _HEALTHCARE_KEYWORDS:
-        if kw in name_lower:
-            return "healthcare"
-    for kw in _SENIOR_KEYWORDS:
-        if kw in name_lower:
-            return "senior_living"
-    for kw in _GOV_KEYWORDS:
-        if kw in name_lower:
-            return "state_local_gov"
+    # Name-based heuristics (ordered by specificity)
+    name_vertical = detect_vertical_from_name(company)
+    if name_vertical:
+        return _validate_vertical(name_vertical)
+
+    # SEC fallback — it's a public company but name didn't reveal vertical
+    if sec_detected:
+        return _validate_vertical("unknown")
 
     return "unknown"
 
@@ -554,7 +625,7 @@ def _load_source_data_for_agent(agent_name: str, slug: str) -> str:
     return "\n\n".join(parts)
 
 
-RETRY_DELAYS = [5, 15, 45]
+RETRY_DELAYS = [5, 10, 20, 40, 60]
 
 
 def _build_cached_system(agent_prompt: str, persona_text: str | None = None) -> list[dict]:
@@ -772,7 +843,7 @@ def run_subagent(agent_name: str, slug: str, *, use_cache: bool = True) -> tuple
             label=agent_name,
         )
     except (anthropic.RateLimitError, anthropic.APIStatusError):
-        return {"status": "insufficient_data", "reason": "rate_limited_after_3_retries"}, False
+        return {"status": "insufficient_data", "reason": f"rate_limited_after_{len(RETRY_DELAYS) + 1}_retries"}, False
 
     # Try to parse JSON from response
     # Strip markdown fences if present
@@ -840,11 +911,11 @@ def run_phase2(slug: str, *, use_cache: bool = True, parallel: bool = True) -> d
 
     if parallel:
         with ThreadPoolExecutor(max_workers=3) as pool:
-            # Stagger submissions by 1.5s to avoid per-second rate limits
+            # Stagger submissions by 4s to spread across rate-limit window
             futures = {}
             for i, name in enumerate(agents):
                 if i > 0:
-                    time.sleep(1.5)
+                    time.sleep(4.0)
                 futures[pool.submit(_run_subagent_with_status, name, slug, use_cache)] = name
             for future in as_completed(futures):
                 name, result, was_cached = future.result()
@@ -914,6 +985,55 @@ def _parse_json_robust(text: str, raw_path: Path) -> dict | None:
     print(f"    {SYM_ERROR} synthesizer returned unparseable output", flush=True)
     print(f"    Raw output saved to {raw_path} for manual recovery.", flush=True)
     return None
+
+
+def _build_company_bg_fallback(slug: str) -> dict:
+    """Build a minimal company-bg output from Phase 1 cached source data.
+
+    Used when the company-bg subagent fails (e.g., rate limited) but Phase 1
+    data is available. Extracts basic info from sec.json, nces.json, sam.json,
+    and news.json so Phase 3 can still run with reduced quality.
+    """
+    fallback = {"_fallback": True, "status": "partial_fallback"}
+    sources_dir = SOURCES_DIR / slug
+
+    # Try SEC data for basic company info
+    sec_path = sources_dir / "sec.json"
+    if sec_path.exists():
+        try:
+            sec = json.loads(sec_path.read_text())
+            if sec.get("company"):
+                fallback["company_name"] = sec["company"].get("name", "")
+                fallback["sic_code"] = sec["company"].get("sic", "")
+                fallback["state"] = sec["company"].get("state", "")
+        except Exception:
+            pass
+
+    # Try NCES for K-12 info
+    nces_path = sources_dir / "nces.json"
+    if nces_path.exists():
+        try:
+            nces = json.loads(nces_path.read_text())
+            if nces.get("district_metadata"):
+                fallback["district_metadata"] = nces["district_metadata"]
+                fallback["school_count"] = nces.get("school_count", 0)
+        except Exception:
+            pass
+
+    # Try SAM for entity info
+    sam_path = sources_dir / "sam.json"
+    if sam_path.exists():
+        try:
+            sam = json.loads(sam_path.read_text())
+            if sam.get("status") != "insufficient_data":
+                fallback["sam_data"] = {
+                    "entity_name": sam.get("entity_name", ""),
+                    "naics_codes": sam.get("naics_codes", []),
+                }
+        except Exception:
+            pass
+
+    return fallback
 
 
 def _build_phase3_context(slug: str, subagent_outputs: dict) -> tuple[list, str, str | None]:
@@ -1036,15 +1156,36 @@ def run_phase3(slug: str, subagent_outputs: dict) -> dict:
         print(f"    {SYM_ERROR} ANTHROPIC_API_KEY not set — cannot run synthesizer", flush=True)
         return {"status": "insufficient_data", "reason": "ANTHROPIC_API_KEY not set"}
 
-    # Check if company-bg is present (required)
-    company_bg = subagent_outputs.get("company-bg", {})
-    if company_bg.get("status") in ("insufficient_data", "error", "parse_error"):
-        print(f"    {SYM_ERROR} company-bg missing or failed — cannot synthesize", flush=True)
+    # Check subagent health — allow partial failures
+    failed_agents = []
+    succeeded_agents = []
+    for agent_name in ["company-bg", "tech-and-pain", "hiring-signals"]:
+        agent_data = subagent_outputs.get(agent_name, {})
+        if agent_data.get("status") in ("insufficient_data", "error", "parse_error"):
+            failed_agents.append(agent_name)
+        else:
+            succeeded_agents.append(agent_name)
+
+    if len(failed_agents) == 3:
+        # ALL subagents failed — cannot proceed
+        print(f"    {SYM_ERROR} all 3 subagents failed — cannot synthesize", flush=True)
         return {
             "status": "insufficient_data",
-            "reason": "company-bg subagent failed — cannot generate brief without company snapshot",
+            "reason": "all_subagents_failed",
             "subagent_outputs": subagent_outputs,
         }
+
+    if "company-bg" in failed_agents and len(succeeded_agents) >= 1:
+        # company-bg failed but others succeeded — build fallback snapshot from Phase 1 cached data
+        print(f"    \033[33m⚠\033[0m  company-bg failed — using Phase 1 fallback snapshot", flush=True)
+        _write_status("phase3", "company-bg failed — using Phase 1 fallback")
+        fallback_snapshot = _build_company_bg_fallback(slug)
+        subagent_outputs["company-bg"] = fallback_snapshot
+
+    if failed_agents:
+        print(f"    \033[33m⚠\033[0m  continuing with partial data (failed: {', '.join(failed_agents)})", flush=True)
+        _write_status("phase3", f"Partial subagent data — failed: {', '.join(failed_agents)}",
+                      subagent_partial=True, failed_agents=failed_agents)
 
     # Build shared context
     _, user_msg, persona_text = _build_phase3_context(slug, subagent_outputs)
@@ -1349,12 +1490,76 @@ def research(company: str, *, force: bool = False, open_browser: bool = False, u
                   total_cost=round(_estimate_cost(), 4))
 
 
+def retry_phase2(company: str, *, open_browser: bool = False, parallel: bool = True):
+    """Re-run ONLY Phase 2 + 3 + 4, using Phase 1 cached data.
+
+    Used when Phase 2 failed due to rate limiting but Phase 1 data is still fresh.
+    """
+    global _status_path
+    _token_usage.update({"input": 0, "output": 0, "cache_creation": 0, "cache_read": 0})
+    slug = slugify(company)
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    _status_path = Path(f"/tmp/orchestrator-status-{slug}.json")
+
+    sources_dir = SOURCES_DIR / slug
+    if not sources_dir.exists():
+        print(f"  ✗ No cached Phase 1 data at sources/{slug}/ — run full /research first", file=sys.stderr)
+        sys.exit(1)
+
+    print(f"\n  {'='*54}")
+    print(f"  /research {company} (retry Phase 2 only)")
+    print(f"  slug: {slug}  date: {today}")
+    print(f"  {'='*54}")
+    print(f"  Skipping Phase 1 — using cached source data")
+
+    t0 = time.time()
+
+    # Phase 2 — retry with no subagent cache
+    t2 = time.time()
+    subagent_outputs = run_phase2(slug, use_cache=False, parallel=parallel)
+    t2_elapsed = time.time() - t2
+    print(f"  Phase 2 elapsed: {t2_elapsed:.1f}s")
+
+    # Phase 3
+    t3 = time.time()
+    brief = run_phase3(slug, subagent_outputs)
+    t3_elapsed = time.time() - t3
+    print(f"  Phase 3 elapsed: {t3_elapsed:.1f}s")
+
+    if brief.get("status") in ("insufficient_data", "error", "parse_error"):
+        print(f"\n  ⚠  Synthesizer failed: {brief.get('reason', brief.get('status'))}")
+        BRIEFS_DIR.mkdir(parents=True, exist_ok=True)
+        brief_path = BRIEFS_DIR / f"{slug}-{today}.json"
+        brief_path.write_text(json.dumps(brief, indent=2, default=str))
+        return
+
+    # Save + render
+    if "metadata" not in brief:
+        brief["metadata"] = {}
+    brief["metadata"]["runtime_seconds"] = round(time.time() - t0, 1)
+    brief["metadata"]["retry_phase2"] = True
+
+    BRIEFS_DIR.mkdir(parents=True, exist_ok=True)
+    brief_path = BRIEFS_DIR / f"{slug}-{today}.json"
+    brief_path.write_text(json.dumps(brief, indent=2, default=str))
+    print(f"\n  Brief JSON: {brief_path.relative_to(PROJECT_ROOT)}")
+
+    html_path = run_phase4(brief_path, open_browser)
+
+    total = time.time() - t0
+    print(f"\n  {'='*54}")
+    print(f"  /research retry complete in {total:.1f}s")
+    print(f"  {'='*54}\n")
+
+
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python orchestrator.py <company_name> [--force] [--open] [--no-cache] [--sequential]", file=sys.stderr)
+        print("Usage: python orchestrator.py <company_name> [--force] [--open] [--no-cache] [--sequential] [--retry-phase-2]", file=sys.stderr)
         print("  e.g.: python orchestrator.py 'Atlanta Public Schools'", file=sys.stderr)
         print("        python orchestrator.py 'Georgia Tech' --force --open", file=sys.stderr)
         print("        python orchestrator.py 'City of Atlanta' --no-cache --sequential", file=sys.stderr)
+        print("        python orchestrator.py 'Grady Memorial Hospital' --retry-phase-2", file=sys.stderr)
         sys.exit(1)
 
     company = sys.argv[1]
@@ -1363,7 +1568,10 @@ def main():
     use_cache = "--no-cache" not in sys.argv
     parallel = "--sequential" not in sys.argv
 
-    research(company, force=force, open_browser=open_browser, use_cache=use_cache, parallel=parallel)
+    if "--retry-phase-2" in sys.argv:
+        retry_phase2(company, open_browser=open_browser, parallel=parallel)
+    else:
+        research(company, force=force, open_browser=open_browser, use_cache=use_cache, parallel=parallel)
 
 
 if __name__ == "__main__":

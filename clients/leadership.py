@@ -625,7 +625,7 @@ def fetch_leadership_data(
     domains = _guess_domain(company_name, slug)
 
     # Choose paths by entity type
-    if entity_type == "k12_district":
+    if entity_type in ("k12_district", "k12"):
         paths = LEADERSHIP_PATHS_K12
     elif entity_type == "higher_ed":
         paths = LEADERSHIP_PATHS_HIGHER_ED
