@@ -11,7 +11,7 @@
     body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
     @media (prefers-reduced-motion: no-preference) { body { animation: pageIn 0.25s ease-out; } }
     @keyframes pageIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-    @media print { body { animation: none !important; } }
+    /* moved to consolidated @media print block below */
     .doc-nav a.active { color: #2563eb; border-left-color: #2563eb; font-weight: 600; }
     .doc-nav a { border-left: 3px solid transparent; }
     .doc-nav a:hover { color: #2563eb; border-left-color: #93c5fd; }
@@ -31,7 +31,25 @@
     }
     .doc-section.collapsed .doc-body { max-height: 0 !important; opacity: 0; }
     .doc-section h3 { cursor: pointer; user-select: none; }
-    @media print { .doc-section.collapsed .doc-body { max-height: none !important; opacity: 1 !important; } .doc-chevron { display: none !important; } }
+    @media print {
+      @page { size: letter portrait; margin: 0.6in 0.5in; }
+      body { animation: none !important; font-size: 10pt; line-height: 1.45; }
+      html, html.dark, body { background: white !important; color: #000 !important; }
+      * { box-shadow: none !important; text-shadow: none !important; }
+      .doc-nav, nav, header button { display: none !important; }
+      header { position: relative !important; }
+      main { max-width: 100% !important; }
+      .doc-section.collapsed .doc-body { max-height: none !important; opacity: 1 !important; }
+      .doc-chevron { display: none !important; }
+      .doc-section h3 { cursor: default; }
+      section { break-inside: avoid; page-break-inside: avoid; margin-bottom: 14pt; }
+      h3 { page-break-after: avoid; }
+      table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+      th, td { border: 1px solid #e5e7eb; padding: 4pt 6pt; }
+      th { background: #f9fafb !important; }
+      code { background: #f3f4f6; padding: 1pt 3pt; border-radius: 2pt; font-size: 8pt; }
+      a { color: #1e40af; }
+    }
   </style>
 </head>
 <body class="bg-gray-50 dark:bg-slate-950 text-gray-800 dark:text-slate-200">

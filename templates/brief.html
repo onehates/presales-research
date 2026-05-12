@@ -237,7 +237,7 @@
       margin-top: 0 !important; padding-top: 0 !important;
     }
     .section-card .section-header { cursor: pointer; user-select: none; }
-    @media print { .section-card.collapsed .section-body { max-height: none !important; opacity: 1 !important; } .section-chevron { display: none !important; } .collapse-controls { display: none !important; } }
+    /* collapsible print overrides moved to main @media print block below */
     .champion-card { transition: box-shadow 0.2s, transform 0.2s; }
     .champion-card:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
     .timeline-item { transition: transform 0.15s; }
@@ -302,53 +302,152 @@
     .dark .cmd-item:hover, .dark .cmd-item.active { background: #1e293b; }
     .cmd-section { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; padding: 10px 16px 4px; }
 
-    /* Print */
+    /* =============================================
+       PRINT STYLESHEET
+       ============================================= */
     @media print {
-      /* Hide interactive UI */
-      .no-print, #side-nav, #chat-toggle, #chat-panel, #cmd-overlay, #kbd-overlay,
+
+      /* --- Page setup --- */
+      @page { size: letter portrait; margin: 0.6in 0.5in; }
+
+      /* --- Reset to light mode --- */
+      html, html.dark, body, body.dark { background: white !important; color: #000 !important; }
+      * { box-shadow: none !important; text-shadow: none !important; }
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
+
+      /* Transparent backgrounds for most elements */
+      .section-card, section, div, tr, td, th, main, footer, header { background-color: white !important; }
+
+      /* Preserve semantic colors for badges/chips */
+      .bg-green-100, .bg-green-50 { background-color: #d1fae5 !important; color: #065f46 !important; }
+      .bg-amber-100, .bg-amber-50, .bg-yellow-100, .bg-yellow-50 { background-color: #fef3c7 !important; color: #78350f !important; }
+      .bg-blue-100, .bg-blue-50 { background-color: #dbeafe !important; color: #1e3a8a !important; }
+      .bg-red-100, .bg-red-50 { background-color: #fee2e2 !important; color: #7f1d1d !important; }
+      .bg-purple-100, .bg-purple-50 { background-color: #f3e8ff !important; color: #581c87 !important; }
+      .bg-emerald-100, .bg-emerald-50 { background-color: #d1fae5 !important; color: #065f46 !important; }
+
+      /* TL;DR card keeps its accent */
+      #sec-tldr { background-color: #eff6ff !important; border-color: #93c5fd !important; }
+      #sec-tldr * { color: #1e3a8a !important; }
+
+      /* Disqualifier card keeps its accent */
+      #sec-disqualifiers { background-color: #fef2f2 !important; border-color: #fca5a5 !important; }
+      #sec-disqualifiers * { color: #7f1d1d !important; }
+
+      /* --- Typography --- */
+      body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 10pt; line-height: 1.45; }
+      h1 { font-size: 18pt; margin-bottom: 6pt; }
+      h2 { font-size: 12pt; margin-top: 0; margin-bottom: 4pt; }
+      h3 { font-size: 10pt; margin-top: 6pt; margin-bottom: 3pt; }
+      p { margin: 3pt 0; }
+      table { font-size: 9pt; }
+
+      /* --- Hide all interactive UI --- */
+      .no-print,
+      #side-nav, #chat-toggle, #chat-panel, #cmd-overlay, #kbd-overlay,
+      #reading-progress,
       .ask-btn, .collapse-controls, .section-chevron, .meddic-save-btn,
-      .toast-container { display: none !important; }
+      .meddic-saved-indicator, .meddic-unsaved-indicator,
+      .toast-container, .info-icon,
+      button:not(.print-keep) { display: none !important; }
 
-      /* Force light mode */
-      html, html.dark, body { background: white !important; color: black !important; }
-      .section-card, section, table, tr, td, th, div { background-color: white !important; }
-      * { color-adjust: exact !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-
-      /* Force all sections expanded */
-      .section-card.collapsed .section-body,
-      .section-body {
-        max-height: none !important; opacity: 1 !important;
-        overflow: visible !important;
-      }
-
-      /* Layout reset */
-      .section-card { break-inside: avoid; border-left-color: #d1d5db !important; box-shadow: none !important; transform: none !important; }
-      main { margin-left: 0 !important; max-width: 100% !important; padding: 0 24px !important; }
-      footer { margin-left: 0 !important; max-width: 100% !important; }
+      /* --- Layout reset --- */
       header { position: relative !important; }
+      main { margin-left: 0 !important; max-width: 100% !important; padding: 0 16px !important; }
+      footer { margin-left: 0 !important; max-width: 100% !important; }
 
-      /* Page break control */
-      section { page-break-inside: avoid; }
+      /* --- Force all sections expanded --- */
+      .section-card.collapsed .section-body,
+      .section-body { max-height: none !important; opacity: 1 !important; overflow: visible !important; }
+
+      /* --- Section cards --- */
+      .section-card {
+        border-left: 2px solid #d1d5db !important;
+        transform: none !important;
+        margin-bottom: 14pt;
+        padding: 10pt !important;
+      }
+      section { margin-bottom: 14pt; }
+
+      /* --- Page break control --- */
       h2 { page-break-after: avoid; }
+      h3 { page-break-after: avoid; }
+      section, .section-card { break-inside: avoid; page-break-inside: avoid; }
 
-      /* Typography */
-      body { font-size: 10pt; line-height: 1.4; }
-      h1 { font-size: 18pt; }
-      h2 { font-size: 14pt; }
-      h3 { font-size: 12pt; }
-      table { font-size: 11px; }
+      /* Large sections that WILL span pages — allow break-inside */
+      #sec-champions, #sec-meddic, #sec-discovery, #sec-events, #sec-hiring, #sec-gtm { break-inside: auto; page-break-inside: auto; }
 
-      /* Links: show URLs inline */
-      a { color: inherit !important; text-decoration: none !important; }
-      a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 8px; color: #666; word-break: break-all; }
-      .source-chip { background: #f3f4f6 !important; color: #374151 !important; }
-      .source-chip::after { content: " (" attr(href) ")"; font-size: 8px; color: #9ca3af; word-break: break-all; }
+      /* Items within large sections should avoid splitting */
+      .champion-card, .timeline-item, tr, .discovery-q { break-inside: avoid; page-break-inside: avoid; }
 
-      /* Suppress link URL on nav/button elements */
-      nav a::after, header a::after, .nav-link::after { content: none !important; }
+      /* Force page break before major strategy sections */
+      #sec-gtm { page-break-before: always; }
 
-      @page { margin: 0.5in; size: letter portrait; }
+      /* --- Grids: stack single-column for print, keep 2-col for small items --- */
+      .grid { display: block !important; }
+      .grid > * { display: block !important; width: 100% !important; margin-bottom: 6pt !important; }
+      /* Keep snapshot / funding stat grids side-by-side */
+      #sec-snapshot .grid, #sec-funding .grid, #sec-vertical .grid { display: grid !important; grid-template-columns: 1fr 1fr 1fr !important; gap: 6pt !important; }
+      #sec-snapshot .grid > *, #sec-funding .grid > *, #sec-vertical .grid > * { margin-bottom: 0 !important; }
+      /* Quick stats banner: keep 4-col */
+      .grid.grid-cols-2.md\\:grid-cols-4 { display: grid !important; grid-template-columns: 1fr 1fr 1fr 1fr !important; gap: 6pt !important; }
+      .grid.grid-cols-2.md\\:grid-cols-4 > * { margin-bottom: 0 !important; }
+      /* GTM strategy: 2-col */
+      #sec-gtm .grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8pt !important; }
+      #sec-gtm .grid > * { margin-bottom: 0 !important; }
+      /* Hiring stats: keep row */
+      #sec-hiring .grid.grid-cols-4 { display: grid !important; grid-template-columns: 1fr 1fr 1fr 1fr !important; gap: 6pt !important; }
+      #sec-hiring .grid.grid-cols-4 > * { margin-bottom: 0 !important; }
+
+      /* --- MEDDIC table --- */
+      table { width: 100%; border-collapse: collapse; }
+      th, td { border: 1px solid #e5e7eb; padding: 4pt 6pt; vertical-align: top; text-align: left; }
+      th { background: #f9fafb !important; font-weight: 600; }
+      .meddic-check { display: none !important; }
+      .meddic-notes { display: none !important; }
+      .meddic-row-validated { background: #f0fdf4 !important; border-left: 2px solid #86efac; }
+
+      /* --- Champion cards --- */
+      .champion-card { border: 1px solid #e5e7eb; padding: 8pt; margin-bottom: 8pt; }
+      .champion-bar { background: #e5e7eb !important; }
+      .champion-bar-fill { background: #2563eb !important; }
+      .score-dot { border: 1px solid #999; }
+
+      /* --- Timeline (material events) --- */
+      .timeline-item { padding-left: 12pt; border-left: 2px solid #2563eb; margin-bottom: 6pt; }
+      .timeline-item::before { display: none !important; }
+      .timeline-dot { display: none !important; }
+
+      /* --- SVG flowchart --- */
+      #procurement-flow { overflow: visible !important; }
+      #procurement-flow svg { max-width: 100% !important; height: auto !important; }
+
+      /* --- Links --- */
+      a { color: #1e40af !important; text-decoration: none !important; }
+      /* Source chips: show URL */
+      .source-chip { background: #f3f4f6 !important; color: #374151 !important; border: 1px solid #d1d5db; }
+      .source-chip::after { content: " (" attr(href) ")"; font-size: 7pt; color: #9ca3af; word-break: break-all; }
+      /* Suppress URL display on internal links */
+      nav a::after, header a::after, .nav-link::after, footer a::after, a:not([href^="http"])::after { content: none !important; }
+
+      /* --- Print-only footer --- */
+      .print-footer { display: block !important; margin-top: 16pt; padding-top: 8pt; border-top: 1px solid #d1d5db; font-size: 8pt; color: #888; text-align: center; }
+
+      /* --- Confidence badges: keep color-coded --- */
+      [class*="bg-green"] { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      [class*="bg-amber"] { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      [class*="bg-red"]   { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+      /* --- Dark mode overrides: ensure all dark: classes resolve to light --- */
+      .dark\\:bg-slate-900, .dark\\:bg-slate-950, .dark\\:bg-blue-950, .dark\\:bg-red-950 { background-color: white !important; }
+      .dark\\:text-white, .dark\\:text-slate-200, .dark\\:text-slate-300, .dark\\:text-blue-300 { color: #000 !important; }
+      .dark\\:border-slate-800, .dark\\:border-slate-700, .dark\\:border-blue-800 { border-color: #e5e7eb !important; }
     }
+
+    /* Hide print-only footer on screen */
+    @media screen { .print-footer { display: none; } }
   </style>
 </head>
 <body class="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 antialiased">
@@ -1673,6 +1772,11 @@
       </span>
     </div>
   </footer>
+
+  <!-- Print-only footer (visible only in PDF/print) -->
+  <div class="print-footer">
+    {{ data.snapshot.name }} — Account Brief &middot; Generated {{ data.metadata.generated_at[:10] }} &middot; Pre-Sales Research Platform
+  </div>
 
   <!-- Reading Progress Bar -->
   <div id="reading-progress" class="fixed top-0 left-0 right-0 h-[3px] z-[60] no-print" style="pointer-events:none;">
