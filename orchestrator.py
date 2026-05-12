@@ -53,15 +53,58 @@ PROMPT_CACHE_HEADERS = {"anthropic-beta": "prompt-caching-2024-07-31"}
 SUBAGENT_CACHE_TTL = 86400
 
 # ---------------------------------------------------------------------------
-# Canonical vertical enum — ALL detection paths MUST return one of these
+# Canonical vertical enum — derived from persona/verkada-se.yml at startup
 # ---------------------------------------------------------------------------
 
-VALID_VERTICALS = [
-    "k12", "higher_ed", "healthcare", "senior_living",
-    "state_local_gov", "federal", "public_safety", "transportation",
-    "critical_infrastructure", "manufacturing", "retail", "hospitality",
-    "unknown",
+# Mapping from persona file vertical names → code-level slugs
+_PERSONA_VERTICAL_SLUGS = {
+    "K-12": "k12",
+    "Healthcare": "healthcare",
+    "Retail": "retail",
+    "Manufacturing": "manufacturing",
+    "HigherEd": "higher_ed",
+    "CRE_Hospitality": "hospitality",
+}
+
+# Verticals the orchestrator supports that aren't (yet) in the persona file
+# but have distinct source-routing and keyword detection needs.
+# When a new vertical is added to persona/verkada-se.yml, add a slug mapping
+# above and remove it from this list.
+_EXTRA_VERTICALS = [
+    "senior_living", "state_local_gov", "federal",
+    "public_safety", "transportation", "critical_infrastructure",
 ]
+
+
+def _load_verticals_from_persona() -> list[str]:
+    """Parse icp.verticals from the persona YAML and return slug list.
+
+    Falls back to the slug mapping keys if the file can't be read.
+    Always appends _EXTRA_VERTICALS and 'unknown'.
+    """
+    slugs = []
+    try:
+        import yaml
+        data = yaml.safe_load(PERSONA_PATH.read_text())
+        for v in data.get("icp", {}).get("verticals", []):
+            name = v.get("name", "")
+            slug = _PERSONA_VERTICAL_SLUGS.get(name)
+            if slug:
+                slugs.append(slug)
+            else:
+                # Auto-slugify unknown persona verticals
+                auto = re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
+                if auto:
+                    slugs.append(auto)
+    except Exception:
+        # Fallback: use the static mapping
+        slugs = list(_PERSONA_VERTICAL_SLUGS.values())
+    slugs.extend(v for v in _EXTRA_VERTICALS if v not in slugs)
+    slugs.append("unknown")
+    return slugs
+
+
+VALID_VERTICALS = _load_verticals_from_persona()
 
 # Token usage accumulator (populated by _stream_anthropic_with_retry)
 _token_usage = {"input": 0, "output": 0, "cache_creation": 0, "cache_read": 0}
