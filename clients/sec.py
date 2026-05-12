@@ -510,6 +510,55 @@ class NoRecentFilingsError(Exception):
 
 
 # ---------------------------------------------------------------------------
+# Quick NAICS lookup (Phase 0 vertical detection — no full filing scrape)
+# ---------------------------------------------------------------------------
+
+def quick_naics_lookup(company_name: str, slug: str) -> dict | None:
+    """Quick lookup of SIC/NAICS code only. Fast, single API call.
+
+    Returns {"cik": "...", "sic": "...", "sic_description": "...", "naics": "..."} or None.
+    Checks sec.json cache first to avoid redundant network calls.
+    """
+    # Check existing cache
+    cached_path = SOURCES_DIR / slug / "sec.json"
+    if cached_path.exists():
+        try:
+            data = json.loads(cached_path.read_text())
+            if data.get("company", {}).get("sic"):
+                return {
+                    "cik": data["company"].get("cik", ""),
+                    "sic": data["company"]["sic"],
+                    "sic_description": data["company"].get("sic_description", ""),
+                    "naics": data["company"].get("sic", ""),  # SEC uses SIC, map in caller
+                }
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    # Try to resolve CIK (single API call to company_tickers.json)
+    try:
+        cik_info = resolve_cik(company_name)
+    except (CompanyNotFoundError, Exception):
+        return None
+
+    # Fetch submissions for SIC code (single API call)
+    try:
+        submissions = fetch_filing_metadata(cik_info["cik"])
+        sic = submissions.get("sic", "")
+        sic_desc = submissions.get("sicDescription", "")
+        if sic:
+            return {
+                "cik": cik_info["cik"],
+                "sic": sic,
+                "sic_description": sic_desc,
+                "naics": sic,  # SEC uses SIC; caller maps via NAICS_TO_VERTICAL
+            }
+    except Exception:
+        pass
+
+    return None
+
+
+# ---------------------------------------------------------------------------
 # Main pipeline
 # ---------------------------------------------------------------------------
 

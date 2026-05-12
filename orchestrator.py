@@ -2,7 +2,8 @@
 """
 Orchestrator — /research pipeline entry point.
 
-Phase 1: Run all 18 source clients in parallel (ThreadPoolExecutor).
+Phase 0: Detect vertical (name heuristic → SEC SIC → Haiku LLM → web search + Haiku).
+Phase 1: Run source clients in parallel, filtered by detected vertical.
 Phase 2: Run 3 subagents (company-bg, tech-and-pain, hiring-signals) in parallel.
 Phase 3: Run synthesizer (Opus) reading all 3 subagent outputs + persona.
 Phase 4: Render brief JSON → HTML via render/render.py.
@@ -105,6 +106,61 @@ def _load_verticals_from_persona() -> list[str]:
 
 
 VALID_VERTICALS = _load_verticals_from_persona()
+
+# SIC code prefix → vertical mapping (SEC uses SIC, not NAICS)
+# Used by Phase 0 SEC quick lookup
+SIC_TO_VERTICAL = {
+    # Healthcare
+    "80": "healthcare",   # Health Services
+    "8011": "healthcare", # Offices of physicians
+    "8021": "healthcare", # Offices of dentists
+    "8041": "healthcare", # Offices of chiropractors
+    "8042": "healthcare", # Offices of optometrists
+    "8049": "healthcare", # Other health practitioners
+    "8051": "senior_living",  # Skilled nursing facilities
+    "8052": "senior_living",  # Intermediate care facilities
+    "8059": "senior_living",  # Nursing/personal care
+    "806": "healthcare",  # Hospitals
+    "807": "healthcare",  # Medical/dental labs
+    "808": "healthcare",  # Home health care
+    "809": "healthcare",  # Health services NEC
+    # Retail
+    "52": "retail",       # Building materials/garden
+    "53": "retail",       # General merchandise
+    "54": "retail",       # Food stores
+    "55": "retail",       # Auto dealers/gas stations
+    "56": "retail",       # Apparel/accessory stores
+    "57": "retail",       # Home furniture/furnishings
+    "58": "hospitality",  # Eating/drinking places
+    "59": "retail",       # Retail stores NEC
+    # Manufacturing
+    "20": "manufacturing", "21": "manufacturing", "22": "manufacturing",
+    "23": "manufacturing", "24": "manufacturing", "25": "manufacturing",
+    "26": "manufacturing", "27": "manufacturing", "28": "manufacturing",
+    "29": "manufacturing", "30": "manufacturing", "31": "manufacturing",
+    "32": "manufacturing", "33": "manufacturing", "34": "manufacturing",
+    "35": "manufacturing", "36": "manufacturing", "37": "manufacturing",
+    "38": "manufacturing", "39": "manufacturing",
+    # Transportation
+    "40": "transportation", "41": "transportation", "42": "transportation",
+    "43": "transportation", "44": "transportation", "45": "transportation",
+    "46": "transportation", "47": "transportation",
+    # Hospitality
+    "70": "hospitality",  # Hotels/lodging
+    "701": "hospitality", # Hotels and motels
+    "7011": "hospitality",
+    # Education
+    "82": "higher_ed",    # Educational services
+    "8211": "k12",        # Elementary/secondary schools
+    "8221": "higher_ed",  # Colleges/universities
+    # Critical infrastructure
+    "49": "critical_infrastructure",  # Electric/gas/sanitary
+    "48": "critical_infrastructure",  # Communications
+    # Government-adjacent (public admin)
+    "91": "state_local_gov", "92": "public_safety", "93": "state_local_gov",
+    "94": "state_local_gov", "95": "state_local_gov", "96": "federal",
+    "97": "federal",
+}
 
 # Token usage accumulator (populated by _stream_anthropic_with_retry)
 _token_usage = {"input": 0, "output": 0, "cache_creation": 0, "cache_read": 0}
@@ -448,19 +504,146 @@ def detect_vertical_early(company: str, slug: str) -> str:
 HAIKU_MODEL = "claude-haiku-4-5-20251001"
 
 
-def llm_classify_vertical(company_name: str, slug: str) -> str:
-    """Use a cheap Haiku call to classify vertical from scraped data.
+def _haiku_classify_vertical(company_name: str, context: str = "") -> str:
+    """Use Haiku to classify company into one of VALID_VERTICALS.
 
-    Called as a fallback when NAICS + name heuristics both fail,
-    AFTER Phase 1 has populated website.json and news.json.
-    Cost: ~$0.001 per classification.
+    Cost: ~$0.001 per call. Returns validated vertical or 'unknown'.
     """
     if not anthropic or not os.environ.get("ANTHROPIC_API_KEY"):
         return "unknown"
 
-    # Gather context from cached Phase 1 data
-    context_parts = []
+    valid_list = ", ".join(v for v in VALID_VERTICALS if v != "unknown")
+    prompt = (
+        f"Classify this company into ONE vertical from this exact list:\n"
+        f"{valid_list}\n\n"
+        f"Company: {company_name}\n"
+        f"{f'Context: {context[:1500]}' if context else ''}\n\n"
+        f"Output JUST the vertical string. If genuinely unclear, output: unknown"
+    )
+
+    try:
+        client = anthropic.Anthropic()
+        response = client.messages.create(
+            model=HAIKU_MODEL,
+            max_tokens=30,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        result = response.content[0].text.strip().lower().replace(" ", "_")
+        _token_usage["input"] += response.usage.input_tokens
+        _token_usage["output"] += response.usage.output_tokens
+        return _validate_vertical(result)
+    except Exception as e:
+        print(f"    \033[33m⚠\033[0m  Haiku classification failed: {str(e)[:60]}", flush=True)
+        return "unknown"
+
+
+def _quick_tavily_search(query: str, max_results: int = 2) -> str:
+    """Run a quick Tavily search and return snippet text. Returns '' on failure."""
+    tavily_key = os.environ.get("TAVILY_API_KEY", "")
+    if not tavily_key:
+        return ""
+    try:
+        import requests
+        resp = requests.post(
+            "https://api.tavily.com/search",
+            json={
+                "api_key": tavily_key,
+                "query": query,
+                "search_depth": "basic",
+                "max_results": max_results,
+            },
+            timeout=10,
+        )
+        if resp.status_code != 200:
+            return ""
+        results = resp.json().get("results", [])
+        snippets = [r.get("content", "")[:300] for r in results if r.get("content")]
+        return " | ".join(snippets)
+    except Exception:
+        return ""
+
+
+def _resolve_sic_to_vertical(sic: str) -> str | None:
+    """Map an SEC SIC code to a vertical using prefix matching (longest first)."""
+    if not sic:
+        return None
+    for prefix_len in [4, 3, 2]:
+        prefix = sic[:prefix_len]
+        if prefix in SIC_TO_VERTICAL:
+            return SIC_TO_VERTICAL[prefix]
+    return None
+
+
+def phase0_detect_vertical(company: str, slug: str) -> tuple[str, str]:
+    """Detect vertical BEFORE source collection (Phase 0).
+
+    4-step cascade, stops at first confident result:
+      1. Name heuristic (instant, free)
+      2. SEC CIK + SIC lookup (fast, free, deterministic)
+      3. Haiku LLM classification — name only (fast, ~$0.001)
+      4. Web search + Haiku (slower, ~$0.02)
+
+    Returns: (vertical, detection_method)
+    """
+    print(f"\n  Phase 0 — Vertical Detection")
+    print(f"  {'─' * 50}")
+
+    # Step 1: Name heuristic
+    name_vertical = detect_vertical_from_name(company)
+    if name_vertical and name_vertical != "unknown":
+        print(f"    {SYM_OK} {name_vertical} (name heuristic)", flush=True)
+        return _validate_vertical(name_vertical), "name_heuristic"
+
+    # Step 2: SEC CIK + SIC lookup (fast — single API call)
+    print(f"    {SYM_RUN} checking SEC EDGAR for SIC code...", flush=True)
+    try:
+        from clients.sec import quick_naics_lookup
+        sic_result = quick_naics_lookup(company, slug)
+        if sic_result and sic_result.get("sic"):
+            sic = sic_result["sic"]
+            vertical = _resolve_sic_to_vertical(sic)
+            if vertical:
+                sic_desc = sic_result.get("sic_description", "")
+                print(f"    {SYM_OK} {vertical} (SIC {sic} — {sic_desc})", flush=True)
+                return _validate_vertical(vertical), "sec_sic"
+            else:
+                print(f"    {SYM_INSUF} SIC {sic} ({sic_result.get('sic_description', '')}) — no vertical mapping", flush=True)
+        else:
+            print(f"    {SYM_INSUF} not found in SEC EDGAR", flush=True)
+    except Exception as e:
+        print(f"    {SYM_ERROR} SEC lookup failed: {str(e)[:60]}", flush=True)
+
+    # Step 3: Haiku LLM classification (just name)
+    if anthropic and os.environ.get("ANTHROPIC_API_KEY"):
+        print(f"    {SYM_RUN} asking Haiku to classify based on name...", flush=True)
+        haiku_result = _haiku_classify_vertical(company, context="")
+        if haiku_result and haiku_result != "unknown":
+            print(f"    {SYM_OK} {haiku_result} (Haiku classification)", flush=True)
+            return _validate_vertical(haiku_result), "haiku_name"
+        else:
+            print(f"    {SYM_INSUF} Haiku uncertain from name alone", flush=True)
+
+        # Step 4: Web search + Haiku
+        print(f"    {SYM_RUN} running web search for industry context...", flush=True)
+        search_snippet = _quick_tavily_search(f"{company} industry classification")
+        if search_snippet:
+            haiku_result = _haiku_classify_vertical(company, context=search_snippet)
+            if haiku_result and haiku_result != "unknown":
+                print(f"    {SYM_OK} {haiku_result} (Haiku + web search)", flush=True)
+                return _validate_vertical(haiku_result), "haiku_web_search"
+
+    print(f"    {SYM_INSUF} unknown (all methods inconclusive)", flush=True)
+    return "unknown", "fallback"
+
+
+def llm_classify_vertical(company_name: str, slug: str) -> str:
+    """Post-Phase-1 LLM vertical classification using cached source data.
+
+    Called as a secondary fallback when Phase 0 returned 'unknown' but
+    Phase 1 data (website, news, SEC) may now provide enough context.
+    """
     sources_dir = SOURCES_DIR / slug
+    context_parts = []
 
     website_path = sources_dir / "website.json"
     if website_path.exists():
@@ -468,7 +651,6 @@ def llm_classify_vertical(company_name: str, slug: str) -> str:
             data = json.loads(website_path.read_text())
             if data.get("status") == "ok":
                 pages = data.get("pages", {})
-                # Use homepage text, truncated
                 for url, text in pages.items():
                     context_parts.append(f"Website ({url}):\n{text[:1500]}")
                     break
@@ -492,40 +674,14 @@ def llm_classify_vertical(company_name: str, slug: str) -> str:
             data = json.loads(sec_path.read_text())
             if data.get("company"):
                 sic = data["company"].get("sic_description", "")
-                industry = data["company"].get("industry", "")
-                context_parts.append(f"SEC SIC: {sic}, Industry: {industry}")
+                context_parts.append(f"SEC SIC: {sic}")
         except Exception:
             pass
 
     if not context_parts:
         return "unknown"
 
-    valid_list = ", ".join(v for v in VALID_VERTICALS if v != "unknown")
-    prompt = (
-        f"Classify this company into ONE of these verticals:\n"
-        f"{valid_list}\n\n"
-        f"Company: {company_name}\n\n"
-        + "\n\n".join(context_parts)
-        + "\n\nOutput JUST the vertical string (one of the list above), nothing else.\n"
-        f"If genuinely unclear, output: unknown"
-    )
-
-    try:
-        client = anthropic.Anthropic()
-        response = client.messages.create(
-            model=HAIKU_MODEL,
-            max_tokens=50,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        result = response.content[0].text.strip().lower().replace(" ", "_")
-        # Track token usage
-        _token_usage["input"] += response.usage.input_tokens
-        _token_usage["output"] += response.usage.output_tokens
-
-        return _validate_vertical(result)
-    except Exception as e:
-        print(f"    \033[33m⚠\033[0m  LLM vertical classification failed: {str(e)[:60]}", flush=True)
-        return "unknown"
+    return _haiku_classify_vertical(company_name, context="\n".join(context_parts))
 
 
 def filter_sources_by_vertical(client_names: list[str], vertical: str) -> tuple[list[str], list[str]]:
@@ -1618,31 +1774,30 @@ def research(company: str, *, force: bool = False, open_browser: bool = False, u
 
     t0 = time.time()
 
-    # Detect vertical for source filtering
-    vertical = detect_vertical_early(company, slug)
-    if vertical != "unknown":
-        print(f"\n  Detected vertical: {vertical}")
-        _write_status("starting", f"Detected vertical: {vertical}", vertical=vertical)
-    else:
-        _write_status("starting", "Vertical unknown — running all sources", vertical="unknown")
+    # Phase 0 — Vertical Detection (runs BEFORE source collection)
+    vertical, detection_method = phase0_detect_vertical(company, slug)
+    _write_status("phase0", "Vertical detection complete",
+                  detected_vertical=vertical, detection_method=detection_method,
+                  vertical=vertical)
 
-    # Phase 1 — Source data collection
+    # Phase 1 — Source data collection (now vertical-aware from the start)
     _write_status("phase1", "Collecting source data...")
     t1 = time.time()
     phase1_results = run_phase1(company, slug, force, vertical=vertical)
     print(f"  Phase 1 elapsed: {time.time() - t1:.1f}s")
 
-    # Post-Phase 1 vertical refinement: if still unknown, try LLM classification
-    # using the website/news/SEC data just collected
+    # Post-Phase 1 vertical refinement: if Phase 0 returned 'unknown',
+    # retry with the data Phase 1 just collected (website, news, SEC)
     if vertical == "unknown":
-        refined = detect_vertical_early(company, slug)  # Re-check with fresh cached data
+        refined = detect_vertical_early(company, slug)
         if refined == "unknown":
-            print(f"\n  Classifying vertical via LLM (Haiku)...", flush=True)
+            print(f"\n  Refining vertical via LLM (Haiku) with Phase 1 data...", flush=True)
             refined = llm_classify_vertical(company, slug)
         if refined != "unknown":
             vertical = refined
             print(f"  Refined vertical: {vertical}")
-            _write_status("starting", f"Refined vertical: {vertical}", vertical=vertical)
+            _write_status("phase0", f"Refined vertical: {vertical} (post-Phase-1)",
+                          vertical=vertical, detection_method="post_phase1_refinement")
 
     # Phase 1b — Deferred clients (depend on Phase 1 output)
     applicable_deferred = DEFERRED_CLIENTS

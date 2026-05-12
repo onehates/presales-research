@@ -67,6 +67,17 @@
       </div>
     </div>
 
+    <!-- Phase 0: Vertical Detection -->
+    <div id="phase0-section" class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg p-4 mb-4" style="display:none;">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide">Phase 0 — Vertical Detection</h2>
+        <div id="phase0-result" class="flex items-center gap-2">
+          <div class="w-2 h-2 rounded-full bg-gray-300 pulse"></div>
+          <span class="text-xs text-gray-400">detecting...</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Phase 1: Sources -->
     <div id="phase1-section" class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg p-5 mb-4" style="display:none;">
       <div class="flex items-center gap-2 mb-3">
@@ -157,7 +168,7 @@
     const statusUrl = slugParam ? `/status?slug=${slugParam}` : '/status';
 
     const ALL_SOURCES = [
-      'sec','indeed','crtsh','github','news','nces','clery','sam',
+      'sec','indeed','crtsh','github','news','website','nces','clery','sam',
       'sourcewell','tips','hhs','reddit','ga_procurement',
       'atlanta_procurement','sled_procurement','omnia','costars','hgac',
       'leadership','champion_signals'
@@ -213,6 +224,7 @@
 
       const phaseConfig = {
         starting: { color: 'bg-blue-400', label: 'Starting...', pct: 2 },
+        phase0:   { color: 'bg-sky-500', label: 'Phase 0 — Detecting Vertical', pct: 5 },
         phase1:   { color: 'bg-blue-500', label: 'Phase 1 — Collecting Sources', pct: 25 },
         phase2:   { color: 'bg-indigo-500', label: 'Phase 2 — Running Subagents', pct: 55 },
         phase3:   { color: 'bg-purple-500', label: 'Phase 3 — Synthesizing Brief', pct: 80 },
@@ -225,6 +237,20 @@
       label.textContent = cfg.label;
       bar.style.width = cfg.pct + '%';
       bar.className = `h-2 rounded-full transition-all duration-500 ${cfg.color}`;
+
+      // Phase 0: Vertical Detection
+      const phase0Events = (data.events || []).filter(e => e.phase === 'phase0');
+      if (phase0Events.length > 0 || phase === 'phase0') {
+        document.getElementById('phase0-section').style.display = '';
+        const p0el = document.getElementById('phase0-result');
+        if (data.detected_vertical && data.detected_vertical !== 'unknown') {
+          const method = data.detection_method || '';
+          const methodLabel = method.replace(/_/g, ' ');
+          p0el.innerHTML = sourceIcon('ok') + `<span class="text-xs font-medium text-emerald-600 dark:text-emerald-400">${data.detected_vertical.replace(/_/g, ' ')}</span><span class="text-[10px] text-gray-400 dark:text-slate-500">(${methodLabel})</span>`;
+        } else if (data.detected_vertical === 'unknown' && phase !== 'phase0') {
+          p0el.innerHTML = `<svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg><span class="text-xs text-amber-500 dark:text-amber-400">unknown</span><span class="text-[10px] text-gray-400 dark:text-slate-500">(all methods inconclusive)</span>`;
+        }
+      }
 
       // Vertical badge
       if (data.vertical && data.vertical !== 'unknown') {
