@@ -136,15 +136,23 @@
         <h2 class="text-[10px] font-bold text-gray-600 uppercase mb-1">Key Discovery Questions</h2>
         {% set questions_shown = [] %}
         {% for persona, pdata in data.discovery_questions_by_persona.items() %}
-          {% if pdata is mapping and pdata.questions is iterable %}
-            {% for q in pdata.questions %}
+          {% set qlist = pdata.questions if pdata is mapping and pdata.questions is iterable else pdata %}
+          {% if qlist is iterable and qlist is not string %}
+            {% for q in qlist %}
               {% if questions_shown | length < 3 %}
                 {% if questions_shown.append(1) %}{% endif %}
-                <p class="text-[11px] text-gray-700 mb-1 leading-tight border-l-2 border-gray-300 pl-2">{{ q.question[:120] if q is mapping else q[:120] }}...</p>
+                {% set qtext = q.question if q is mapping and q.question else (q.text if q is mapping and q.text else q) %}
+                <div class="mb-1.5 border-l-2 border-violet-400 pl-2">
+                  <p class="text-[11px] text-gray-700 leading-tight">{{ qtext[:140] }}{% if qtext|length > 140 %}...{% endif %}</p>
+                  <p class="text-[9px] text-gray-400">{{ persona | humanize_id }}{% if q is mapping and q.source_trigger %} · {{ q.source_trigger | humanize_id }}{% endif %}</p>
+                </div>
               {% endif %}
             {% endfor %}
           {% endif %}
         {% endfor %}
+        {% if questions_shown | length == 0 %}
+        <p class="text-[10px] text-gray-400 italic">Discovery questions not available — re-run synthesis.</p>
+        {% endif %}
       </div>
       {% endif %}
     </div>

@@ -123,6 +123,18 @@ class _SilentUndefined(Undefined):
         return self
 
 
+def render_battlecard(brief_data: dict, slug: str = "", date: str = "") -> str:
+    """Render a battlecard HTML string from brief data."""
+    env = Environment(
+        loader=FileSystemLoader(str(TEMPLATE_DIR)),
+        autoescape=False,
+        undefined=_SilentUndefined,
+    )
+    env.filters["humanize_id"] = humanize_id
+    template = env.get_template("battlecard.html")
+    return template.render(data=brief_data, slug=slug, date=date)
+
+
 def render_brief(json_path: Path) -> Path:
     with open(json_path) as f:
         data = json.load(f)
