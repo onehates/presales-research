@@ -2369,6 +2369,33 @@
 
       svg += '</svg>';
       container.innerHTML = svg;
+
+      // SVG mouseenter doesn't bubble — attach tooltip listeners directly
+      container.querySelectorAll('[data-tooltip]').forEach(function(g) {
+        var showT = null, hideT = null;
+        g.addEventListener('mouseenter', function(e) {
+          clearTimeout(hideT);
+          showT = setTimeout(function() {
+            var ttEl = document.getElementById('tooltip-el');
+            if (!ttEl) return;
+            ttEl.textContent = g.getAttribute('data-tooltip');
+            ttEl.classList.add('visible');
+            var rect = g.getBoundingClientRect();
+            var x = rect.left + rect.width / 2;
+            var y = rect.bottom + 4;
+            ttEl.style.left = Math.max(8, Math.min(x - ttEl.offsetWidth / 2, window.innerWidth - ttEl.offsetWidth - 8)) + 'px';
+            if (y + ttEl.offsetHeight > window.innerHeight) y = rect.top - ttEl.offsetHeight - 4;
+            ttEl.style.top = y + 'px';
+          }, 300);
+        });
+        g.addEventListener('mouseleave', function() {
+          clearTimeout(showT);
+          hideT = setTimeout(function() {
+            var ttEl = document.getElementById('tooltip-el');
+            if (ttEl) ttEl.classList.remove('visible');
+          }, 300);
+        });
+      });
     })();
 
     // --- Keyboard shortcuts ---
