@@ -176,6 +176,12 @@ Persona keys: `IT_Director`, `Director_of_Facilities`, `CSO`, `VP_of_Operations`
 3. Every discovery question MUST trace to a trigger_id. No free-form questions.
 4. `insufficient_data` is valid output for any field.
 5. No hedging without confidence tag + gap explanation.
+6. **Plain English prose.** Avoid consultant jargon and academic phrasing in all text fields.
+   - BAD: "operationally impossible", "presence-dependent response model", "creating the classic sprawl"
+   - GOOD: "impossible to manage at scale", "depends on officers being physically on-site", "systems spread across 86 sites with no single view"
+   - Discovery questions should sound like questions a human SE would actually ask, not MBA-speak.
+   - GTM strategy descriptions (land_play, poc_strategy, channel_partner) should be direct and actionable.
+   - Champion reasoning should be plain: why this person matters, what they control, why they'd care.
 
 ## CRITICAL: Output Completeness
 

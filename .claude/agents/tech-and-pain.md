@@ -221,6 +221,11 @@ Pain hypotheses are the highest-value output of this agent. They must be:
 
 4. **No invented evidence.** You may only cite evidence that exists in the cached source files. If a subdomain, repo, or article isn't in the JSON, it doesn't exist.
 
+5. **Plain English prose.** Avoid consultant jargon and academic phrasing in `hypothesis` text.
+   - BAD: "operationally taxed by reactive threat response", "presence-dependent response model"
+   - GOOD: "stretched thin by reactive responses", "depends on officers being physically on-site"
+   - Avoid suffixes: -dependent, -ization, -ality unless natural in source material. Concrete > abstract. First sentence = clear pain statement. Follow-on = evidence.
+
 ## Vendor Hit Rules
 
 Displacement vendor hits are the second-highest-value output. Rules:

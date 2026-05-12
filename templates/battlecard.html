@@ -178,14 +178,14 @@
             </td>
             <td class="py-1.5">
               <p class="font-semibold text-gray-900">{{ prod.name }}</p>
-              <span class="inline-block px-1 py-0 rounded text-[8px] font-bold uppercase bg-{{ c }}-100 text-{{ c }}-700">{{ prod.category | replace('_', ' ') }}</span>
+              <span class="inline-block px-1 py-0 rounded text-[8px] font-bold uppercase bg-{{ c }}-100 text-{{ c }}-700">{{ prod.category | humanize_id }}</span>
             </td>
             <td class="py-1.5 text-gray-600">
               <p class="leading-tight">{{ prod.reasoning[:100] }}{% if prod.reasoning|length > 100 %}...{% endif %}</p>
               {% if prod.matched_triggers %}
               <div class="flex flex-wrap gap-0.5 mt-0.5">
                 {% for t in prod.matched_triggers[:2] %}
-                <span class="text-[8px] text-gray-400">{{ t | replace('_', ' ') }}</span>
+                <span class="text-[8px] text-gray-400">{{ t | humanize_id }}</span>
                 {% endfor %}
               </div>
               {% endif %}

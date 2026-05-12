@@ -298,7 +298,7 @@
           <span class="font-medium text-gray-600 dark:text-slate-300">{{ data.snapshot.name }}</span>
         </nav>
         <h1 class="text-xl font-bold text-gray-900 dark:text-white">{{ data.snapshot.name }}</h1>
-        <p class="text-sm text-gray-500 dark:text-slate-400">{{ data.snapshot.vertical }} · {{ data.entity_type | default(data.snapshot.ticker or 'Private') | replace('_', ' ') }} · {{ data.snapshot.headquarters_state }}</p>
+        <p class="text-sm text-gray-500 dark:text-slate-400">{{ data.snapshot.vertical }} · {{ data.entity_type | default(data.snapshot.ticker or 'Private') | humanize_id }} · {{ data.snapshot.headquarters_state }}</p>
         </div>
       </div>
       <div class="flex items-center gap-3">
@@ -426,7 +426,7 @@
       <div class="flex items-start gap-2 mb-2">
         <span class="text-red-600 font-bold text-lg leading-none mt-0.5">!</span>
         <div>
-          <span class="text-sm font-medium text-red-900">{{ flag.id }}</span>
+          <span class="text-sm font-medium text-red-900 dark:text-red-300">{{ flag.id | humanize_id }}</span>
           <p class="text-sm text-red-800">{{ flag.evidence }}</p>
         </div>
       </div>
@@ -545,7 +545,7 @@
           <dt class="text-gray-500 dark:text-slate-400 text-xs uppercase mb-1">Key Drivers Present</dt>
           <div class="flex flex-wrap gap-1">
             {% for d in data.vertical_match.key_drivers_present %}
-            <span class="inline-block bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs font-medium">{{ d }}</span>
+            <span class="inline-block bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs font-medium dark:bg-green-950 dark:text-green-300">{{ d | humanize_id }}</span>
             {% endfor %}
           </div>
         </div>
@@ -553,7 +553,7 @@
           <dt class="text-gray-500 dark:text-slate-400 text-xs uppercase mb-1">Typical Pain Present</dt>
           <div class="flex flex-wrap gap-1">
             {% for p in data.vertical_match.typical_pain_present %}
-            <span class="inline-block bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-xs font-medium">{{ p }}</span>
+            <span class="inline-block bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-xs font-medium dark:bg-amber-950 dark:text-amber-300">{{ p | humanize_id }}</span>
             {% endfor %}
           </div>
         </div>
@@ -619,7 +619,7 @@
             </div>
             <div class="flex items-center gap-2 flex-shrink-0 ml-3">
               {% set role_colors = {'champion': 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300', 'economic_buyer': 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300', 'influencer': 'bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300'} %}
-              <span class="inline-block px-2 py-0.5 rounded text-xs font-medium {{ role_colors.get(cand.meddic_role, 'bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-400') }}">{{ cand.meddic_role | replace('_', ' ') }}</span>
+              <span class="inline-block px-2 py-0.5 rounded text-xs font-medium {{ role_colors.get(cand.meddic_role, 'bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-400') }}">{{ cand.meddic_role | humanize_id }}</span>
               {{ confidence_badge(cand.confidence) }}
             </div>
           </div>
@@ -811,7 +811,7 @@
           <div class="timeline-dot {{ 'relevant' if event.verkada_relevant else '' }}"></div>
           <div class="flex items-center gap-2 mb-1">
             <span class="text-xs font-medium text-gray-500">{{ event.date or 'Date unknown' }}</span>
-            <span class="inline-block bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400 px-2 py-0.5 rounded text-xs">{{ event.category }}</span>
+            <span class="inline-block bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400 px-2 py-0.5 rounded text-xs">{{ event.category | humanize_id }}</span>
             {% if event.verkada_relevant %}
             <span class="inline-block bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-medium">Verkada-relevant</span>
             {% endif %}
@@ -939,7 +939,7 @@
         {% for pain in data.pain_hypotheses %}
         <div class="border-l-2 border-amber-400 pl-4">
           <div class="flex items-center gap-2 mb-1">
-            <span class="inline-block bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-xs font-medium">{{ pain.linked_persona_pain }}</span>
+            <span class="inline-block bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-xs font-medium dark:bg-amber-950 dark:text-amber-300">{{ pain.linked_persona_pain | humanize_id }}</span>
             {{ confidence_badge(pain.confidence) }}
             {{ quality_badge(pain.source_quality) }}
           </div>
@@ -982,7 +982,7 @@
             <span class="text-xs text-gray-400">{{ theme.post_count }} post{{ 's' if theme.post_count != 1 else '' }}</span>
             {{ confidence_badge(theme.confidence) }}
             {% if theme.linked_persona_pain %}
-            <span class="inline-block bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-xs font-medium">{{ theme.linked_persona_pain }}</span>
+            <span class="inline-block bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-xs font-medium dark:bg-amber-950 dark:text-amber-300">{{ theme.linked_persona_pain | humanize_id }}</span>
             {% endif %}
           </div>
           <blockquote class="text-xs text-gray-600 dark:text-slate-300 italic border-l-2 border-gray-200 dark:border-slate-700 pl-2 my-1">"{{ theme.representative_quote }}"</blockquote>
@@ -1172,7 +1172,7 @@
         {% if count > 0 %}
         <div class="bg-gray-50 dark:bg-slate-800 rounded p-2 text-center">
           <div class="font-bold text-lg text-gray-800 dark:text-slate-100">{{ count }}</div>
-          <div class="text-gray-500 dark:text-slate-400">{{ cat | replace('_', ' ') }}</div>
+          <div class="text-gray-500 dark:text-slate-400 text-xs">{{ cat | humanize_id }}</div>
         </div>
         {% endif %}
         {% endfor %}
@@ -1408,7 +1408,7 @@
           <!-- Product details -->
           <div class="p-4">
             <div class="flex items-center gap-2 mb-1">
-              <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-{{ c }}-100 text-{{ c }}-700 dark:bg-{{ c }}-950 dark:text-{{ c }}-300">{{ prod.category | replace('_', ' ') }}</span>
+              <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-{{ c }}-100 text-{{ c }}-700 dark:bg-{{ c }}-950 dark:text-{{ c }}-300">{{ prod.category | humanize_id }}</span>
               {% if prod.line %}<span class="text-[10px] text-gray-400 dark:text-slate-500">{{ prod.line }}</span>{% endif %}
             </div>
             <h4 class="text-sm font-bold text-gray-900 dark:text-slate-100 mb-0.5">{{ prod.name }}</h4>
@@ -1490,7 +1490,7 @@
           </div>
           <div class="p-3">
             <div class="flex items-center gap-2 mb-1">
-              <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-{{ c }}-100 text-{{ c }}-700 dark:bg-{{ c }}-950 dark:text-{{ c }}-300">{{ prod.category | replace('_', ' ') }}</span>
+              <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-{{ c }}-100 text-{{ c }}-700 dark:bg-{{ c }}-950 dark:text-{{ c }}-300">{{ prod.category | humanize_id }}</span>
             </div>
             <h4 class="text-xs font-bold text-gray-900 dark:text-slate-100 mb-0.5">{{ prod.name }}</h4>
             <p class="text-[10px] text-gray-500 dark:text-slate-400 italic mb-1">{{ prod.tagline }}</p>
@@ -1532,7 +1532,7 @@
         <div>
           <h3 class="text-sm font-semibold text-gray-800 dark:text-slate-200 mb-2 flex items-center gap-2">
             <span class="inline-block w-2 h-2 rounded-full {{ 'bg-blue-500' if questions else 'bg-gray-300' }}"></span>
-            {{ persona | replace('_', ' ') }}
+            {{ persona | humanize_id }}
             <span class="text-xs text-gray-400 font-normal">{{ questions | length }} question{{ 's' if questions | length != 1 else '' }}</span>
           </h3>
           {% if questions %}
@@ -1541,7 +1541,7 @@
             <div class="border-l-2 border-blue-200 pl-3">
               <p class="text-sm text-gray-800 dark:text-slate-200">{{ q.question }}</p>
               <div class="flex items-center gap-2 mt-1">
-                <span class="inline-block bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 px-2 py-0.5 rounded text-xs">{{ q.source_trigger }}</span>
+                <span class="inline-block bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 px-2 py-0.5 rounded text-xs">{{ q.source_trigger | humanize_id }}</span>
                 {{ confidence_badge(q.confidence) }}
               </div>
               <p class="text-xs text-gray-400 mt-0.5">{{ q.evidence }}</p>

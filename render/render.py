@@ -16,6 +16,42 @@ PERSONA_PATH = PROJECT_ROOT / "persona" / "verkada-se.yml"
 GLOSSARY_PATH = PROJECT_ROOT / "data" / "glossary.yml"
 
 
+SPECIAL_CASES = {
+    'k12': 'K-12',
+    'k12_district': 'K-12 District',
+    'higher_ed': 'Higher Ed',
+    'state_local_gov': 'State & Local Gov',
+    'public_safety': 'Public Safety',
+    'critical_infrastructure': 'Critical Infrastructure',
+    'senior_living': 'Senior Living',
+    'meddic': 'MEDDIC',
+    'gtm': 'GTM',
+    'ndaa': 'NDAA',
+    'frpl': 'FRPL',
+    'sled': 'SLED',
+    'ferpa': 'FERPA',
+    'hipaa': 'HIPAA',
+    'poc': 'POC',
+    'nvr': 'NVR',
+    'dvr': 'DVR',
+    'it': 'IT',
+    'federal_funding_ndaa': 'Federal Funding (NDAA)',
+    'federal_funding_NDAA': 'Federal Funding (NDAA)',
+}
+
+
+def humanize_id(s: str) -> str:
+    """Convert snake_case ID to human-readable title case with special cases."""
+    if not s or not isinstance(s, str):
+        return str(s) if s else ""
+    lower = s.lower()
+    if lower in SPECIAL_CASES:
+        return SPECIAL_CASES[lower]
+    if s in SPECIAL_CASES:
+        return SPECIAL_CASES[s]
+    return s.replace('_', ' ').title()
+
+
 def confidence_badge(confidence: str) -> str:
     colors = {
         "high": "bg-green-100 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-800",
@@ -99,6 +135,7 @@ def render_brief(json_path: Path) -> Path:
     env.globals["confidence_badge"] = confidence_badge
     env.globals["quality_badge"] = quality_badge
     env.globals["source_chip"] = source_chip
+    env.filters["humanize_id"] = humanize_id
 
     # Load chat starter prompts from persona file
     chat_starter_prompts = []

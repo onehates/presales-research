@@ -150,7 +150,7 @@
           {% endif %}
           <div class="flex-1 min-w-0">
             <p class="text-sm font-semibold text-gray-900">{{ prod.name }}</p>
-            <p class="text-[10px] text-blue-600 uppercase font-bold">{{ prod.category | replace('_', ' ') }}</p>
+            <p class="text-[10px] text-blue-600 uppercase font-bold">{{ prod.category | humanize_id }}</p>
             <p class="text-xs text-gray-500 mt-1 leading-snug">{{ prod.reasoning[:100] }}{% if prod.reasoning|length > 100 %}...{% endif %}</p>
             {% if prod.compliance and prod.compliance.ndaa %}
             <span class="inline-block mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-green-100 text-green-700 border border-green-200">NDAA</span>
@@ -168,7 +168,7 @@
         {% for prod in data.recommended_products.secondary_bundle[:4] %}
         <div class="inline-flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5">
           <span class="text-xs font-medium text-gray-800">{{ prod.name }}</span>
-          <span class="text-[10px] text-gray-400">{{ prod.category | replace('_', ' ') }}</span>
+          <span class="text-[10px] text-gray-400">{{ prod.category | humanize_id }}</span>
         </div>
         {% endfor %}
       </div>

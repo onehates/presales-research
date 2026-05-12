@@ -54,6 +54,10 @@ if STATIC_DIR.exists():
 # Jinja2 env for rendering templates
 _jinja_env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)), autoescape=True)
 
+# Import humanize_id filter from render module
+from render.render import humanize_id
+_jinja_env.filters["humanize_id"] = humanize_id
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

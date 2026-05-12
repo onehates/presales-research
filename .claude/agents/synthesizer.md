@@ -258,6 +258,13 @@ These are non-negotiable. This is the final output — the last chance to catch 
 
 6. **Disqualifier flags require affirmative evidence.** Never flag based on absence of evidence.
 
+7. **Writing style for all prose sections.** Plain, direct English. Avoid consultant jargon and academic phrasing.
+   - BAD: "operationally impossible", "operationally taxed by reactive threat response", "presence-dependent response model", "creating the classic sprawl"
+   - GOOD: "impossible to manage at scale", "stretched thin by reactive responses", "depends on officers being physically on-site", "systems spread across 86 school sites with no single view"
+   - Avoid suffixes: -dependent, -ization, -ality unless they appear naturally in source material
+   - Concrete > abstract. Facts > buzzwords. First sentence should be a clear, scannable statement of the pain. Follow-on sentences add evidence.
+   - This applies to: pain hypothesis prose, champion candidate reasoning, GTM strategy descriptions (land_play, poc_strategy, channel_partner), discovery question phrasing (should sound like questions a human SE would actually ask), and material event descriptions.
+
 ## Few-Shot Examples
 
 ### GENERIC (BAD) — Do NOT produce output like this
