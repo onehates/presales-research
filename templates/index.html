@@ -68,6 +68,27 @@
     .dark .activity-event:hover { background: #1e293b; }
     /* Skeleton pulse */
     .skel { border-radius: 6px; }
+    /* Stat hover cards */
+    .stat-card { cursor: help; transition: transform 0.15s, box-shadow 0.15s; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+    .dark .stat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+    .stat-tooltip { position: absolute; z-index: 100; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); width: max-content; min-width: 220px; max-width: 320px; max-height: 400px; background: white; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 12px 40px rgba(0,0,0,0.12); opacity: 0; pointer-events: none; transition: opacity 150ms ease; overflow: hidden; }
+    @media (max-width: 768px) { .stat-tooltip { left: 0; transform: none; } }
+    .stat-tooltip.visible { opacity: 1; pointer-events: auto; }
+    .dark .stat-tooltip { background: #1e293b; border-color: #334155; box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+    .stat-tooltip-header { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em; }
+    .dark .stat-tooltip-header { border-bottom-color: #334155; color: #64748b; }
+    .stat-tooltip-body { max-height: 340px; overflow-y: auto; padding: 4px 0; scrollbar-width: thin; }
+    .stat-tooltip-body::-webkit-scrollbar { width: 4px; }
+    .stat-tooltip-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+    .dark .stat-tooltip-body::-webkit-scrollbar-thumb { background: #475569; }
+    .stat-tooltip-row { display: flex; align-items: center; gap: 8px; padding: 6px 14px; font-size: 13px; color: #374151; cursor: pointer; transition: background 0.1s; }
+    .stat-tooltip-row:hover { background: #f9fafb; }
+    .dark .stat-tooltip-row { color: #e2e8f0; }
+    .dark .stat-tooltip-row:hover { background: #334155; }
+    .stat-tooltip-row .date { font-size: 11px; color: #9ca3af; margin-left: auto; flex-shrink: 0; }
+    .dark .stat-tooltip-row .date { color: #64748b; }
+    .stat-tooltip-empty { padding: 16px 14px; text-align: center; font-size: 12px; color: #9ca3af; }
   </style>
 </head>
 <body class="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 antialiased min-h-screen flex flex-col">
@@ -102,19 +123,19 @@
 
     <!-- Quick Stats Banner -->
     <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-      <div class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-4 text-center">
+      <div class="stat-card relative bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-4 text-center" id="stat-total-briefs">
         <div class="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-1">Total Briefs</div>
         <div class="text-2xl font-bold text-gray-900 dark:text-white counter" data-target="{{ total_briefs }}">0</div>
       </div>
-      <div class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-4 text-center">
+      <div class="stat-card relative bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-4 text-center" id="stat-accounts">
         <div class="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-1">Accounts</div>
         <div class="text-2xl font-bold text-gray-900 dark:text-white counter" data-target="{{ unique_accounts }}">0</div>
       </div>
-      <div class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-4 text-center">
+      <div class="stat-card relative bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-4 text-center" id="stat-verticals">
         <div class="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-1">Verticals</div>
         <div class="text-2xl font-bold text-gray-900 dark:text-white counter" data-target="{{ verticals | length }}">0</div>
       </div>
-      <div class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-4 text-center">
+      <div class="stat-card relative bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-4 text-center" id="stat-latest">
         <div class="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-1">Latest Brief</div>
         <div class="text-sm font-bold text-gray-900 dark:text-white">{{ briefs[0].date if briefs else '---' }}</div>
       </div>
@@ -230,7 +251,7 @@
               {% endif %}
             </div>
           </div>
-          <button onclick="event.stopPropagation();toggleStar('{{ b.slug }}', '{{ b.date }}')" class="tip text-lg leading-none {{ 'starred' if b.starred else 'text-gray-300 dark:text-slate-500 hover:text-amber-400' }} transition-colors" data-tip="Star">&#9733;</button>
+          <button onclick="event.stopPropagation();toggleStar('{{ b.slug }}', '{{ b.date }}')" data-action="star" class="tip text-lg leading-none {{ 'starred' if b.starred else 'text-gray-300 dark:text-slate-500 hover:text-amber-400' }} transition-colors" data-tip="{{ 'Unstar' if b.starred else 'Star' }}">&#9733;</button>
         </div>
 
         {% if b.size_indicator %}
@@ -501,16 +522,29 @@
   // === Star toggle ===
   function toggleStar(slug, date) {
     const card = document.querySelector('[data-slug="' + slug + '"][data-date="' + date + '"]');
-    const btn = card.querySelector('.starred, .text-gray-300');
-    const isStarred = card.dataset.starred === 'True';
+    const btn = card.querySelector('[data-action="star"]');
+    const isStarred = card.dataset.starred === 'True' || card.dataset.starred === 'true';
+    const newState = !isStarred;
+    // Optimistic UI update
+    card.dataset.starred = newState ? 'True' : 'False';
+    if (newState) {
+      btn.className = 'tip text-lg leading-none starred transition-colors';
+      btn.setAttribute('data-tip', 'Unstar');
+    } else {
+      btn.className = 'tip text-lg leading-none text-gray-300 dark:text-slate-500 hover:text-amber-400 transition-colors';
+      btn.setAttribute('data-tip', 'Star');
+    }
+    toast(newState ? 'Starred' : 'Unstarred', 'gray', 2000);
     fetch('/api/briefs/' + slug + '/' + date, {
       method: 'PATCH',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({starred: !isStarred})
-    }).then(r => r.json()).then(() => {
-      card.dataset.starred = (!isStarred).toString();
-      if (!isStarred) { btn.className = 'tip text-lg leading-none starred transition-colors'; }
-      else { btn.className = 'tip text-lg leading-none text-gray-300 dark:text-slate-500 hover:text-amber-400 transition-colors'; }
+      body: JSON.stringify({starred: newState})
+    }).catch(() => {
+      // Revert on failure
+      card.dataset.starred = isStarred ? 'True' : 'False';
+      if (isStarred) { btn.className = 'tip text-lg leading-none starred transition-colors'; btn.setAttribute('data-tip', 'Unstar'); }
+      else { btn.className = 'tip text-lg leading-none text-gray-300 dark:text-slate-500 hover:text-amber-400 transition-colors'; btn.setAttribute('data-tip', 'Star'); }
+      toast('Failed to update star', 'red', 2000);
     });
   }
 
@@ -795,6 +829,109 @@
     sb.classList.toggle('collapsed');
     localStorage.setItem('activity-sidebar-open', sb.classList.contains('collapsed') ? 'false' : 'true');
   };
+
+  // === Stat Card Hover Tooltips ===
+  (function() {
+    var briefs = BRIEFS_DATA;
+    var enterTimer = null;
+    var leaveTimer = null;
+    var activeTooltip = null;
+
+    function hideActive() {
+      if (activeTooltip) { activeTooltip.classList.remove('visible'); setTimeout(function() { activeTooltip.remove(); }, 160); activeTooltip = null; }
+    }
+
+    function showTooltip(card, html) {
+      hideActive();
+      var tip = document.createElement('div');
+      tip.className = 'stat-tooltip';
+      tip.innerHTML = html;
+      card.appendChild(tip);
+      // Prevent tooltip disappearing when mousing into it
+      tip.addEventListener('mouseenter', function() { clearTimeout(leaveTimer); });
+      tip.addEventListener('mouseleave', function() { leaveTimer = setTimeout(hideActive, 200); });
+      requestAnimationFrame(function() { tip.classList.add('visible'); });
+      activeTooltip = tip;
+    }
+
+    function briefRow(b) {
+      var url = b.html_exists ? '/briefs/' + b.slug + '-' + b.date + '.html' : '#';
+      return '<a href="' + url + '" class="stat-tooltip-row"><span class="truncate">' + esc(b.name) + '</span><span class="date">' + b.date + '</span></a>';
+    }
+
+    // Build vertical map
+    var vertMap = {};
+    briefs.forEach(function(b) {
+      var v = b.vertical || 'Unknown';
+      if (!vertMap[v]) vertMap[v] = [];
+      vertMap[v].push(b);
+    });
+
+    // Build unique accounts
+    var accountMap = {};
+    briefs.forEach(function(b) {
+      if (!accountMap[b.slug]) accountMap[b.slug] = b;
+    });
+    var uniqueAccounts = Object.values(accountMap);
+
+    var cards = {
+      'stat-total-briefs': function() {
+        if (!briefs.length) return '<div class="stat-tooltip-empty">No briefs yet</div>';
+        var header = '<div class="stat-tooltip-header">Total Briefs (' + briefs.length + ')</div>';
+        var body = '<div class="stat-tooltip-body">' + briefs.map(briefRow).join('') + '</div>';
+        return header + body;
+      },
+      'stat-accounts': function() {
+        if (!uniqueAccounts.length) return '<div class="stat-tooltip-empty">No accounts yet</div>';
+        var header = '<div class="stat-tooltip-header">Unique Accounts (' + uniqueAccounts.length + ')</div>';
+        var body = '<div class="stat-tooltip-body">' + uniqueAccounts.map(function(b) {
+          var url = b.html_exists ? '/briefs/' + b.slug + '-' + b.date + '.html' : '#';
+          return '<a href="' + url + '" class="stat-tooltip-row"><span class="truncate">' + esc(b.name) + '</span><span class="date">' + (b.vertical || '') + '</span></a>';
+        }).join('') + '</div>';
+        return header + body;
+      },
+      'stat-verticals': function() {
+        var verts = Object.keys(vertMap);
+        if (!verts.length) return '<div class="stat-tooltip-empty">No verticals yet</div>';
+        var header = '<div class="stat-tooltip-header">Verticals Covered (' + verts.length + ')</div>';
+        var vertColors = {'K-12':'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300','Higher Ed':'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300','Healthcare':'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300','Government':'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300','Retail':'bg-rose-100 text-rose-700 dark:bg-rose-900 dark:text-rose-300'};
+        var body = '<div class="stat-tooltip-body">' + verts.map(function(v) {
+          var vc = vertColors[v] || 'bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-slate-300';
+          var count = vertMap[v].length;
+          return '<div class="stat-tooltip-row" style="cursor:pointer" onclick="document.getElementById(\'filter-vertical\').value=\'' + v + '\';filterBriefs();window.scrollTo({top:document.getElementById(\'briefs-grid\').offsetTop-80,behavior:\'smooth\'})">' +
+            '<span class="inline-block px-2 py-0.5 rounded text-xs font-medium ' + vc + '">' + esc(v) + '</span>' +
+            '<span class="date">' + count + ' brief' + (count !== 1 ? 's' : '') + '</span></div>';
+        }).join('') + '</div>';
+        return header + body;
+      },
+      'stat-latest': function() {
+        if (!briefs.length) return '<div class="stat-tooltip-empty">No briefs yet</div>';
+        var b = briefs[0]; // already sorted newest first
+        var header = '<div class="stat-tooltip-header">Most Recent Brief</div>';
+        var url = b.html_exists ? '/briefs/' + b.slug + '-' + b.date + '.html' : '#';
+        var body = '<div class="stat-tooltip-body"><a href="' + url + '" class="stat-tooltip-row" style="flex-direction:column;align-items:flex-start;gap:4px;padding:12px 14px">' +
+          '<span class="font-semibold text-gray-900 dark:text-white">' + esc(b.name) + '</span>' +
+          '<span class="text-xs text-gray-400">' + (b.generated_at || b.date) + '</span>' +
+          (b.vertical ? '<span class="text-xs text-gray-500">' + esc(b.vertical) + '</span>' : '') +
+          (b.top_champion ? '<span class="text-xs text-gray-500">Top champion: ' + esc(b.top_champion) + (b.top_champion_score ? ' (' + Math.round(b.top_champion_score * 100) + '%)' : '') + '</span>' : '') +
+          '</a></div>';
+        return header + body;
+      }
+    };
+
+    Object.keys(cards).forEach(function(id) {
+      var card = document.getElementById(id);
+      if (!card) return;
+      card.addEventListener('mouseenter', function() {
+        clearTimeout(leaveTimer);
+        enterTimer = setTimeout(function() { showTooltip(card, cards[id]()); }, 300);
+      });
+      card.addEventListener('mouseleave', function() {
+        clearTimeout(enterTimer);
+        leaveTimer = setTimeout(hideActive, 200);
+      });
+    });
+  })();
 
   // Init activity sidebar
   (function() {
