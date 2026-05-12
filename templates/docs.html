@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Documentation — Pre-Sales Research Platform</title>
+  <title>Getting Started — Pre-Sales Research Platform</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>tailwind.config={darkMode:'class'}</script>
   <style>
@@ -11,7 +11,6 @@
     body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
     @media (prefers-reduced-motion: no-preference) { body { animation: pageIn 0.25s ease-out; } }
     @keyframes pageIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-    /* moved to consolidated @media print block below */
     .doc-nav a.active { color: #2563eb; border-left-color: #2563eb; font-weight: 600; }
     .doc-nav a { border-left: 3px solid transparent; }
     .doc-nav a:hover { color: #2563eb; border-left-color: #93c5fd; }
@@ -31,6 +30,14 @@
     }
     .doc-section.collapsed .doc-body { max-height: 0 !important; opacity: 0; }
     .doc-section h3 { cursor: pointer; user-select: none; }
+    /* Step numbers */
+    .step-num { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+    /* Glossary search */
+    #glossary-search:focus { outline: none; box-shadow: 0 0 0 2px #3b82f6; }
+    .glossary-item.hidden { display: none; }
+    /* Kbd style */
+    kbd { display: inline-block; padding: 2px 6px; font-size: 11px; font-family: ui-monospace, monospace; line-height: 1.4; color: #1e293b; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; box-shadow: 0 1px 0 #cbd5e1; }
+    .dark kbd { color: #e2e8f0; background: #1e293b; border-color: #475569; box-shadow: 0 1px 0 #475569; }
     @media print {
       @page { size: letter portrait; margin: 0.6in 0.5in; }
       body { animation: none !important; font-size: 10pt; line-height: 1.45; }
@@ -49,6 +56,7 @@
       th { background: #f9fafb !important; }
       code { background: #f3f4f6; padding: 1pt 3pt; border-radius: 2pt; font-size: 8pt; }
       a { color: #1e40af; }
+      #glossary-search { display: none; }
     }
   </style>
 </head>
@@ -60,7 +68,7 @@
       <div class="flex items-center gap-3">
         <a href="/" class="bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 px-3 py-1.5 rounded-md text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-200 transition-colors flex items-center gap-1.5 flex-shrink-0">&larr; Back to Dashboard</a>
         <span class="text-gray-300 dark:text-slate-700">|</span>
-        <h1 class="text-xl font-bold text-gray-900 dark:text-white">Platform Documentation</h1>
+        <h1 class="text-xl font-bold text-gray-900 dark:text-white">Getting Started Guide</h1>
       </div>
       <span class="text-xs text-gray-400 dark:text-slate-500">Pre-Sales Research Platform v1</span>
     </div>
@@ -71,76 +79,297 @@
     <!-- Side Nav -->
     <nav class="doc-nav hidden lg:block w-56 flex-shrink-0 sticky top-24 self-start">
       <ul class="space-y-1 text-sm">
-        <li><a href="#what" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">What is this?</a></li>
-        <li><a href="#how" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">How it works</a></li>
-        <li><a href="#sources" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">Source clients</a></li>
-        <li><a href="#persona" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">Persona file</a></li>
-        <li><a href="#meddic" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">MEDDIC framework</a></li>
-        <li><a href="#gtm" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">GTM strategy</a></li>
-        <li><a href="#commands" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">Commands</a></li>
-        <li><a href="#architecture" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">Architecture</a></li>
+        <li><a href="#what" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">What This Platform Does</a></li>
+        <li><a href="#quickstart" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">Quick Start</a></li>
+        <li><a href="#homepage" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">The Homepage</a></li>
+        <li><a href="#brief" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">Inside a Brief</a></li>
+        <li><a href="#chat" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">Using the Chat</a></li>
+        <li><a href="#shortcuts" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">Keyboard Shortcuts</a></li>
+        <li><a href="#meddic" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">MEDDIC Workflow</a></li>
+        <li><a href="#glossary" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">Glossary of Terms</a></li>
+        <li><a href="#sources" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">Source Catalog</a></li>
+        <li><a href="#costs" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">Cost Model</a></li>
+        <li><a href="#troubleshooting" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">Troubleshooting</a></li>
+        <li><a href="#faq" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">FAQ</a></li>
       </ul>
     </nav>
 
     <!-- Main Content -->
     <main class="flex-1 min-w-0 max-w-3xl prose">
 
-      <!-- What is this? -->
+      <!-- 1. What This Platform Does -->
       <section id="what" class="mb-12">
-        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">What is this?</h3>
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">What This Platform Does</h3>
         <p class="text-gray-700 dark:text-slate-300 leading-relaxed mb-4">
-          A multi-agent AI research platform that generates Verkada-specific pre-sales discovery briefs. Give it a target account name, and it dispatches 20 specialized source clients in parallel, synthesizes findings through a persona-driven rule engine, and renders a sourced HTML brief ready for call prep.
+          This is a multi-agent AI research platform that generates Verkada-specific pre-sales discovery briefs. You give it a target account name. It dispatches 20+ specialized source clients in parallel, synthesizes findings through a persona-driven rule engine, and renders a sourced HTML brief ready for call prep.
         </p>
         <p class="text-gray-700 dark:text-slate-300 leading-relaxed mb-4">
-          The tool's value isn't "AI generates research" — generic LLMs already do that. The value is the <strong>persona file rule engine</strong> (<code>persona/verkada-se.yml</code>) that forces every output to be Verkada-specific and SE-grade. Every claim is sourced. Every discovery question traces to a fired trigger. Every section either has evidence or says <code>insufficient_data</code>.
+          The tool's value isn't "AI generates research" &mdash; generic LLMs already do that. The value is the <strong>persona file rule engine</strong> (<code>persona/verkada-se.yml</code>) that forces every output to be Verkada-specific and SE-grade. Every claim is sourced. Every discovery question traces to a fired trigger. Every section either has evidence or says <code>insufficient_data</code>.
         </p>
         <div class="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4 text-sm text-blue-800 dark:text-blue-200">
-          <strong>Anti-genericness guarantee:</strong> Any sentence that could appear unchanged in a brief about a different company in the same industry is rejected during synthesis.
+          <strong>Anti-genericness guarantee:</strong> Any sentence that could appear unchanged in a brief about a different company in the same industry is rejected during synthesis. If a section can't be supported by 2+ sources, it outputs <code>insufficient_data</code> instead of filler.
         </div>
       </section>
 
-      <!-- How it works -->
-      <section id="how" class="mb-12">
-        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">How it works</h3>
+      <!-- 2. Quick Start -->
+      <section id="quickstart" class="mb-12">
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Quick Start (5 Steps)</h3>
         <div class="space-y-4">
           <div class="flex gap-4 items-start">
-            <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 flex items-center justify-center font-bold text-sm flex-shrink-0">1</div>
+            <div class="step-num bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">1</div>
             <div>
-              <p class="font-semibold text-gray-900 dark:text-white">Source Collection</p>
-              <p class="text-gray-600 dark:text-slate-300 text-sm">20 source clients run in parallel — SEC filings, news, job postings, NCES data, cooperative purchasing, leadership discovery, and more. Each writes structured JSON to <code>sources/&lt;company&gt;/</code>.</p>
+              <p class="font-semibold text-gray-900 dark:text-white">Type a company name</p>
+              <p class="text-gray-600 dark:text-slate-300 text-sm">Use the research bar at the top of the homepage. Type a company or organization name (e.g., "Dallas ISD", "Target Corporation", "Memorial Hermann"). Press Enter or click Research.</p>
             </div>
           </div>
           <div class="flex gap-4 items-start">
-            <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 flex items-center justify-center font-bold text-sm flex-shrink-0">2</div>
+            <div class="step-num bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">2</div>
             <div>
-              <p class="font-semibold text-gray-900 dark:text-white">Subagent Analysis</p>
-              <p class="text-gray-600 dark:text-slate-300 text-sm">Three subagents (<code>company-bg</code>, <code>tech-and-pain</code>, <code>hiring-signals</code>) each process relevant source data and produce structured findings with confidence levels.</p>
+              <p class="font-semibold text-gray-900 dark:text-white">Wait for the pipeline</p>
+              <p class="text-gray-600 dark:text-slate-300 text-sm">The status page shows real-time progress as 20+ source clients fetch data in parallel, subagents analyze it, and synthesizers produce the brief. This typically takes 2&ndash;4 minutes.</p>
             </div>
           </div>
           <div class="flex gap-4 items-start">
-            <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 flex items-center justify-center font-bold text-sm flex-shrink-0">3</div>
+            <div class="step-num bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">3</div>
             <div>
-              <p class="font-semibold text-gray-900 dark:text-white">Synthesis</p>
-              <p class="text-gray-600 dark:text-slate-300 text-sm">Two synthesizers run in parallel: the <strong>main synthesizer</strong> (snapshot, pain hypotheses, displacement intel, champions) and the <strong>deals synthesizer</strong> (MEDDIC, GTM strategy, discovery questions). Both are grounded by the persona file.</p>
+              <p class="font-semibold text-gray-900 dark:text-white">Read the brief</p>
+              <p class="text-gray-600 dark:text-slate-300 text-sm">When complete, you're redirected to the rendered HTML brief. Start with the TL;DR card at the top (3 bullets, 30-second skim), then drill into MEDDIC, GTM strategy, and discovery questions.</p>
             </div>
           </div>
           <div class="flex gap-4 items-start">
-            <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 flex items-center justify-center font-bold text-sm flex-shrink-0">4</div>
+            <div class="step-num bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">4</div>
             <div>
-              <p class="font-semibold text-gray-900 dark:text-white">Render</p>
-              <p class="text-gray-600 dark:text-slate-300 text-sm">Brief JSON is rendered to a single-file HTML brief with source footnotes, confidence badges, interactive MEDDIC checklist, and an embedded chat panel for follow-up questions.</p>
+              <p class="font-semibold text-gray-900 dark:text-white">Use the chat panel</p>
+              <p class="text-gray-600 dark:text-slate-300 text-sm">Click the chat icon (bottom-right) to ask follow-up questions about the account. The chat has full context of the brief data and persona file. Ask things like "What's the displacement play against Genetec here?" or "Draft a cold email to the IT Director."</p>
             </div>
           </div>
-        </div>
-        <div class="mt-6 bg-gray-100 dark:bg-slate-800 rounded-lg p-4 text-sm text-gray-700 dark:text-slate-300">
-          <strong>Model assignment:</strong> Source parsing uses Haiku. Subagent reasoning uses Sonnet. Final synthesis uses Opus. This is intentional — output quality comes from prompts and the persona file, not from model size at the wrong layer.
+          <div class="flex gap-4 items-start">
+            <div class="step-num bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">5</div>
+            <div>
+              <p class="font-semibold text-gray-900 dark:text-white">Export or run follow-up commands</p>
+              <p class="text-gray-600 dark:text-slate-300 text-sm">Use <strong>Download PDF</strong> to save for offline reading. From the brief toolbar, run specialized commands like <code>/displace</code> for a battle card or <code>/demo-plan</code> for a tailored demo script. These read from cached data &mdash; no re-fetching.</p>
+            </div>
+          </div>
         </div>
       </section>
 
-      <!-- Source Clients -->
+      <!-- 3. The Homepage -->
+      <section id="homepage" class="mb-12">
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">The Homepage</h3>
+        <p class="text-gray-700 dark:text-slate-300 leading-relaxed mb-4">
+          The homepage is your dashboard. Here's what each section does, from top to bottom:
+        </p>
+        <div class="space-y-3">
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm mb-1">Research Bar</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">The primary input. Type any company/organization name and press Enter. Below the bar, vertical example chips show the types of accounts the platform handles (K-12, Healthcare, Retail, etc.). Click a chip to auto-fill that example.</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm mb-1">Quick Stats</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">Summary cards showing total briefs generated, accounts researched, and average research time. Hover over any stat to see a breakdown. Stats are calculated from all briefs in the <code>briefs/</code> directory.</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm mb-1">Brief Cards</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">Each previously generated brief appears as a card with the account name, vertical tag, generation date, and confidence score. Click to open the brief. Cards show key stats at a glance &mdash; number of sources, fired triggers, and champion identification status.</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm mb-1">Search &amp; Filter</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">Use the search bar to filter briefs by account name. Click vertical tags to filter by industry. Use the star icon to bookmark frequently-accessed briefs.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. Inside a Brief -->
+      <section id="brief" class="mb-12">
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Inside a Brief</h3>
+        <p class="text-gray-700 dark:text-slate-300 leading-relaxed mb-4">
+          A brief is a single-page HTML document with every section backed by sourced data. Here's what each section contains:
+        </p>
+        <div class="space-y-2">
+          <div class="border-l-4 border-blue-400 pl-4 py-2">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm">TL;DR</p>
+            <p class="text-gray-600 dark:text-slate-400 text-xs">3 bullets max. The 30-second executive summary. Read this before every call.</p>
+          </div>
+          <div class="border-l-4 border-blue-400 pl-4 py-2">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm">Account Snapshot</p>
+            <p class="text-gray-600 dark:text-slate-400 text-xs">Company name, entity type, vertical classification, headquarters, size indicator (sites/students/employees), and federal funding profile. All sourced with footnote chips.</p>
+          </div>
+          <div class="border-l-4 border-blue-400 pl-4 py-2">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm">Pain Hypotheses</p>
+            <p class="text-gray-600 dark:text-slate-400 text-xs">Ranked list of pain points mapped to Verkada product capabilities. Each hypothesis includes confidence level (high/medium/inference), evidence citations, and the specific Verkada product that addresses it.</p>
+          </div>
+          <div class="border-l-4 border-blue-400 pl-4 py-2">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm">Displacement Intel</p>
+            <p class="text-gray-600 dark:text-slate-400 text-xs">Detected incumbent vendors (from job postings, RFPs, news). For each vendor, shows the Verkada displacement playbook from the persona file with specific counter-arguments.</p>
+          </div>
+          <div class="border-l-4 border-blue-400 pl-4 py-2">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm">Champions &amp; Leadership</p>
+            <p class="text-gray-600 dark:text-slate-400 text-xs">Named individuals with titles, MEDDIC role classifications (economic buyer, champion, coach), and champion fit scores. Sourced from LinkedIn, news mentions, and org charts.</p>
+          </div>
+          <div class="border-l-4 border-blue-400 pl-4 py-2">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm">MEDDIC Qualification</p>
+            <p class="text-gray-600 dark:text-slate-400 text-xs">Full MEDDIC framework with interactive checkboxes. Each field (Metrics, Economic Buyer, Decision Criteria, Decision Process, Identify Pain, Champion) includes evidence, confidence, gap analysis, and source quality. See <a href="#meddic" class="text-blue-600 dark:text-blue-400 underline">MEDDIC Workflow</a> below.</p>
+          </div>
+          <div class="border-l-4 border-blue-400 pl-4 py-2">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm">GTM Strategy</p>
+            <p class="text-gray-600 dark:text-slate-400 text-xs">Land play, POC strategy, bundle recommendation, procurement path (with contract numbers for SLED), expansion motion (3 phases), and competitive displacement playbook.</p>
+          </div>
+          <div class="border-l-4 border-blue-400 pl-4 py-2">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm">Discovery Questions by Persona</p>
+            <p class="text-gray-600 dark:text-slate-400 text-xs">Questions organized by buyer persona (IT Director, Facilities, CSO, VP Ops, LP Director, Superintendent). Every question traces to a specific trigger that fired, with evidence and confidence. Includes inline leverage references (customer proof points).</p>
+          </div>
+          <div class="border-l-4 border-blue-400 pl-4 py-2">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm">Procurement Flowchart</p>
+            <p class="text-gray-600 dark:text-slate-400 text-xs">SVG visual showing the recommended procurement path. Hover over each node for details. SLED accounts show cooperative purchasing vehicles; commercial accounts show direct/reseller paths.</p>
+          </div>
+          <div class="border-l-4 border-blue-400 pl-4 py-2">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm">Source Footnotes</p>
+            <p class="text-gray-600 dark:text-slate-400 text-xs">Every claim in the brief has a colored footnote chip linking to the source URL. Green = primary source, yellow = secondary, red = inference. Click any chip to open the source.</p>
+          </div>
+        </div>
+        <p class="text-gray-500 dark:text-slate-500 text-xs mt-4">All sections are collapsible &mdash; click any section header to collapse/expand. State is saved across page loads.</p>
+      </section>
+
+      <!-- 5. Using the Chat -->
+      <section id="chat" class="mb-12">
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Using the Chat</h3>
+        <p class="text-gray-700 dark:text-slate-300 leading-relaxed mb-4">
+          Every brief has an embedded chat panel (bottom-right corner). The chat has full context of the brief's structured data and the persona file, so it can answer Verkada-specific questions about the account.
+        </p>
+        <div class="space-y-3">
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm mb-2">Good questions to ask</p>
+            <ul class="text-gray-600 dark:text-slate-400 text-sm space-y-1 list-disc pl-5">
+              <li>"What's the displacement play against Genetec here?"</li>
+              <li>"Draft a cold email to the IT Director focused on their NVR refresh pain"</li>
+              <li>"What cooperative purchasing vehicles can this district use?"</li>
+              <li>"Summarize the top 3 pain points for my AE"</li>
+              <li>"What Command modules should I demo for this account?"</li>
+              <li>"Write a follow-up email based on these call notes: [paste notes]"</li>
+            </ul>
+          </div>
+          <div class="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg p-4 text-sm text-amber-800 dark:text-amber-200">
+            <strong>Note:</strong> The chat reads from cached brief data only. It does not fetch new information. If you need updated data, re-run <code>/research</code> first.
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. Keyboard Shortcuts -->
+      <section id="shortcuts" class="mb-12">
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Keyboard Shortcuts</h3>
+        <div class="border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-gray-50 dark:bg-slate-800 text-left text-gray-500 dark:text-slate-400 uppercase text-xs">
+                <th class="px-4 py-2.5 font-semibold">Shortcut</th>
+                <th class="px-4 py-2.5 font-semibold">Action</th>
+                <th class="px-4 py-2.5 font-semibold">Where</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-slate-800">
+              <tr class="client-row">
+                <td class="px-4 py-2.5"><kbd>Ctrl</kbd> + <kbd>K</kbd></td>
+                <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">Open command palette</td>
+                <td class="px-4 py-2.5 text-gray-500 dark:text-slate-400 text-xs">Homepage</td>
+              </tr>
+              <tr class="client-row">
+                <td class="px-4 py-2.5"><kbd>/</kbd></td>
+                <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">Focus search / research bar</td>
+                <td class="px-4 py-2.5 text-gray-500 dark:text-slate-400 text-xs">Homepage</td>
+              </tr>
+              <tr class="client-row">
+                <td class="px-4 py-2.5"><kbd>Ctrl</kbd> + <kbd>P</kbd></td>
+                <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">Download PDF (opens print dialog)</td>
+                <td class="px-4 py-2.5 text-gray-500 dark:text-slate-400 text-xs">Brief page</td>
+              </tr>
+              <tr class="client-row">
+                <td class="px-4 py-2.5"><kbd>Escape</kbd></td>
+                <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">Close chat panel / command palette / tooltips</td>
+                <td class="px-4 py-2.5 text-gray-500 dark:text-slate-400 text-xs">Anywhere</td>
+              </tr>
+              <tr class="client-row">
+                <td class="px-4 py-2.5"><kbd>D</kbd></td>
+                <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">Toggle dark mode</td>
+                <td class="px-4 py-2.5 text-gray-500 dark:text-slate-400 text-xs">Anywhere</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 7. MEDDIC Discovery Workflow -->
+      <section id="meddic" class="mb-12">
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">MEDDIC Discovery Workflow</h3>
+        <p class="text-gray-700 dark:text-slate-300 leading-relaxed mb-4">
+          Every brief includes a MEDDIC qualification section synthesized from cross-subagent data. Each field includes value, evidence array, confidence level, gap analysis, and source quality. The brief renders this as an interactive checklist.
+        </p>
+
+        <p class="font-semibold text-gray-900 dark:text-white mb-3">How to use the MEDDIC section during discovery</p>
+        <div class="space-y-3 mb-6">
+          <div class="flex gap-3 items-start">
+            <div class="step-num bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs">1</div>
+            <p class="text-gray-600 dark:text-slate-300 text-sm"><strong>Before the call:</strong> Review each MEDDIC field. The "gap" text tells you exactly what you need to confirm or discover. Use this to build your call agenda.</p>
+          </div>
+          <div class="flex gap-3 items-start">
+            <div class="step-num bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs">2</div>
+            <p class="text-gray-600 dark:text-slate-300 text-sm"><strong>During the call:</strong> Use the discovery questions from the persona-matched section. Each question traces to a trigger, so you know why you're asking it.</p>
+          </div>
+          <div class="flex gap-3 items-start">
+            <div class="step-num bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs">3</div>
+            <p class="text-gray-600 dark:text-slate-300 text-sm"><strong>After the call:</strong> Check off validated MEDDIC fields using the interactive checkboxes. The state persists across page loads so you can track progress across multiple calls.</p>
+          </div>
+        </div>
+
+        <p class="font-semibold text-gray-900 dark:text-white mb-3">The 6 MEDDIC fields</p>
+        <div class="space-y-2">
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3 flex gap-3">
+            <span class="font-bold text-blue-700 dark:text-blue-400 w-8 flex-shrink-0">M</span>
+            <div><span class="font-semibold">Metrics</span> &mdash; <span class="text-gray-600 dark:text-slate-300 text-sm">Quantified business impact Verkada can deliver. Examples: consolidate 86 sites onto one platform, eliminate NVR maintenance across 42 buildings, comply with NDAA to protect $12M in federal funding.</span></div>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3 flex gap-3">
+            <span class="font-bold text-blue-700 dark:text-blue-400 w-8 flex-shrink-0">E</span>
+            <div><span class="font-semibold">Economic Buyer</span> &mdash; <span class="text-gray-600 dark:text-slate-300 text-sm">The person who can say yes to the budget. Mapped from leadership data + persona role mappings. Named individuals when available; hypothesized from entity type when not.</span></div>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3 flex gap-3">
+            <span class="font-bold text-blue-700 dark:text-blue-400 w-8 flex-shrink-0">D</span>
+            <div><span class="font-semibold">Decision Criteria</span> &mdash; <span class="text-gray-600 dark:text-slate-300 text-sm">What the buyer evaluates on. Derived from vertical drivers, pain hypotheses, and NDAA exposure. Examples: cloud-native architecture, single pane of glass, NDAA compliance.</span></div>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3 flex gap-3">
+            <span class="font-bold text-blue-700 dark:text-blue-400 w-8 flex-shrink-0">D</span>
+            <div><span class="font-semibold">Decision Process</span> &mdash; <span class="text-gray-600 dark:text-slate-300 text-sm">How they buy. K-12 districts need board approval. Government entities use cooperative purchasing vehicles. Corporations have procurement departments. Derived from entity type + co-op data.</span></div>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3 flex gap-3">
+            <span class="font-bold text-blue-700 dark:text-blue-400 w-8 flex-shrink-0">I</span>
+            <div><span class="font-semibold">Identify Pain</span> &mdash; <span class="text-gray-600 dark:text-slate-300 text-sm">Highest-confidence pain hypothesis that maps to a Verkada product capability. This is your opening angle in the conversation.</span></div>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3 flex gap-3">
+            <span class="font-bold text-blue-700 dark:text-blue-400 w-8 flex-shrink-0">C</span>
+            <div><span class="font-semibold">Champion</span> &mdash; <span class="text-gray-600 dark:text-slate-300 text-sm">Named individual from champion signals enrichment with the highest champion fit score. The single highest-value MEDDIC field &mdash; this is who you need to find and win over.</span></div>
+          </div>
+        </div>
+        <p class="text-gray-500 dark:text-slate-500 text-xs mt-3">Confidence badges: <span class="inline-block px-1.5 py-0.5 rounded border bg-green-100 text-green-700 border-green-200 text-xs font-semibold">high</span> = sourced from primary data, <span class="inline-block px-1.5 py-0.5 rounded border bg-amber-100 text-amber-700 border-amber-200 text-xs font-semibold">medium</span> = inferred with evidence, <span class="inline-block px-1.5 py-0.5 rounded border bg-red-100 text-red-700 border-red-200 text-xs font-semibold">inference</span> = hypothesis needing validation.</p>
+      </section>
+
+      <!-- 8. Glossary of Terms -->
+      <section id="glossary" class="mb-12">
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Glossary of Terms</h3>
+        <p class="text-gray-700 dark:text-slate-300 leading-relaxed mb-4">
+          Terms that appear in briefs are auto-annotated with tooltip definitions. Hover over any underlined term in a brief to see its meaning. Below is the full glossary, searchable and organized by category.
+        </p>
+        <input id="glossary-search" type="text" placeholder="Search terms..." class="w-full mb-4 px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-sm text-gray-800 dark:text-slate-200 placeholder-gray-400 dark:placeholder-slate-500">
+        <div id="glossary-list" class="space-y-1">
+          <!-- Populated by JS from glossary data -->
+        </div>
+        <p class="text-gray-400 dark:text-slate-600 text-xs mt-3" id="glossary-count"></p>
+      </section>
+
+      <!-- 9. Source Catalog -->
       <section id="sources" class="mb-12">
-        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Source Clients ({{ clients | length }})</h3>
-        <p class="text-gray-600 dark:text-slate-400 text-sm mb-4">Each client fetches structured data from a single source category. All write to <code>sources/&lt;company&gt;/</code> with a <code>retrieved_at</code> timestamp. Cache TTLs: SEC 90d, news 7d, jobs 14d, GitHub 30d.</p>
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Source Catalog ({{ clients | length }} Clients)</h3>
+        <p class="text-gray-600 dark:text-slate-400 text-sm mb-2">Each source client fetches structured data from a single source category. All write JSON to <code>sources/&lt;company&gt;/</code> with a <code>retrieved_at</code> timestamp.</p>
+        <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3 mb-4 text-sm text-gray-600 dark:text-slate-400">
+          <strong class="text-gray-800 dark:text-slate-200">Cache TTLs:</strong> SEC filings 90 days &middot; News articles 7 days &middot; Job postings 14 days &middot; GitHub data 30 days &middot; Cooperative purchasing 30 days
+        </div>
         <div class="border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden">
           <table class="w-full text-sm">
             <thead>
@@ -161,193 +390,125 @@
         </div>
       </section>
 
-      <!-- Persona File -->
-      <section id="persona" class="mb-12">
-        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">The Persona File</h3>
+      <!-- 10. Cost Model -->
+      <section id="costs" class="mb-12">
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Cost Model</h3>
         <p class="text-gray-700 dark:text-slate-300 leading-relaxed mb-4">
-          <code>persona/verkada-se.yml</code> is the platform's leverage file — a structured rule engine, not a description document. Every synthesis task loads it as ground truth. It contains:
+          Each research run consumes API credits across three model tiers. Here's the approximate breakdown per account brief:
         </p>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3">
-            <p class="font-semibold text-gray-900 dark:text-white text-sm">product</p>
-            <p class="text-gray-500 dark:text-slate-400 text-xs">Verkada's 8 product lines, positioning, and key differentiators (cloud-native, single platform, zero-appliance, AI at edge, NDAA-compliant)</p>
-          </div>
-          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3">
-            <p class="font-semibold text-gray-900 dark:text-white text-sm">icp</p>
-            <p class="text-gray-500 dark:text-slate-400 text-xs">6 verticals (K-12, Healthcare, Retail, Manufacturing, Higher Ed, CRE) with key drivers and typical pain points</p>
-          </div>
-          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3">
-            <p class="font-semibold text-gray-900 dark:text-white text-sm">displacement_targets</p>
-            <p class="text-gray-500 dark:text-slate-400 text-xs">8 incumbent vendors (Avigilon, Genetec, Milestone, Lenel, Hikvision, Dahua, March Networks, Brivo) with pain themes and Verkada counters</p>
-          </div>
-          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3">
-            <p class="font-semibold text-gray-900 dark:text-white text-sm">triggers</p>
-            <p class="text-gray-500 dark:text-slate-400 text-xs">Detection signals with weights (0.0–1.0) mapped to discovery question templates. Free-form question generation is prohibited.</p>
-          </div>
-          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3">
-            <p class="font-semibold text-gray-900 dark:text-white text-sm">personas</p>
-            <p class="text-gray-500 dark:text-slate-400 text-xs">6 buyer personas (IT Director, Facilities, CSO, VP Ops, LP Director, Superintendent) with care_about and skip_topics</p>
-          </div>
-          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3">
-            <p class="font-semibold text-gray-900 dark:text-white text-sm">disqualifiers</p>
-            <p class="text-gray-500 dark:text-slate-400 text-xs">Flags that should kill an opportunity — prevents wasted SE time on unwinnable deals</p>
-          </div>
-        </div>
-        <div class="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg p-4 text-sm text-amber-800 dark:text-amber-200">
-          <strong>Rule:</strong> Do not invent triggers, personas, or templates that aren't in this file. If you find a gap, surface it — don't fill it silently.
-        </div>
-      </section>
-
-      <!-- MEDDIC -->
-      <section id="meddic" class="mb-12">
-        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">MEDDIC Framework</h3>
-        <p class="text-gray-700 dark:text-slate-300 leading-relaxed mb-4">
-          Every brief includes a MEDDIC qualification section synthesized from cross-subagent data. Each field includes value, evidence array, confidence level, gap analysis, and source quality rating.
-        </p>
-        <div class="space-y-2">
-          <div class="bg-white border border-gray-200 rounded-lg p-3 flex gap-3">
-            <span class="font-bold text-blue-700 dark:text-blue-400 w-8">M</span>
-            <div><span class="font-semibold">Metrics</span> — <span class="text-gray-600 dark:text-slate-300 text-sm">Quantified business impact Verkada can deliver (site consolidation, NVR elimination, NDAA compliance)</span></div>
-          </div>
-          <div class="bg-white border border-gray-200 rounded-lg p-3 flex gap-3">
-            <span class="font-bold text-blue-700 dark:text-blue-400 w-8">E</span>
-            <div><span class="font-semibold">Economic Buyer</span> — <span class="text-gray-600 dark:text-slate-300 text-sm">Mapped from leadership data + persona meddic_role mappings. Named individuals when available.</span></div>
-          </div>
-          <div class="bg-white border border-gray-200 rounded-lg p-3 flex gap-3">
-            <span class="font-bold text-blue-700 dark:text-blue-400 w-8">D</span>
-            <div><span class="font-semibold">Decision Criteria</span> — <span class="text-gray-600 dark:text-slate-300 text-sm">What the buyer evaluates on, derived from vertical drivers + pain hypotheses + NDAA exposure</span></div>
-          </div>
-          <div class="bg-white border border-gray-200 rounded-lg p-3 flex gap-3">
-            <span class="font-bold text-blue-700 dark:text-blue-400 w-8">D</span>
-            <div><span class="font-semibold">Decision Process</span> — <span class="text-gray-600 dark:text-slate-300 text-sm">How they buy: board approval (K-12), cooperative purchasing (gov), procurement dept (enterprise)</span></div>
-          </div>
-          <div class="bg-white border border-gray-200 rounded-lg p-3 flex gap-3">
-            <span class="font-bold text-blue-700 dark:text-blue-400 w-8">I</span>
-            <div><span class="font-semibold">Identify Pain</span> — <span class="text-gray-600 dark:text-slate-300 text-sm">Highest-confidence pain hypothesis that maps to a Verkada product capability</span></div>
-          </div>
-          <div class="bg-white border border-gray-200 rounded-lg p-3 flex gap-3">
-            <span class="font-bold text-blue-700 dark:text-blue-400 w-8">C</span>
-            <div><span class="font-semibold">Champion</span> — <span class="text-gray-600 dark:text-slate-300 text-sm">Named individual from champion signals enrichment. Highest champion_fit_score with meddic_role=champion.</span></div>
-          </div>
-        </div>
-        <p class="text-gray-500 text-xs mt-3">The brief's interactive MEDDIC checklist lets SEs track which fields have been validated during discovery calls.</p>
-      </section>
-
-      <!-- GTM Strategy -->
-      <section id="gtm" class="mb-12">
-        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Verkada GTM Strategy</h3>
-        <p class="text-gray-700 dark:text-slate-300 leading-relaxed mb-4">
-          Each brief includes a tailored go-to-market strategy derived from the account's vertical, size, pain hypotheses, and competitive landscape.
-        </p>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3">
-            <p class="font-semibold text-gray-900 dark:text-white text-sm">Land Play</p>
-            <p class="text-gray-500 dark:text-slate-400 text-xs">First product line to lead with, based on vertical drivers and pain signals</p>
-          </div>
-          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3">
-            <p class="font-semibold text-gray-900 dark:text-white text-sm">POC Strategy</p>
-            <p class="text-gray-500 dark:text-slate-400 text-xs">Proof-of-concept design around the highest-weight fired trigger</p>
-          </div>
-          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3">
-            <p class="font-semibold text-gray-900 dark:text-white text-sm">Bundle Recommendation</p>
-            <p class="text-gray-500 dark:text-slate-400 text-xs">Primary and secondary Verkada products mapped from vertical key drivers</p>
-          </div>
-          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3">
-            <p class="font-semibold text-gray-900 dark:text-white text-sm">Procurement Path</p>
-            <p class="text-gray-500 dark:text-slate-400 text-xs">Recommended cooperative purchasing vehicles with specific contract numbers</p>
-          </div>
-          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3">
-            <p class="font-semibold text-gray-900 dark:text-white text-sm">Expansion Motion</p>
-            <p class="text-gray-500 dark:text-slate-400 text-xs">3-phase land-and-expand plan scaled to the account's size indicator</p>
-          </div>
-          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3">
-            <p class="font-semibold text-gray-900 dark:text-white text-sm">Competitive Displacement</p>
-            <p class="text-gray-500 dark:text-slate-400 text-xs">Incumbent target, displacement playbook, and proof points from persona leverage references</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Commands -->
-      <section id="commands" class="mb-12">
-        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Commands</h3>
-        <p class="text-gray-700 dark:text-slate-300 leading-relaxed mb-4">
-          The platform exposes slash commands for different research and prep workflows. Only <code>/research</code> fetches new data — all other commands read from cache.
-        </p>
-        <div class="border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden">
+        <div class="border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden mb-4">
           <table class="w-full text-sm">
             <thead>
               <tr class="bg-gray-50 dark:bg-slate-800 text-left text-gray-500 dark:text-slate-400 uppercase text-xs">
-                <th class="px-4 py-2.5 font-semibold">Command</th>
+                <th class="px-4 py-2.5 font-semibold">Stage</th>
+                <th class="px-4 py-2.5 font-semibold">Model</th>
                 <th class="px-4 py-2.5 font-semibold">Purpose</th>
+                <th class="px-4 py-2.5 font-semibold">Approx. Cost</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-slate-800">
               <tr class="client-row">
-                <td class="px-4 py-2.5 font-mono text-blue-700 dark:text-blue-400">/research &lt;company&gt;</td>
-                <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">Full pipeline: dispatch source clients, run subagents, synthesize, render HTML</td>
+                <td class="px-4 py-2.5 text-gray-800 dark:text-slate-200">Source parsing</td>
+                <td class="px-4 py-2.5 font-mono text-gray-600 dark:text-slate-400 text-xs">Haiku</td>
+                <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">Extract, deduplicate, normalize raw source data</td>
+                <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">~$0.02</td>
               </tr>
               <tr class="client-row">
-                <td class="px-4 py-2.5 font-mono text-blue-700 dark:text-blue-400">/displace &lt;company&gt;</td>
-                <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">Competitive displacement battle card from cached brief + persona</td>
+                <td class="px-4 py-2.5 text-gray-800 dark:text-slate-200">Subagent analysis</td>
+                <td class="px-4 py-2.5 font-mono text-gray-600 dark:text-slate-400 text-xs">Sonnet</td>
+                <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">Per-source synthesis (company-bg, tech-and-pain, hiring-signals)</td>
+                <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">~$0.15</td>
               </tr>
               <tr class="client-row">
-                <td class="px-4 py-2.5 font-mono text-blue-700 dark:text-blue-400">/vertical-lens &lt;company&gt;</td>
-                <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">Vertical-specific angle overlay (K-12, healthcare, etc.)</td>
+                <td class="px-4 py-2.5 text-gray-800 dark:text-slate-200">Synthesis</td>
+                <td class="px-4 py-2.5 font-mono text-gray-600 dark:text-slate-400 text-xs">Opus</td>
+                <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">Main + deals synthesizer (MEDDIC, GTM, discovery Qs)</td>
+                <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">~$0.40</td>
               </tr>
               <tr class="client-row">
-                <td class="px-4 py-2.5 font-mono text-blue-700 dark:text-blue-400">/discovery-prep &lt;company&gt; &lt;persona&gt;</td>
-                <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">Persona-tuned discovery questions from cached brief</td>
+                <td class="px-4 py-2.5 text-gray-800 dark:text-slate-200">Web fetches</td>
+                <td class="px-4 py-2.5 font-mono text-gray-600 dark:text-slate-400 text-xs">N/A</td>
+                <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">20+ source client API calls (Google, SEC, LinkedIn, etc.)</td>
+                <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">~$0.05</td>
               </tr>
-              <tr class="client-row">
-                <td class="px-4 py-2.5 font-mono text-blue-700 dark:text-blue-400">/demo-plan &lt;company&gt;</td>
-                <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">Recommended Command modules + 30-min demo script</td>
-              </tr>
-              <tr class="client-row">
-                <td class="px-4 py-2.5 font-mono text-blue-700 dark:text-blue-400">/size &lt;company&gt;</td>
-                <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">Rough product mix from sites/doors/cameras inputs</td>
-              </tr>
-              <tr class="client-row">
-                <td class="px-4 py-2.5 font-mono text-blue-700 dark:text-blue-400">/followup &lt;notes&gt;</td>
-                <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">Post-call email drafter from persona only</td>
+              <tr class="bg-gray-50 dark:bg-slate-800 font-semibold">
+                <td class="px-4 py-2.5 text-gray-900 dark:text-white" colspan="3">Total per brief</td>
+                <td class="px-4 py-2.5 text-gray-900 dark:text-white">~$0.60</td>
               </tr>
             </tbody>
           </table>
         </div>
+        <div class="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4 text-sm text-blue-800 dark:text-blue-200">
+          <strong>Follow-up commands</strong> (<code>/displace</code>, <code>/demo-plan</code>, etc.) cost ~$0.05&ndash;$0.10 each because they read from cache and use Sonnet, not Opus. Chat messages cost ~$0.01&ndash;$0.03 each.
+        </div>
       </section>
 
-      <!-- Architecture -->
-      <section id="architecture" class="mb-12">
-        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Architecture</h3>
-        <p class="text-gray-700 dark:text-slate-300 leading-relaxed mb-4">
-          The platform follows a strict layered architecture with clear boundaries between data collection, analysis, synthesis, and presentation.
-        </p>
-        <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-4 font-mono text-sm text-gray-700 dark:text-slate-300 leading-relaxed">
-<pre class="whitespace-pre-wrap">clients/          20 source clients (one per data source)
-  └→ sources/     Raw JSON cache with retrieved_at timestamps
-
-.claude/agents/   Subagent definitions (company-bg, tech-and-pain, hiring-signals)
-  └→ Synthesizer  Main + deals synthesizer (Opus)
-
-persona/          verkada-se.yml rule engine
-  └→ Used by      Synthesizers + module commands
-
-templates/        Jinja2 HTML templates
-render/           JSON → HTML interpolation
-briefs/           Final deliverables (.json + .html)
-chat_server.py    FastAPI server (homepage, chat, API, status)</pre>
+      <!-- 11. Troubleshooting -->
+      <section id="troubleshooting" class="mb-12">
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Troubleshooting</h3>
+        <div class="space-y-4">
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm mb-1">Research hangs or never completes</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">Check the status page for stuck source clients. Most commonly caused by API rate limits (Google, SEC EDGAR). The pipeline has 120-second timeouts per client &mdash; stuck clients will eventually fail gracefully with <code>insufficient_data</code>.</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm mb-1">Brief has many "insufficient_data" sections</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">This is normal for small, private companies with limited public presence. The platform refuses to invent data. Check which source clients returned empty &mdash; if key clients (news, SEC, LinkedIn) failed, it may be a transient API issue. Try re-running <code>/research</code>.</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm mb-1">PDF looks wrong</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">The PDF uses your browser's native print dialog. For best results: choose "Save as PDF" as the destination, set margins to "Default", and enable "Background graphics" to preserve badge colors. Chrome/Edge produce the best output.</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm mb-1">Chat says it doesn't have context</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">The chat panel loads brief data from the JSON file. If you're viewing a cached HTML file directly (not through the server), the chat won't have context. Access briefs through the homepage at <code>http://localhost:8000</code>.</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm mb-1">No champion identified</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">Champion identification depends on leadership data from LinkedIn and news sources. Private companies and smaller organizations often have limited public leadership data. The brief will show this as a MEDDIC gap &mdash; use it as a discovery question.</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm mb-1">Glossary tooltips not appearing on a term</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">The glossary uses case-insensitive matching with fallbacks for snake_case and humanized variants. If a term isn't matching, it may not be in <code>data/glossary.yml</code>. Tooltips only annotate the first occurrence per element to avoid visual clutter.</p>
+          </div>
         </div>
-        <div class="mt-4 space-y-3">
-          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3">
-            <p class="font-semibold text-gray-900 dark:text-white text-sm">Caching</p>
-            <p class="text-gray-500 dark:text-slate-400 text-xs">All raw source data cached to <code>sources/&lt;company&gt;/</code>. Only <code>/research</code> refreshes stale cache. Other commands fail loudly if cache is missing.</p>
+      </section>
+
+      <!-- 12. FAQ -->
+      <section id="faq" class="mb-12">
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">FAQ</h3>
+        <div class="space-y-4">
+          <div>
+            <p class="font-semibold text-gray-900 dark:text-white text-sm">Can I research any company?</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">Yes. The platform works across all Verkada ICP verticals: K-12, higher education, healthcare, retail, manufacturing, government, hospitality, senior living, transportation, critical infrastructure, and corporate. Public-sector and large commercial accounts produce the richest briefs because they have the most public data.</p>
           </div>
-          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3">
-            <p class="font-semibold text-gray-900 dark:text-white text-sm">Brief Contract</p>
-            <p class="text-gray-500 dark:text-slate-400 text-xs">The brief JSON in <code>briefs/&lt;company&gt;-&lt;date&gt;.json</code> is the contract between <code>/research</code> and all module commands. Schema must not be broken.</p>
+          <div>
+            <p class="font-semibold text-gray-900 dark:text-white text-sm">How long does a research run take?</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">Typically 2&ndash;4 minutes. Source collection runs in parallel (30&ndash;60 seconds), subagent analysis takes 30&ndash;45 seconds, and synthesis takes 45&ndash;90 seconds. The status page shows real-time progress.</p>
           </div>
-          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3">
-            <p class="font-semibold text-gray-900 dark:text-white text-sm">Confidence Pipeline</p>
-            <p class="text-gray-500 dark:text-slate-400 text-xs">Confidence levels propagate through the pipeline — never upgraded. <span class="inline-block px-1.5 py-0.5 rounded border bg-green-100 text-green-700 border-green-200 text-xs font-semibold">high</span> = sourced, <span class="inline-block px-1.5 py-0.5 rounded border bg-amber-100 text-amber-700 border-amber-200 text-xs font-semibold">medium</span> = inferred with evidence, <span class="inline-block px-1.5 py-0.5 rounded border bg-red-100 text-red-700 border-red-200 text-xs font-semibold">inference</span> = hypothesis.</p>
+          <div>
+            <p class="font-semibold text-gray-900 dark:text-white text-sm">Can I re-run research on the same account?</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">Yes. Re-running <code>/research</code> refreshes stale cached sources and generates a new brief with a new timestamp. Old briefs are preserved in <code>briefs/</code>.</p>
+          </div>
+          <div>
+            <p class="font-semibold text-gray-900 dark:text-white text-sm">What are the vertical example chips on the research bar?</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">Quick-access examples showing the types of accounts the platform handles. Click any chip to auto-fill the research bar with that example company name.</p>
+          </div>
+          <div>
+            <p class="font-semibold text-gray-900 dark:text-white text-sm">Why do some discovery questions have "(ref: ...)" at the end?</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">These are <strong>leverage references</strong> &mdash; real Verkada customer proof points from the persona file. They give you a specific customer story to cite during discovery. Example: "(ref: Greenville County Schools &mdash; deployed 2,400 cameras across 106 sites)".</p>
+          </div>
+          <div>
+            <p class="font-semibold text-gray-900 dark:text-white text-sm">What does "confidence: inference" mean?</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">The platform uses three confidence levels. <strong>High</strong> = backed by a primary source (SEC filing, official press release). <strong>Medium</strong> = inferred from secondary sources with evidence. <strong>Inference</strong> = hypothesis based on vertical patterns or weak signals. Always validate inference-level claims during discovery.</p>
+          </div>
+          <div>
+            <p class="font-semibold text-gray-900 dark:text-white text-sm">Do follow-up commands (like /displace) fetch new data?</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">No. Only <code>/research</code> fetches new data. All other commands (<code>/displace</code>, <code>/demo-plan</code>, <code>/discovery-prep</code>, <code>/vertical-lens</code>, <code>/size</code>, <code>/followup</code>) read from cached brief data. If the cache is missing, they fail with an error instead of fetching.</p>
+          </div>
+          <div>
+            <p class="font-semibold text-gray-900 dark:text-white text-sm">Can I use this offline?</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">Viewing previously generated briefs works offline (they're self-contained HTML files). Running new research requires internet access for source collection and API calls.</p>
           </div>
         </div>
       </section>
@@ -355,12 +516,97 @@ chat_server.py    FastAPI server (homepage, chat, API, status)</pre>
     </main>
   </div>
 
-  <!-- Dark mode init (inherit from index.html preference) -->
+  <!-- Dark mode init -->
   <script>
-    const pref = localStorage.getItem('theme-preference') || 'system';
+    var pref = localStorage.getItem('theme-preference') || 'system';
     if (pref === 'dark' || (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
       document.documentElement.classList.add('dark');
     }
+  </script>
+
+  <!-- Glossary data + search -->
+  <script>
+    var GLOSSARY = [
+      {label:"NDAA",tooltip:"Section 889 — federal law banning certain Chinese-made surveillance equipment (Hikvision, Dahua). Federal funding recipients must comply or lose funding",category:"Compliance"},
+      {label:"FRPL",tooltip:"Free / Reduced Price Lunch — federal program eligibility used as a poverty indicator. High FRPL districts qualify for Title I funding",category:"K-12"},
+      {label:"FedRAMP",tooltip:"Federal cloud security authorization. Verkada has FedRAMP Moderate In Process status",category:"Compliance"},
+      {label:"SLED",tooltip:"State, Local, and Education sales segment",category:"Sales"},
+      {label:"POC",tooltip:"Proof of Concept — a hands-on trial deployment before purchase. Verkada offers 30-day pelican-case POCs",category:"Sales"},
+      {label:"NVR",tooltip:"Network Video Recorder — on-prem appliance for storing camera footage. Legacy architecture that Verkada's cloud platform replaces",category:"Technology"},
+      {label:"DVR",tooltip:"Digital Video Recorder — older on-prem recording appliance. Being displaced by cloud-managed video",category:"Technology"},
+      {label:"VMS",tooltip:"Video Management Software — software for managing camera feeds. Incumbent VMS platforms (Genetec, Milestone) are a key Verkada displacement target",category:"Technology"},
+      {label:"MEDDIC",tooltip:"Sales qualification framework: Metrics, Economic Buyer, Decision Criteria, Decision Process, Identify Pain, Champion",category:"Sales"},
+      {label:"GTM",tooltip:"Go-To-Market — the sales strategy for landing and expanding within an account",category:"Sales"},
+      {label:"ICP",tooltip:"Ideal Customer Profile — the characteristics of accounts most likely to buy",category:"Sales"},
+      {label:"AE",tooltip:"Account Executive — the Verkada sales rep who owns the deal relationship",category:"Sales"},
+      {label:"SE",tooltip:"Solutions Engineer — the technical seller who runs demos, POCs, and discovery",category:"Sales"},
+      {label:"Sourcewell",tooltip:"National cooperative purchasing program for government, education, and nonprofits. Verkada contract: 041524-VRK",category:"Procurement"},
+      {label:"OMNIA",tooltip:"OMNIA Partners — cooperative purchasing program for public-sector buyers. Verkada contract: R250206",category:"Procurement"},
+      {label:"HGACBuy",tooltip:"Houston-Galveston Area Council cooperative purchasing program. Verkada contract: SE05-26",category:"Procurement"},
+      {label:"COSTARS",tooltip:"Pennsylvania statewide cooperative purchasing program",category:"Procurement"},
+      {label:"TIPS",tooltip:"The Interlocal Purchasing System — cooperative purchasing for public-sector entities",category:"Procurement"},
+      {label:"ORC",tooltip:"Organized Retail Crime — coordinated theft rings targeting retail locations. Key driver for Verkada camera deployments in retail",category:"Retail"},
+      {label:"Shrink",tooltip:"Inventory loss from theft, fraud, or error. A primary pain point for retail LP teams",category:"Retail"},
+      {label:"LP",tooltip:"Loss Prevention — the retail function responsible for reducing theft and shrink",category:"Retail"},
+      {label:"OSHA",tooltip:"Occupational Safety and Health Administration — federal workplace safety regulator. Relevant for manufacturing and industrial verticals",category:"Manufacturing"},
+      {label:"PPE",tooltip:"Personal Protective Equipment — safety gear required in manufacturing/industrial environments. Verkada cameras can detect PPE compliance via AI analytics",category:"Manufacturing"},
+      {label:"CIK",tooltip:"Central Index Key — the SEC's unique identifier for public filers",category:"Data"},
+      {label:"LEAID",tooltip:"Local Education Agency ID — the NCES identifier for school districts",category:"K-12"},
+      {label:"NCES",tooltip:"National Center for Education Statistics — federal source for K-12 school and district data",category:"K-12"},
+      {label:"Clery Act",tooltip:"Federal law requiring colleges to report campus crime statistics. Relevant for higher education Verkada deployments",category:"Compliance"},
+      {label:"Title I",tooltip:"Federal education funding for high-poverty schools. Districts with high FRPL rates qualify for Title I, which can fund security improvements",category:"K-12"},
+      {label:"E-Rate",tooltip:"Federal program subsidizing telecom and internet for schools. Can fund network infrastructure needed for cloud camera deployments",category:"K-12"},
+      {label:"GSA Schedule",tooltip:"General Services Administration purchasing vehicle for federal agencies",category:"Procurement"},
+      {label:"RFP",tooltip:"Request for Proposal — formal procurement solicitation. Active security RFPs are a high-value trigger",category:"Procurement"},
+      {label:"Command",tooltip:"Verkada Command — the cloud-based management platform for all Verkada devices. Single pane of glass for cameras, access control, sensors, and alarms",category:"Verkada"}
+    ];
+
+    var listEl = document.getElementById('glossary-list');
+    var countEl = document.getElementById('glossary-count');
+    var searchEl = document.getElementById('glossary-search');
+
+    // Group by category
+    var cats = {};
+    GLOSSARY.forEach(function(t) {
+      var c = t.category || 'Other';
+      if (!cats[c]) cats[c] = [];
+      cats[c].push(t);
+    });
+
+    // Render
+    var catOrder = ['Sales','Verkada','Technology','Procurement','Compliance','K-12','Retail','Manufacturing','Data'];
+    var html = '';
+    catOrder.forEach(function(cat) {
+      if (!cats[cat]) return;
+      html += '<div class="glossary-cat mb-3"><p class="text-xs font-bold uppercase text-gray-400 dark:text-slate-500 tracking-wide mb-1 px-1">' + cat + '</p>';
+      cats[cat].forEach(function(t) {
+        html += '<div class="glossary-item flex gap-3 px-3 py-2 rounded hover:bg-white dark:hover:bg-slate-900" data-search="' + (t.label + ' ' + t.tooltip + ' ' + cat).toLowerCase() + '">';
+        html += '<span class="font-mono text-blue-700 dark:text-blue-400 text-sm font-semibold whitespace-nowrap w-24 flex-shrink-0">' + t.label + '</span>';
+        html += '<span class="text-gray-600 dark:text-slate-400 text-sm">' + t.tooltip + '</span>';
+        html += '</div>';
+      });
+      html += '</div>';
+    });
+    listEl.innerHTML = html;
+    countEl.textContent = GLOSSARY.length + ' terms';
+
+    // Search filter
+    searchEl.addEventListener('input', function() {
+      var q = this.value.toLowerCase().trim();
+      var items = listEl.querySelectorAll('.glossary-item');
+      var visible = 0;
+      items.forEach(function(el) {
+        var match = !q || el.getAttribute('data-search').indexOf(q) !== -1;
+        el.classList.toggle('hidden', !match);
+        if (match) visible++;
+      });
+      // Show/hide category headers with no visible items
+      listEl.querySelectorAll('.glossary-cat').forEach(function(cat) {
+        var hasVisible = cat.querySelector('.glossary-item:not(.hidden)');
+        cat.style.display = hasVisible ? '' : 'none';
+      });
+      countEl.textContent = (q ? visible + ' of ' : '') + GLOSSARY.length + ' terms';
+    });
   </script>
 
   <!-- Scroll spy + collapsible sections -->
@@ -391,14 +637,12 @@ chat_server.py    FastAPI server (homepage, chat, API, status)</pre>
       sec.classList.add('doc-section');
       var h3 = sec.querySelector('h3');
       if (!h3) return;
-      // Insert chevron
       var span = document.createElement('span');
       span.innerHTML = chevSvg;
       span.style.display = 'inline-flex';
       span.style.verticalAlign = 'middle';
       span.style.marginRight = '6px';
       h3.insertBefore(span, h3.firstChild);
-      // Wrap body
       var body = document.createElement('div');
       body.className = 'doc-body';
       var children = Array.from(sec.children);
@@ -408,9 +652,7 @@ chat_server.py    FastAPI server (homepage, chat, API, status)</pre>
         if (past) body.appendChild(child);
       });
       sec.appendChild(body);
-      // Restore state
       if (saved[sec.id]) sec.classList.add('collapsed');
-      // Click
       h3.addEventListener('click', function() {
         sec.classList.toggle('collapsed');
         var state = {};

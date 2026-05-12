@@ -121,6 +121,51 @@
 
   <main class="max-w-6xl mx-auto px-6 py-8 flex-1">
 
+    <!-- Start New Research -->
+    <section class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-6 mb-8">
+      <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-1">Research a new account</h2>
+      <p class="text-xs text-gray-400 dark:text-slate-500 mb-4">Cost: ~$1.50 fresh, ~$0.40 cached &middot; Time: 5-9 minutes</p>
+      <form id="research-form" class="flex gap-3" onsubmit="launchResearch(event)" autocomplete="off">
+        <div class="flex-1 relative">
+          <input id="company-input" type="text" placeholder="Enter company or account name..." class="w-full border border-gray-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-lg px-5 py-4 text-base outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900" required autocomplete="off" />
+          <div id="suggest-spinner" class="hidden absolute right-4 top-1/2 -translate-y-1/2">
+            <svg class="animate-spin h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+          </div>
+          <ul id="suggest-dropdown" class="hidden absolute z-50 left-0 right-0 top-full mt-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden"></ul>
+        </div>
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg text-sm font-bold transition-colors whitespace-nowrap">
+          Start Research
+        </button>
+      </form>
+      <div class="mt-3 flex gap-2 flex-wrap">
+        {% set examples = {'K-12 District': 'Gwinnett County Public Schools', 'Higher Ed': 'Georgia State University', 'Healthcare': 'Piedmont Healthcare', 'Government': 'City of Atlanta', 'Retail': 'Floor & Decor', 'Manufacturing': 'Gulfstream Aerospace', 'Senior Living': 'Brookdale Senior Living', 'Federal': 'US Army Corps of Engineers', 'Transportation': 'Hartsfield-Jackson Airport', 'Critical Infrastructure': 'Georgia Power', 'Hospitality': 'Marriott International', 'Public Safety': 'Atlanta Police Department'} %}
+        {% for label, example in examples.items() %}
+        <button onclick="document.getElementById('company-input').value='{{ example }}'" class="text-xs bg-gray-100 dark:bg-slate-700 hover:bg-blue-50 dark:hover:bg-slate-600 text-gray-600 dark:text-slate-300 hover:text-blue-700 dark:hover:text-blue-400 px-2.5 py-1 rounded-full transition-colors">{{ label }}</button>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Getting Started CTA (dismissable) -->
+    <div id="docs-cta" class="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg px-5 py-3.5 mb-8 flex items-center justify-between gap-4" style="display:none;">
+      <div class="flex items-center gap-3">
+        <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+        <p class="text-sm text-blue-800 dark:text-blue-200"><strong>New here?</strong> Read the <a href="/docs" class="underline font-semibold hover:text-blue-900 dark:hover:text-blue-100">Getting Started Guide</a> to understand the platform, MEDDIC workflow, source catalog, and cost model.</p>
+      </div>
+      <button onclick="dismissDocsCta()" class="text-blue-400 hover:text-blue-600 dark:text-blue-500 dark:hover:text-blue-300 flex-shrink-0 p-1" title="Dismiss">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <script>
+      (function() {
+        var dismissed = localStorage.getItem('docs-cta-dismissed');
+        if (!dismissed) document.getElementById('docs-cta').style.display = '';
+      })();
+      function dismissDocsCta() {
+        document.getElementById('docs-cta').style.display = 'none';
+        localStorage.setItem('docs-cta-dismissed', '1');
+      }
+    </script>
+
     <!-- Quick Stats Banner -->
     <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
       <div class="stat-card relative bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-4 text-center" id="stat-total-briefs">
@@ -138,30 +183,6 @@
       <div class="stat-card relative bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-4 text-center" id="stat-latest">
         <div class="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-1">Latest Brief</div>
         <div class="text-sm font-bold text-gray-900 dark:text-white">{{ briefs[0].date if briefs else '---' }}</div>
-      </div>
-    </section>
-
-    <!-- Start New Research -->
-    <section class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-6 mb-8">
-      <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-1">Research a new account</h2>
-      <p class="text-xs text-gray-400 dark:text-slate-500 mb-4">Cost: ~$1.50 fresh, ~$0.40 cached &middot; Time: 5-9 minutes</p>
-      <form id="research-form" class="flex gap-3" onsubmit="launchResearch(event)" autocomplete="off">
-        <div class="flex-1 relative">
-          <input id="company-input" type="text" placeholder="Enter company or account name..." class="w-full border border-gray-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-lg px-4 py-3 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 dark:focus:ring-blue-900" required autocomplete="off" />
-          <div id="suggest-spinner" class="hidden absolute right-3 top-1/2 -translate-y-1/2">
-            <svg class="animate-spin h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-          </div>
-          <ul id="suggest-dropdown" class="hidden absolute z-50 left-0 right-0 top-full mt-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden"></ul>
-        </div>
-        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap">
-          Start Research
-        </button>
-      </form>
-      <div class="mt-3 flex gap-2 flex-wrap">
-        {% set examples = {'K-12 District': 'Gwinnett County Public Schools', 'Higher Ed': 'Georgia State University', 'Healthcare': 'Piedmont Healthcare', 'Government': 'City of Atlanta', 'Retail': 'Floor & Decor'} %}
-        {% for label, example in examples.items() %}
-        <button onclick="document.getElementById('company-input').value='{{ example }}'" class="text-xs bg-gray-100 dark:bg-slate-700 hover:bg-blue-50 dark:hover:bg-slate-600 text-gray-600 dark:text-slate-300 hover:text-blue-700 dark:hover:text-blue-400 px-2.5 py-1 rounded-full transition-colors">{{ label }}</button>
-        {% endfor %}
       </div>
     </section>
 

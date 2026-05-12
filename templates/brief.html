@@ -2864,75 +2864,87 @@
     el.addEventListener('mouseleave', function() { hideTimer = setTimeout(function() { el.classList.remove('visible'); }, 300); });
   })();
 
-  // === Annotate terms with tooltips (loaded from data/glossary.yml) ===
+  // === Glossary term auto-detection ===
   (function() {
     var glossary = {{ glossary_terms | default([]) | tojson }};
-    // Split into free-text acronyms (no context), contextual labels, and pain phrases
-    var acronyms = {};
-    var contextTerms = {};
-    var painPhrases = {};
+    if (!glossary.length) return;
+
+    // Build lookup: lowercase label → tooltip, also snake_case → tooltip, humanized → tooltip
+    var termMap = {};
     glossary.forEach(function(t) {
-      if (t.context === 'pain_phrase') {
-        // Pain phrases: store both snake_case and humanized forms
-        painPhrases[t.label.toLowerCase()] = t.tooltip;
-        painPhrases[t.label.replace(/_/g, ' ').toLowerCase()] = t.tooltip;
-      } else if (t.context) {
-        contextTerms[t.label.toLowerCase()] = t.tooltip;
-      } else {
-        acronyms[t.label] = t.tooltip;
-      }
+      var label = t.label || '';
+      var tip = t.tooltip || '';
+      if (!label || !tip) return;
+      termMap[label.toLowerCase()] = tip;
+      // snake_case → humanized: high_camera_count → high camera count
+      var humanized = label.replace(/_/g, ' ').toLowerCase();
+      if (humanized !== label.toLowerCase()) termMap[humanized] = tip;
+      // humanized → snake_case: High Camera Count → high_camera_count
+      var snaked = label.replace(/\s+/g, '_').toLowerCase();
+      if (snaked !== label.toLowerCase()) termMap[snaked] = tip;
     });
-    // Free-text acronym annotation: wrap first occurrence per element
-    document.querySelectorAll('main p, main dd, main span, main td').forEach(function(el) {
-      if (el.closest('[data-tooltip]') || el.closest('abbr') || el.querySelector('abbr')) return;
-      if (el.closest('.count-detail-tip') || el.closest('#chat-panel')) return;
-      for (var acr in acronyms) {
-        var re = new RegExp('\\b(' + acr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')\\b');
-        if (re.test(el.textContent) && !el.innerHTML.includes('<abbr')) {
-          el.innerHTML = el.innerHTML.replace(re, '<abbr title="' + acronyms[acr].replace(/"/g, '&quot;') + '">$1</abbr>');
-          break;
-        }
-      }
-    });
-    // Contextual label + pain phrase annotation on chip/badge elements
-    // Walk ALL inline-block spans, bg-*-100 chips, text-xs labels, and td elements
-    document.querySelectorAll('main span[class*="bg-"], main span.inline-block, main span.text-xs, main td, main span[class*="px-"]').forEach(function(el) {
-      if (el.hasAttribute('data-tooltip') || el.closest('[data-tooltip]')) return;
-      if (el.closest('.count-detail-tip') || el.closest('#chat-panel')) return;
-      var txt = el.textContent.trim();
-      var lower = txt.toLowerCase();
-      // Direct contextual match (case-insensitive)
-      if (contextTerms[lower]) {
-        el.setAttribute('data-tooltip', contextTerms[lower]);
-        el.style.cursor = 'help';
-        return;
-      }
-      // Pain phrase match: try the full text as snake_case and as-is
-      var snaked = lower.replace(/\s+/g, '_');
-      if (painPhrases[snaked]) {
-        el.setAttribute('data-tooltip', painPhrases[snaked]);
-        el.style.cursor = 'help';
-        return;
-      }
-      if (painPhrases[lower]) {
-        el.setAttribute('data-tooltip', painPhrases[lower]);
-        el.style.cursor = 'help';
-        return;
-      }
-      // Partial keyword match: if any glossary acronym appears as a word in the chip text
-      if (txt.length > 3) {
-        for (var acr in acronyms) {
-          if (acr.length >= 3) {
-            var kwRe = new RegExp('\\b' + acr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
-            if (kwRe.test(txt)) {
-              el.setAttribute('data-tooltip', acronyms[acr]);
-              el.style.cursor = 'help';
-              return;
-            }
+
+    // Shared tooltip element
+    var tipEl = document.createElement('div');
+    tipEl.style.cssText = 'position:fixed;display:none;z-index:10000;background:#0f172a;color:#f1f5f9;padding:8px 12px;border-radius:6px;max-width:320px;font-size:12px;line-height:1.4;pointer-events:auto;box-shadow:0 4px 12px rgba(0,0,0,0.4);border:1px solid #334155;';
+    document.body.appendChild(tipEl);
+    var closeTimer = null;
+
+    function showGlossary(el, text) {
+      clearTimeout(closeTimer);
+      tipEl.textContent = text;
+      tipEl.style.display = 'block';
+      var rect = el.getBoundingClientRect();
+      tipEl.style.left = rect.left + 'px';
+      tipEl.style.top = (rect.bottom + 4) + 'px';
+      var tr = tipEl.getBoundingClientRect();
+      if (tr.right > window.innerWidth - 10) tipEl.style.left = (window.innerWidth - tr.width - 10) + 'px';
+      if (tr.bottom > window.innerHeight - 10) tipEl.style.top = (rect.top - tr.height - 4) + 'px';
+    }
+    function schedClose() { closeTimer = setTimeout(function() { tipEl.style.display = 'none'; }, 300); }
+    tipEl.addEventListener('mouseenter', function() { clearTimeout(closeTimer); });
+    tipEl.addEventListener('mouseleave', schedClose);
+
+    function annotate() {
+      // Walk all candidate elements: chips, badges, spans, labels, tds, list items
+      document.querySelectorAll('main span, main td, main li, main dd, main p, main h3, main h4').forEach(function(el) {
+        if (el.dataset.glossaryDone) return;
+        if (el.closest('.glossary-tip,.count-detail-tip,#chat-panel,script,style,button,nav')) return;
+        // Skip elements with children that are themselves candidates (avoid double-processing)
+        if (el.querySelector('span[class*="bg-"], span[class*="px-"]') && el.tagName !== 'SPAN') return;
+
+        var txt = el.textContent.trim();
+        if (!txt || txt.length > 200) return;
+
+        var lower = txt.toLowerCase();
+        var snaked = lower.replace(/\s+/g, '_');
+
+        // Try: exact match, snake_case, humanized
+        var match = termMap[lower] || termMap[snaked] || null;
+
+        // If no exact match, try partial: does the text contain a glossary term as a word?
+        if (!match && txt.length > 3) {
+          for (var key in termMap) {
+            if (key.length < 3) continue;
+            var re = new RegExp('\\b' + key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+            if (re.test(txt)) { match = termMap[key]; break; }
           }
         }
-      }
-    });
+
+        if (match) {
+          el.style.borderBottom = '1px dotted rgba(148,163,184,0.5)';
+          el.style.cursor = 'help';
+          el.dataset.glossaryDone = '1';
+          el.addEventListener('mouseenter', function() { showGlossary(el, match); });
+          el.addEventListener('mouseleave', schedClose);
+        }
+      });
+    }
+
+    // Run now and again after async content loads
+    annotate();
+    setTimeout(annotate, 600);
+    setTimeout(annotate, 1500);
   })();
 
   // === Download PDF ===
