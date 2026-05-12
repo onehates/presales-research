@@ -239,6 +239,40 @@
       </div>
     </div>
 
+    <!-- Find Similar Accounts -->
+    {% if briefs %}
+    <section class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-5 mb-8">
+      <h2 class="text-sm font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wide mb-3">Find Similar Accounts</h2>
+      <div class="flex gap-3 items-end flex-wrap">
+        <div class="flex-1 min-w-[200px]">
+          <label class="text-xs text-gray-500 dark:text-slate-500 mb-1 block">Select an existing brief</label>
+          <select id="similar-brief-select" class="w-full border border-gray-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400">
+            {% for b in briefs %}
+            <option value="{{ b.slug }}|{{ b.date }}">{{ b.name }} ({{ b.date }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button onclick="findSimilarFromHomepage()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap">
+          Find Similar
+        </button>
+      </div>
+      <p class="text-[10px] text-gray-400 dark:text-slate-600 mt-2">Each suggestion: ~$0.03 · Each batch research: ~$1.50/account</p>
+      <!-- Inline results area -->
+      <div id="homepage-similar-results" class="mt-4 hidden">
+        <div id="homepage-similar-loading" class="hidden space-y-2">
+          <div class="h-16 bg-gray-100 dark:bg-slate-800 rounded animate-pulse"></div>
+          <div class="h-16 bg-gray-100 dark:bg-slate-800 rounded animate-pulse"></div>
+          <div class="h-16 bg-gray-100 dark:bg-slate-800 rounded animate-pulse"></div>
+        </div>
+        <div id="homepage-similar-cards" class="space-y-2"></div>
+        <div id="homepage-similar-actions" class="hidden flex items-center justify-between mt-3">
+          <span id="homepage-similar-count" class="text-xs text-gray-500 dark:text-slate-400"></span>
+          <button id="homepage-research-btn" onclick="researchSelectedHomepage()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium disabled:opacity-50" disabled>Research Selected</button>
+        </div>
+      </div>
+    </section>
+    {% endif %}
+
     <!-- Brief Cards Grid -->
     <section id="briefs-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
       {% if not briefs %}
@@ -991,6 +1025,95 @@
     // Already defined above, just hook the fetch
     var origDeleteBrief = window.deleteBrief;
   })();
+
+  // --- Find Similar Accounts (Homepage) ---
+  var homepageSimilarData = [];
+
+  function findSimilarFromHomepage() {
+    var sel = document.getElementById('similar-brief-select');
+    if (!sel) return;
+    var parts = sel.value.split('|');
+    var slug = parts[0], date = parts[1];
+
+    var resultsArea = document.getElementById('homepage-similar-results');
+    var loading = document.getElementById('homepage-similar-loading');
+    var cards = document.getElementById('homepage-similar-cards');
+    var actions = document.getElementById('homepage-similar-actions');
+
+    resultsArea.classList.remove('hidden');
+    loading.classList.remove('hidden');
+    cards.innerHTML = '';
+    actions.classList.add('hidden');
+
+    fetch('/api/similar-accounts', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({slug: slug, date: date})
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      loading.classList.add('hidden');
+      if (data.error) {
+        cards.innerHTML = '<p class="text-sm text-red-600 dark:text-red-400">' + data.error + '</p>';
+        return;
+      }
+      homepageSimilarData = data.accounts || [];
+      cards.innerHTML = '';
+      homepageSimilarData.forEach(function(acc, i) {
+        var score = acc.similarity_score || 0;
+        var barColor = score >= 70 ? '#16a34a' : score >= 40 ? '#d97706' : '#dc2626';
+        var el = document.createElement('div');
+        el.className = 'flex items-center gap-3 border border-gray-200 dark:border-slate-700 rounded-lg p-3';
+        el.innerHTML =
+          '<input type="checkbox" class="homepage-sim-check accent-blue-600" data-idx="' + i + '" onchange="updateHomepageResearchBtn()" />' +
+          '<div class="flex-1 min-w-0">' +
+            '<span class="font-semibold text-sm text-gray-900 dark:text-white">' + (acc.name || '') + '</span>' +
+            '<span class="text-xs text-gray-400 dark:text-slate-500 ml-2">' + (acc.vertical || '') + ' · ' + (acc.geography || '') + '</span>' +
+            '<p class="text-xs text-gray-500 dark:text-slate-400 mt-0.5">' + (acc.why_similar || '') + '</p>' +
+          '</div>' +
+          '<div class="text-right flex-shrink-0">' +
+            '<span class="text-xs font-bold" style="color:' + barColor + '">' + score + '%</span>' +
+          '</div>';
+        cards.appendChild(el);
+      });
+      actions.classList.remove('hidden');
+      updateHomepageResearchBtn();
+    })
+    .catch(function(err) {
+      loading.classList.add('hidden');
+      cards.innerHTML = '<p class="text-sm text-red-600 dark:text-red-400">Error: ' + err.message + '</p>';
+    });
+  }
+
+  function updateHomepageResearchBtn() {
+    var checks = document.querySelectorAll('.homepage-sim-check:checked');
+    var btn = document.getElementById('homepage-research-btn');
+    var count = document.getElementById('homepage-similar-count');
+    btn.disabled = checks.length === 0;
+    btn.textContent = 'Research ' + (checks.length || '') + ' Selected';
+    count.textContent = checks.length + ' of ' + homepageSimilarData.length + ' selected';
+  }
+
+  function researchSelectedHomepage() {
+    var checks = document.querySelectorAll('.homepage-sim-check:checked');
+    var names = [];
+    checks.forEach(function(cb) { names.push(homepageSimilarData[parseInt(cb.dataset.idx)].name); });
+    if (!names.length) return;
+
+    fetch('/api/batch-research', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({accounts: names})
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      toast(data.count + ' account' + (data.count !== 1 ? 's' : '') + ' queued for research', 'green');
+      setTimeout(function() { window.open('/status.html', '_blank'); }, 1000);
+    })
+    .catch(function(err) {
+      toast('Batch research failed: ' + err.message, 'red');
+    });
+  }
   </script>
 </body>
 </html>

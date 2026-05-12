@@ -469,6 +469,195 @@ async def api_patch_brief(slug: str, date: str, update: BriefMetaUpdate):
 
 
 # ---------------------------------------------------------------------------
+# Similar Accounts suggester
+# ---------------------------------------------------------------------------
+
+class SimilarAccountsRequest(BaseModel):
+    slug: str
+    date: str
+
+@app.post("/api/similar-accounts")
+async def api_similar_accounts(req: SimilarAccountsRequest):
+    brief_path = BRIEFS_DIR / f"{req.slug}-{req.date}.json"
+    if not brief_path.exists():
+        return JSONResponse({"error": "Brief not found"}, status_code=404)
+    brief = json.loads(brief_path.read_text())
+
+    snap = brief.get("snapshot", {})
+    prompt = f"""Given this account, suggest 5 similar accounts that a Verkada SE would also research.
+
+Source account: {snap.get('name', 'unknown')}
+Vertical: {brief.get('vertical_match', {}).get('entity_type', brief.get('entity_type', 'unknown'))}
+Size: {snap.get('size_indicator', 'unknown')}
+Geography: {snap.get('headquarters_state', 'unknown')}, {snap.get('city', 'unknown')}
+Pain patterns: {json.dumps([h.get('id', h.get('pain', '')) for h in brief.get('pain_hypotheses', [])[:3]])}
+Federal funding: {json.dumps(brief.get('federal_funding_profile', {}).get('ndaa_exposure', 'unknown'))}
+
+Return 5 similar accounts as JSON. Each entry includes:
+- name: full legal name of the suggested account
+- vertical: same as source (or related)
+- size_estimate: rough size descriptor
+- geography: state/region
+- similarity_score: 0-100, how similar to source
+- why_similar: 1-2 sentences explaining the match
+- opportunity_hypothesis: 1 sentence on the likely pain/opportunity
+
+Prefer accounts in the same vertical, similar size, same geographic region. Diversify slightly — include 1-2 stretch options.
+
+Format: {{"accounts": [...]}}"""
+
+    client = anthropic.Anthropic()
+    response = client.messages.create(
+        model=SONNET_MODEL,
+        max_tokens=2000,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    text = response.content[0].text
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError:
+        # Try to extract JSON from markdown fences
+        import re
+        m = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
+        if m:
+            data = json.loads(m.group(1))
+        else:
+            data = {"accounts": [], "error": "Could not parse response"}
+    return data
+
+
+# ---------------------------------------------------------------------------
+# Batch research launcher
+# ---------------------------------------------------------------------------
+
+class BatchResearchRequest(BaseModel):
+    accounts: list[str]
+
+@app.post("/api/batch-research")
+async def api_batch_research(req: BatchResearchRequest):
+    results = []
+    for company_name in req.accounts:
+        slug = company_name.lower().replace(" ", "-").replace(",", "").replace(".", "")
+        cmd = [sys.executable, str(PROJECT_ROOT / "orchestrator.py"), company_name]
+        subprocess.Popen(
+            cmd,
+            env=os.environ.copy(),
+            cwd=str(PROJECT_ROOT),
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        results.append({"slug": slug, "company": company_name, "status_url": f"/status.html?slug={slug}"})
+    return {"queued": results, "count": len(results)}
+
+
+# ---------------------------------------------------------------------------
+# Discovery Call Coach
+# ---------------------------------------------------------------------------
+
+class CoachRequest(BaseModel):
+    slug: str
+    date: str
+    transcript: str
+
+@app.post("/api/coach-call")
+async def api_coach_call(req: CoachRequest):
+    brief_path = BRIEFS_DIR / f"{req.slug}-{req.date}.json"
+    brief = json.loads(brief_path.read_text()) if brief_path.exists() else {}
+    snap = brief.get("snapshot", {})
+    champs = brief.get("champion_candidates", [])
+
+    prompt = f"""Analyze this discovery call transcript against the MEDDIC framework.
+
+ACCOUNT CONTEXT:
+Account: {snap.get('name', 'Unknown')}
+Vertical: {brief.get('vertical_match', {}).get('entity_type', brief.get('entity_type', 'unknown'))}
+Key personas: {json.dumps([p.get('name', '') for p in champs[:3]])}
+
+TRANSCRIPT:
+{req.transcript}
+
+Analyze the call against each MEDDIC field. For each, output:
+- status: "validated" | "partially_validated" | "missed" | "not_applicable"
+- evidence: direct quote from transcript that proves this status (or empty string if missed)
+- score: 0-100 confidence the field was addressed
+- gap: what's still unknown for this field
+- suggested_followup: a specific next question to ask to fill the gap
+
+MEDDIC fields:
+- metrics: Did rep validate quantifiable business impact and tie it to a specific value driver?
+- economic_buyer: Was the actual signing authority identified by name? Were they on the call?
+- decision_criteria: What technical/commercial requirements does the buyer evaluate against?
+- decision_process: Steps from now to close — RFP? Procurement? Board? Timeline?
+- identify_pain: Was a specific, validated pain point uncovered? Acknowledged by buyer?
+- champion: Did anyone on the buyer side advocate for the rep's solution, or volunteer to help internally?
+- competition: What incumbents or competitors were mentioned?
+
+Also output:
+- overall_score: 0-100 weighted average of MEDDIC field scores
+- call_quality: "strong" | "decent" | "needs_work" based on overall_score
+- top_3_strengths: array of short bullet strings
+- top_3_gaps: array of short bullet strings — what to focus on next call
+- next_call_recommendation: 1 paragraph on suggested next step
+
+Output valid JSON only. No markdown fences. No other text."""
+
+    client = anthropic.Anthropic()
+    response = client.messages.create(
+        model=SONNET_MODEL,
+        max_tokens=4000,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    text = response.content[0].text
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError:
+        import re
+        m = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
+        if m:
+            data = json.loads(m.group(1))
+        else:
+            data = {"error": "Could not parse coach response"}
+
+    # Persist coaching analysis
+    coach_path = BRIEFS_DIR / f"{req.slug}-{req.date}.coach.json"
+    coach_path.write_text(json.dumps({
+        "analyzed_at": datetime.now().isoformat(),
+        "transcript_preview": req.transcript[:500],
+        "analysis": data,
+    }, indent=2))
+
+    return data
+
+
+@app.get("/coach", response_class=HTMLResponse)
+async def coach_page(slug: str = Query(...), date: str = Query(...)):
+    if ".." in slug or ".." in date:
+        return HTMLResponse("<h1>Invalid</h1>", status_code=400)
+    brief_path = BRIEFS_DIR / f"{slug}-{date}.json"
+    if not brief_path.exists():
+        return HTMLResponse("<h1>Brief not found</h1>", status_code=404)
+    brief = json.loads(brief_path.read_text())
+    account_name = brief.get("snapshot", {}).get("name", slug)
+
+    # Check for existing coach analysis
+    coach_path = BRIEFS_DIR / f"{slug}-{date}.coach.json"
+    existing_analysis = None
+    if coach_path.exists():
+        try:
+            existing_analysis = json.loads(coach_path.read_text())
+        except Exception:
+            pass
+
+    template = _jinja_env.get_template("coach.html")
+    return template.render(
+        slug=slug,
+        date=date,
+        account_name=account_name,
+        existing_analysis=existing_analysis,
+    )
+
+
+# ---------------------------------------------------------------------------
 # Health check
 # ---------------------------------------------------------------------------
 

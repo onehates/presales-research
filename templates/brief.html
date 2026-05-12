@@ -488,6 +488,15 @@
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
           Sales Report
         </a>
+        <button onclick="openSimilarModal()" class="tip text-xs bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 no-print" data-tip="Find similar accounts to research">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Find Similar Accounts
+        </button>
+        <a href="/coach?slug={{ data.metadata.company_slug }}&date={{ data.metadata.generated_at[:10] }}"
+           class="tip text-xs bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 no-print" data-tip="Analyze a discovery call transcript against MEDDIC">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+          Discovery Call Coach
+        </a>
         <button onclick="toggleDarkMode()" class="tip p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors" data-tip="Toggle dark mode">
           <svg class="w-4 h-4 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
           <svg class="w-4 h-4 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
@@ -682,15 +691,15 @@
       <p class="text-sm text-gray-600 dark:text-slate-300 mb-2">{{ data.federal_funding_profile.frpl_detail }}</p>
       {% endif %}
       {% if data.federal_funding_profile.ndaa_exposure %}
-      <div class="bg-amber-50 border border-amber-200 rounded p-3 mb-3">
-        <span class="text-xs font-semibold text-amber-700 uppercase"><abbr title="NDAA Section 889 — federal law banning certain Chinese-made surveillance equipment (Hikvision, Dahua). Federal funding recipients must comply or lose funding">NDAA</abbr> Exposure</span>
-        <p class="text-sm text-amber-900 mt-1">{{ data.federal_funding_profile.ndaa_exposure }}</p>
+      <div class="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded p-3 mb-3">
+        <span class="text-xs font-semibold text-amber-700 dark:text-amber-300 uppercase"><abbr title="NDAA Section 889 — federal law banning certain Chinese-made surveillance equipment (Hikvision, Dahua). Federal funding recipients must comply or lose funding">NDAA</abbr> Exposure</span>
+        <p class="text-sm text-amber-900 dark:text-amber-200 mt-1">{{ data.federal_funding_profile.ndaa_exposure }}</p>
       </div>
       {% endif %}
       {% if data.federal_funding_profile.funding_programs %}
       <div class="flex flex-wrap gap-1">
         {% for prog in data.federal_funding_profile.funding_programs %}
-        <span class="inline-block bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-medium">{{ prog }}</span>
+        <span class="inline-block bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 px-2 py-0.5 rounded text-xs font-medium">{{ prog }}</span>
         {% endfor %}
       </div>
       {% endif %}
@@ -905,7 +914,7 @@
               <th class="text-left py-2 px-1 w-8 no-print"></th>
               <th class="text-left py-2 px-3 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase w-1/6">Element</th>
               <th class="text-left py-2 px-3 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase w-2/5">Assessment</th>
-              <th class="text-left py-2 px-3 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase w-1/5">Gap to Close</th>
+              <th class="text-left py-2 px-3 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase w-2/5">Discovery Questions</th>
               <th class="text-left py-2 px-3 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase w-1/8">Confidence</th>
             </tr>
           </thead>
@@ -949,7 +958,32 @@
                 </div>
               </td>
               <td class="py-3 px-3">
-                {% if field.gap %}
+                {% if field.gap_questions is defined and field.gap_questions %}
+                <div class="space-y-2">
+                  {% for gq in field.gap_questions %}
+                  <div class="bg-amber-50 dark:bg-amber-950 border border-amber-100 dark:border-amber-900 rounded px-2.5 py-1.5 gap-question" data-meddic-key="{{ key }}" data-q-idx="{{ loop.index0 }}">
+                    <div class="flex items-start gap-1.5">
+                      <input type="checkbox" class="meddic-asked-check mt-0.5 accent-amber-500" data-key="{{ key }}" data-idx="{{ loop.index0 }}" title="Mark as asked" />
+                      <p class="text-xs text-amber-800 dark:text-amber-200 font-medium leading-snug">"{{ gq.text }}"</p>
+                    </div>
+                    {% if gq.rationale %}
+                    <p class="text-[10px] text-amber-600 dark:text-amber-400 italic mt-0.5 ml-5">{{ gq.rationale }}</p>
+                    {% endif %}
+                    <div class="flex gap-1 mt-1 ml-5">
+                      {% if gq.persona %}
+                      {% set persona_colors = {'champion': 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300', 'economic_buyer': 'bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300', 'influencer': 'bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300'} %}
+                      <span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-semibold {{ persona_colors.get(gq.persona, 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400') }}">{{ gq.persona | replace('_', ' ') }}</span>
+                      {% endif %}
+                      {% if gq.priority %}
+                      {% set pri_bg = {'high': 'bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300', 'medium': 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300', 'low': 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400'} %}
+                      <span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-semibold {{ pri_bg.get(gq.priority, 'bg-gray-100 text-gray-500') }}">{{ gq.priority }}</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+                <p class="text-[10px] text-gray-400 dark:text-slate-600 mt-1.5 meddic-asked-progress" data-key="{{ key }}"></p>
+                {% elif field.gap %}
                 <p class="text-xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950 rounded px-2 py-1">{{ field.gap }}</p>
                 {% else %}
                 <span class="text-xs text-gray-400">—</span>
@@ -989,7 +1023,7 @@
             <span class="text-xs font-medium text-gray-500">{{ event.date or 'Date unknown' }}</span>
             <span class="inline-block bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400 px-2 py-0.5 rounded text-xs">{{ event.category | humanize_id }}</span>
             {% if event.verkada_relevant %}
-            <span class="inline-block bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-medium">Verkada-relevant</span>
+            <span class="inline-block bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded text-xs font-medium">Verkada-relevant</span>
             {% endif %}
             {{ confidence_badge(event.confidence) }}
             {{ quality_badge(event.source_quality) }}
@@ -1180,7 +1214,7 @@
           </div>
           <div class="text-xs text-gray-400">{{ vm.mention_count }} mention{{ 's' if vm.mention_count != 1 else '' }}</div>
           {% if vm.is_displacement_target %}
-          <span class="inline-block bg-red-100 text-red-700 px-1.5 py-0.5 rounded text-xs mt-1">displacement target</span>
+          <span class="inline-block bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 px-1.5 py-0.5 rounded text-xs mt-1">displacement target</span>
           {% endif %}
         </div>
         {% endfor %}
@@ -1214,9 +1248,9 @@
         </div>
       </div>
       {% if data.incident_history.regulatory_exposure %}
-      <div class="bg-amber-50 border border-amber-200 rounded p-3 mb-3">
-        <span class="text-xs font-semibold text-amber-700 uppercase">Regulatory Exposure</span>
-        <p class="text-sm text-amber-900 mt-1">{{ data.incident_history.regulatory_exposure }}</p>
+      <div class="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded p-3 mb-3">
+        <span class="text-xs font-semibold text-amber-700 dark:text-amber-300 uppercase">Regulatory Exposure</span>
+        <p class="text-sm text-amber-900 dark:text-amber-200 mt-1">{{ data.incident_history.regulatory_exposure }}</p>
       </div>
       {% endif %}
       <div class="flex gap-1">
@@ -1248,7 +1282,7 @@
             <span class="text-sm font-semibold">{{ vehicle.vehicle }}</span>
             {{ confidence_badge(vehicle.confidence) }}
             {% if vehicle.verkada_contract_status %}
-            <span class="inline-block bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs font-medium">{{ vehicle.verkada_contract_status }}</span>
+            <span class="inline-block bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300 px-2 py-0.5 rounded text-xs font-medium">{{ vehicle.verkada_contract_status }}</span>
             {% endif %}
           </div>
           {% if vehicle.relevant_solicitations %}
@@ -1437,7 +1471,7 @@
           {% if data.verkada_gtm_strategy.poc_strategy.demo_modules %}
           <div class="flex flex-wrap gap-1 mt-2">
             {% for mod in data.verkada_gtm_strategy.poc_strategy.demo_modules %}
-            <span class="inline-block bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs font-medium">{{ mod }}</span>
+            <span class="inline-block bg-green-100 dark:bg-green-950 text-green-800 dark:text-green-300 px-2 py-0.5 rounded text-xs font-medium">{{ mod }}</span>
             {% endfor %}
           </div>
           {% endif %}
@@ -1468,7 +1502,7 @@
             <span class="inline-block bg-amber-200 text-amber-900 px-2 py-0.5 rounded text-xs font-bold">{{ prod }}</span>
             {% endfor %}
             {% for prod in data.verkada_gtm_strategy.bundle_recommendation.secondary_products %}
-            <span class="inline-block bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs">+ {{ prod }}</span>
+            <span class="inline-block bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded text-xs">+ {{ prod }}</span>
             {% endfor %}
           </div>
           <p class="text-xs text-amber-800 dark:text-amber-200">{{ data.verkada_gtm_strategy.bundle_recommendation.rationale }}</p>
@@ -1521,13 +1555,13 @@
         <div class="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg p-4 md:col-span-2">
           <h3 class="text-xs font-semibold text-red-700 dark:text-red-300 uppercase mb-2">Competitive Displacement</h3>
           {% if data.verkada_gtm_strategy.competitive_displacement.primary_target %}
-          <p class="text-sm text-red-900 font-medium mb-1">Target: {{ data.verkada_gtm_strategy.competitive_displacement.primary_target }}</p>
+          <p class="text-sm text-red-900 dark:text-red-200 font-medium mb-1">Target: {{ data.verkada_gtm_strategy.competitive_displacement.primary_target }}</p>
           {% endif %}
-          <p class="text-sm text-red-800">{{ data.verkada_gtm_strategy.competitive_displacement.displacement_playbook }}</p>
+          <p class="text-sm text-red-800 dark:text-red-200">{{ data.verkada_gtm_strategy.competitive_displacement.displacement_playbook }}</p>
           {% if data.verkada_gtm_strategy.competitive_displacement.proof_points %}
           <div class="flex flex-wrap gap-1 mt-2">
             {% for pp in data.verkada_gtm_strategy.competitive_displacement.proof_points %}
-            <span class="inline-block bg-red-100 text-red-700 px-2 py-0.5 rounded text-xs">{{ pp }}</span>
+            <span class="inline-block bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 px-2 py-0.5 rounded text-xs">{{ pp }}</span>
             {% endfor %}
           </div>
           {% endif %}
@@ -2799,6 +2833,40 @@
   })();
   </script>
 
+  <!-- Similar Accounts Modal -->
+  <div id="similar-modal" class="fixed inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm z-[160] hidden items-center justify-center no-print" onclick="if(event.target===this)closeSimilarModal()">
+    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-[640px] max-w-[95vw] max-h-[85vh] flex flex-col overflow-hidden">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-slate-700">
+        <div>
+          <h2 class="text-lg font-bold text-gray-900 dark:text-white">Find Similar Accounts</h2>
+          <p class="text-xs text-gray-400 dark:text-slate-500 mt-0.5">Each suggestion: ~$0.03. Each batch research: ~$1.50/account.</p>
+        </div>
+        <button onclick="closeSimilarModal()" class="text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div id="similar-body" class="flex-1 overflow-y-auto px-5 py-4">
+        <!-- Loading skeleton -->
+        <div id="similar-skeleton" class="space-y-3">
+          <div class="h-20 bg-gray-100 dark:bg-slate-800 rounded-lg animate-pulse"></div>
+          <div class="h-20 bg-gray-100 dark:bg-slate-800 rounded-lg animate-pulse" style="animation-delay:0.1s"></div>
+          <div class="h-20 bg-gray-100 dark:bg-slate-800 rounded-lg animate-pulse" style="animation-delay:0.2s"></div>
+          <div class="h-20 bg-gray-100 dark:bg-slate-800 rounded-lg animate-pulse" style="animation-delay:0.3s"></div>
+          <div class="h-20 bg-gray-100 dark:bg-slate-800 rounded-lg animate-pulse" style="animation-delay:0.4s"></div>
+        </div>
+        <!-- Results -->
+        <div id="similar-results" class="space-y-3 hidden"></div>
+        <div id="similar-error" class="hidden text-center text-red-600 dark:text-red-400 py-8"></div>
+      </div>
+      <div id="similar-footer" class="hidden px-5 py-3 border-t border-gray-200 dark:border-slate-700 flex items-center justify-between">
+        <span id="similar-count" class="text-sm text-gray-500 dark:text-slate-400"></span>
+        <button id="similar-research-btn" onclick="researchSelected()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+          Research Selected
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast container -->
   <div class="toast-container no-print" id="toast-container"></div>
 
@@ -3378,6 +3446,228 @@
       if (tip && !tip.contains(e.target) && !e.target.classList.contains('count-detail')) hideTipNow();
     });
   })();
+  </script>
+
+  <!-- Similar Accounts + MEDDIC Asked Questions -->
+  <script>
+  // --- Similar Accounts Modal ---
+  var similarData = [];
+
+  function openSimilarModal() {
+    var modal = document.getElementById('similar-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.getElementById('similar-skeleton').classList.remove('hidden');
+    document.getElementById('similar-results').classList.add('hidden');
+    document.getElementById('similar-error').classList.add('hidden');
+    document.getElementById('similar-footer').classList.add('hidden');
+
+    fetch('/api/similar-accounts', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({slug: SLUG, date: DATE})
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      document.getElementById('similar-skeleton').classList.add('hidden');
+      if (data.error) {
+        document.getElementById('similar-error').textContent = data.error;
+        document.getElementById('similar-error').classList.remove('hidden');
+        return;
+      }
+      similarData = data.accounts || [];
+      renderSimilarCards(similarData);
+    })
+    .catch(function(err) {
+      document.getElementById('similar-skeleton').classList.add('hidden');
+      document.getElementById('similar-error').textContent = 'Request failed: ' + err.message;
+      document.getElementById('similar-error').classList.remove('hidden');
+    });
+  }
+
+  function closeSimilarModal() {
+    var modal = document.getElementById('similar-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+
+  function renderSimilarCards(accounts) {
+    var container = document.getElementById('similar-results');
+    container.innerHTML = '';
+    accounts.forEach(function(acc, i) {
+      var score = acc.similarity_score || 0;
+      var barColor = score >= 70 ? '#16a34a' : score >= 40 ? '#d97706' : '#dc2626';
+      var card = document.createElement('div');
+      card.className = 'border border-gray-200 dark:border-slate-700 rounded-lg p-4 hover:border-blue-300 dark:hover:border-blue-600 transition-colors';
+      card.innerHTML =
+        '<div class="flex items-start gap-3">' +
+          '<input type="checkbox" class="similar-check mt-1 accent-blue-600" data-idx="' + i + '" onchange="updateResearchBtn()" />' +
+          '<div class="flex-1 min-w-0">' +
+            '<div class="flex items-center gap-2 mb-1">' +
+              '<span class="font-semibold text-gray-900 dark:text-white text-sm">' + (acc.name || 'Unknown') + '</span>' +
+              '<span class="inline-block bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded text-[10px] font-medium">' + (acc.vertical || '') + '</span>' +
+            '</div>' +
+            '<div class="flex items-center gap-3 mb-1.5">' +
+              '<span class="text-xs text-gray-500 dark:text-slate-400">' + (acc.size_estimate || '') + '</span>' +
+              '<span class="text-xs text-gray-400 dark:text-slate-500">' + (acc.geography || '') + '</span>' +
+            '</div>' +
+            '<div class="flex items-center gap-2 mb-1.5">' +
+              '<div class="flex-1 h-1.5 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">' +
+                '<div class="h-full rounded-full" style="width:' + score + '%;background:' + barColor + '"></div>' +
+              '</div>' +
+              '<span class="text-xs font-bold" style="color:' + barColor + '">' + score + '%</span>' +
+            '</div>' +
+            '<p class="text-xs text-gray-600 dark:text-slate-300">' + (acc.why_similar || '') + '</p>' +
+            '<p class="text-xs text-gray-400 dark:text-slate-500 mt-0.5 italic">' + (acc.opportunity_hypothesis || '') + '</p>' +
+          '</div>' +
+        '</div>';
+      container.appendChild(card);
+    });
+    container.classList.remove('hidden');
+    document.getElementById('similar-footer').classList.remove('hidden');
+    updateResearchBtn();
+  }
+
+  function updateResearchBtn() {
+    var checks = document.querySelectorAll('.similar-check:checked');
+    var btn = document.getElementById('similar-research-btn');
+    var count = document.getElementById('similar-count');
+    btn.disabled = checks.length === 0;
+    btn.textContent = 'Research ' + (checks.length || '') + ' Selected Account' + (checks.length !== 1 ? 's' : '');
+    count.textContent = checks.length + ' of ' + similarData.length + ' selected';
+  }
+
+  function researchSelected() {
+    var checks = document.querySelectorAll('.similar-check:checked');
+    var names = [];
+    checks.forEach(function(cb) { names.push(similarData[parseInt(cb.dataset.idx)].name); });
+    if (!names.length) return;
+
+    fetch('/api/batch-research', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({accounts: names})
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      closeSimilarModal();
+      showToast(data.count + ' account' + (data.count !== 1 ? 's' : '') + ' queued for research');
+      setTimeout(function() { window.open('/status.html', '_blank'); }, 1000);
+    })
+    .catch(function(err) {
+      showToast('Batch research failed: ' + err.message);
+    });
+  }
+
+  // --- MEDDIC Asked-Question Tracking ---
+  var ASKED_KEY = 'meddic-asked-' + SLUG + '-' + DATE;
+
+  function loadAskedState() {
+    try { return JSON.parse(localStorage.getItem(ASKED_KEY)) || {}; } catch(e) { return {}; }
+  }
+
+  function saveAskedState(state) {
+    try { localStorage.setItem(ASKED_KEY, JSON.stringify(state)); } catch(e) {}
+  }
+
+  // Initialize asked checkboxes
+  (function() {
+    var saved = loadAskedState();
+    document.querySelectorAll('.meddic-asked-check').forEach(function(cb) {
+      var key = cb.dataset.key + '-' + cb.dataset.idx;
+      if (saved[key]) cb.checked = true;
+      cb.addEventListener('change', function() {
+        var state = loadAskedState();
+        state[cb.dataset.key + '-' + cb.dataset.idx] = cb.checked;
+        saveAskedState(state);
+        updateAskedProgress(cb.dataset.key);
+        updateGlobalAskedProgress();
+      });
+    });
+    // Initial progress
+    var keys = {};
+    document.querySelectorAll('.meddic-asked-check').forEach(function(cb) { keys[cb.dataset.key] = true; });
+    Object.keys(keys).forEach(function(k) { updateAskedProgress(k); });
+    updateGlobalAskedProgress();
+  })();
+
+  function updateAskedProgress(key) {
+    var total = document.querySelectorAll('.meddic-asked-check[data-key="' + key + '"]').length;
+    var asked = document.querySelectorAll('.meddic-asked-check[data-key="' + key + '"]:checked').length;
+    var label = document.querySelector('.meddic-asked-progress[data-key="' + key + '"]');
+    if (label && total > 0) {
+      label.textContent = 'Asked: ' + asked + ' of ' + total;
+      label.style.color = asked === total ? '#16a34a' : '';
+    }
+  }
+
+  function updateGlobalAskedProgress() {
+    var total = document.querySelectorAll('.meddic-asked-check').length;
+    var asked = document.querySelectorAll('.meddic-asked-check:checked').length;
+    // Update export to include asked state
+    if (total > 0) {
+      var label = document.getElementById('meddic-progress-label');
+      if (label) {
+        var validated = document.querySelectorAll('.meddic-check:checked').length;
+        var vTotal = document.querySelectorAll('.meddic-check').length;
+        label.textContent = validated + ' / ' + vTotal + ' validated · ' + asked + ' / ' + total + ' questions asked';
+      }
+    }
+  }
+
+  // Override export to include gap questions
+  var _origExport = window.exportDiscoveryPlan;
+  window.exportDiscoveryPlan = function() {
+    var state = loadMeddicState();
+    var askedState = loadAskedState();
+    var account = '{{ data.snapshot.name }}';
+    var entityType = '{{ data.entity_type | default("") }}';
+    var date = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    var md = '# MEDDIC Discovery Plan — ' + account + '\nDate: ' + date + '\nAccount: ' + entityType + '\n';
+    var validatedCount = 0;
+    var totalCount = Object.keys(MEDDIC_LABELS).length;
+    Object.keys(MEDDIC_LABELS).forEach(function(key) {
+      var label = MEDDIC_LABELS[key];
+      var rowState = state[key] || {};
+      var isValid = rowState.checked || false;
+      if (isValid) validatedCount++;
+      var statusIcon = isValid ? '✓ VALIDATED' : '◯ NOT VALIDATED';
+      md += '\n## ' + label + ' ' + statusIcon + '\n';
+      var row = document.getElementById('meddic-row-' + key);
+      if (row) {
+        var assessP = row.querySelector('td:nth-child(3) p.text-gray-800, td:nth-child(3) p.dark\\:text-slate-200');
+        if (assessP) md += 'Assessment: ' + assessP.textContent.trim() + '\n';
+      }
+      // Gap questions
+      var gapQs = row ? row.querySelectorAll('.gap-question') : [];
+      if (gapQs.length > 0) {
+        md += '\n### Discovery Questions:\n';
+        gapQs.forEach(function(gqEl, idx) {
+          var qText = gqEl.querySelector('p.font-medium');
+          var rationale = gqEl.querySelector('p.italic');
+          var persona = gqEl.querySelector('span[class*="bg-"]');
+          var priority = gqEl.querySelectorAll('span[class*="bg-"]')[1];
+          var isAsked = askedState[key + '-' + idx] ? '✓' : '◯';
+          var priLabel = priority ? priority.textContent.trim().toUpperCase() : '';
+          var persLabel = persona ? persona.textContent.trim() : '';
+          md += '- [' + isAsked + '] [' + priLabel + ' | ' + persLabel + '] ' + (qText ? qText.textContent.trim() : '') + '\n';
+          if (rationale) md += '  *' + rationale.textContent.trim() + '*\n';
+        });
+      } else {
+        var gapP = row ? row.querySelector('td:nth-child(4) p') : null;
+        if (gapP) md += 'Gap to close: ' + gapP.textContent.trim() + '\n';
+      }
+      if (rowState.notes) md += '\nNotes: ' + rowState.notes + '\n';
+    });
+    md += '\n## Discovery Summary\nValidated: ' + validatedCount + '/' + totalCount + '\nLast updated: ' + date + '\n';
+    var blob = new Blob([md], { type: 'text/markdown' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'meddic-' + SLUG + '-' + new Date().toISOString().slice(0,10) + '.md';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    showToast('Discovery plan exported');
+  };
   </script>
 
 </body>
