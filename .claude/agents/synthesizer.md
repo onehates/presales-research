@@ -164,6 +164,12 @@ Most sections are propagated from subagent outputs, not re-synthesized. This pre
     - **COSTARS**: Note contract availability (may be login-walled — report `insufficient_data` if blocked).
     - **TIPS-USA**: Identify security-relevant solicitations.
     If no cooperative purchasing data exists for any vehicle, set `available_vehicles` to empty array.
+
+    **VERIFIED VERKADA CONTRACT NUMBERS (hard-coded — do NOT hallucinate others):**
+    - Sourcewell: **041524-VRK**
+    - OMNIA Partners: **R250206**
+    - HGACBuy: **SE05-26**
+    These are the ONLY verified contract numbers. If a vehicle's contract number is not in this list, do NOT invent one — output "contract number not verified" instead.
 13. **`displacement_intel`** — Merge: `vendor_hits` from tech-and-pain `displacement_vendor_hits`, `vendor_absence_finding` from `displacement_vendor_absence`, `tech_stack_mentions` from hiring-signals `tech_stack_mentions`.
 14. **`champion_candidates`** — Synthesize from `champion_signals.json` (primary, when available) + `leadership.json` named_individuals + company-bg `leadership` + hiring-signals `security_team_signals` + `persona/seller-profile.yml`. When `champion_signals.json` is present, USE its pre-computed weighted scores and score_breakdowns as the primary data source. For each named individual:
     - **`champion_fit_score`**: If present in `champion_signals.json`, use its `champion_fit_score` directly. Otherwise fall back to manual scoring rules below.

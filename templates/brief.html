@@ -220,6 +220,25 @@
     /* Hover lift for section cards and champion cards */
     .section-card { transition: border-left-color 0.2s, box-shadow 0.2s, transform 0.2s; }
     .section-card:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+
+    /* Collapsible sections */
+    .section-chevron {
+      width: 16px; height: 16px; flex-shrink: 0; cursor: pointer;
+      transition: transform 0.2s ease;
+      color: #94a3b8;
+    }
+    .section-card.collapsed .section-chevron { transform: rotate(-90deg); }
+    .section-body {
+      overflow: hidden;
+      transition: max-height 0.3s ease, opacity 0.2s ease;
+      max-height: 5000px; opacity: 1;
+    }
+    .section-card.collapsed .section-body {
+      max-height: 0 !important; opacity: 0;
+      margin-top: 0 !important; padding-top: 0 !important;
+    }
+    .section-card .section-header { cursor: pointer; user-select: none; }
+    @media print { .section-card.collapsed .section-body { max-height: none !important; opacity: 1 !important; } .section-chevron { display: none !important; } .collapse-controls { display: none !important; } }
     .champion-card { transition: box-shadow 0.2s, transform 0.2s; }
     .champion-card:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
     .timeline-item { transition: transform 0.15s; }
@@ -356,7 +375,13 @@
 
   <!-- Side Navigation -->
   <nav id="side-nav" class="hidden lg:block fixed top-[73px] left-0 w-52 h-[calc(100vh-73px)] overflow-y-auto bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 py-4 px-2 z-10 no-print">
-    <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider px-3 mb-2">Sections</div>
+    <div class="flex items-center justify-between px-3 mb-2">
+      <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Sections</span>
+      <span class="collapse-controls flex gap-1">
+        <button onclick="collapseAll()" class="tip text-[10px] text-gray-400 hover:text-blue-600 transition-colors" data-tip="Collapse all sections" title="Collapse All">&#x25B4;</button>
+        <button onclick="expandAll()" class="tip text-[10px] text-gray-400 hover:text-blue-600 transition-colors" data-tip="Expand all sections" title="Expand All">&#x25BE;</button>
+      </span>
+    </div>
     <a href="#sec-tldr" class="nav-link block text-xs text-gray-500 py-1.5 px-3 rounded border-l-2 border-transparent">TL;DR</a>
     <a href="#sec-snapshot" class="nav-link block text-xs text-gray-500 py-1.5 px-3 rounded border-l-2 border-transparent">Snapshot</a>
     {% if data.federal_funding_profile %}
@@ -1704,6 +1729,7 @@
         <kbd>/</kbd><span style="font-size:13px;color:#475569;">Focus chat + slash menu</span>
         <kbd>j</kbd><span style="font-size:13px;color:#475569;">Next section</span>
         <kbd>i</kbd><span style="font-size:13px;color:#475569;">Previous section</span>
+        <kbd>c</kbd><span style="font-size:13px;color:#475569;">Collapse / expand all sections</span>
         <kbd>p</kbd><span style="font-size:13px;color:#475569;">Print brief (Ctrl+P)</span>
         <kbd>Esc</kbd><span style="font-size:13px;color:#475569;">Close overlay / chat</span>
       </div>
@@ -2255,12 +2281,36 @@
       function nodeY(row) { return PAD + row * ROW_H; }
       function nodeCenter(col, row) { return { x: nodeX(col) + COL_W / 2, y: nodeY(row) + 36 / 2 + 10 }; }
 
+      // Tooltips for flowchart nodes
+      var flowTooltips = {
+        'OMNIA': 'OMNIA Partners — national cooperative purchasing program. Members buy through pre-negotiated contracts without their own RFP. Verkada contract: R250206.',
+        'HGACBuy': 'HGACBuy — Houston-Galveston Area Council cooperative purchasing. National coverage. Verkada contract: SE05-26.',
+        'Sourcewell': 'Sourcewell — national cooperative purchasing program (formerly NJPA). Multi-year contracts without competitive bidding. Verkada contract: 041524-VRK.',
+        'TIPS': 'TIPS — The Interlocal Purchasing System. Cooperative purchasing for SLED entities.',
+        'COSTARS': 'COSTARS — Pennsylvania statewide cooperative purchasing program.',
+        'Verkada': 'Verkada is an active vendor on this contract — products available at pre-negotiated pricing.',
+        'buyer': 'Account classification: where this entity sits in the buying universe. Drives which procurement paths apply.',
+        'contract': 'Verkada\'s active contract on this cooperative purchasing vehicle. Members can purchase without running their own RFP — speeds procurement from 6-12 months to 30-90 days.'
+      };
+      function getFlowTooltip(text, cls) {
+        for (var key in flowTooltips) {
+          if (text.indexOf(key) >= 0) return flowTooltips[key];
+        }
+        if (cls === 'buyer') return flowTooltips['buyer'];
+        if (cls === 'contract') return flowTooltips['contract'];
+        if (cls === 'vendor') return flowTooltips['Verkada'];
+        return '';
+      }
       function box(col, row, text, sub, cls) {
         const x = nodeX(col), y = nodeY(row);
         const display = text.length > 18 ? text.slice(0, 17) + '...' : text;
-        let h = `<rect x="${x}" y="${y + 4}" width="${COL_W}" height="${sub ? 44 : 36}" class="flow-node ${cls}"/>`;
-        h += `<text x="${x + COL_W/2}" y="${y + 24}" class="flow-label">${display}</text>`;
-        if (sub) h += `<text x="${x + COL_W/2}" y="${y + 40}" class="flow-sublabel">${sub}</text>`;
+        const tt = getFlowTooltip(text, cls);
+        const ttAttr = tt ? ` data-tooltip="${tt.replace(/"/g, '&quot;')}" style="pointer-events:visible;cursor:help"` : '';
+        let h = `<g${ttAttr}>`;
+        h += `<rect x="${x}" y="${y + 4}" width="${COL_W}" height="${sub ? 44 : 36}" class="flow-node ${cls}" style="pointer-events:visible"/>`;
+        h += `<text x="${x + COL_W/2}" y="${y + 24}" class="flow-label" style="pointer-events:none">${display}</text>`;
+        if (sub) h += `<text x="${x + COL_W/2}" y="${y + 40}" class="flow-sublabel" style="pointer-events:none">${sub}</text>`;
+        h += '</g>';
         return h;
       }
       function arrow(col1, row1, col2, row2) {
@@ -2341,6 +2391,10 @@
             allSections[currentSectionIdx].scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
           break;
+        case 'c':
+          e.preventDefault();
+          toggleAllSections();
+          break;
         case 'p':
           if (!e.ctrlKey && !e.metaKey) {
             e.preventDefault();
@@ -2358,6 +2412,85 @@
           break;
       }
     });
+
+    // --- Collapsible Sections ---
+    (function() {
+      var STORAGE_KEY = 'brief-collapsed-' + SLUG;
+      var cards = document.querySelectorAll('section.section-card');
+      var saved = {};
+      try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e) {}
+
+      var chevronSvg = '<svg class="section-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>';
+
+      cards.forEach(function(card) {
+        var secId = card.id;
+        if (!secId) return;
+        // Find the header row (first child div with flex)
+        var headerRow = card.querySelector('.flex.items-center.justify-between');
+        if (!headerRow) return;
+        // Add chevron before h2
+        var h2 = headerRow.querySelector('h2');
+        if (!h2) return;
+        var chevSpan = document.createElement('span');
+        chevSpan.innerHTML = chevronSvg;
+        chevSpan.style.display = 'inline-flex';
+        h2.parentNode.insertBefore(chevSpan, h2);
+        // Make header row clickable
+        headerRow.classList.add('section-header');
+        // Wrap remaining content in section-body
+        var body = document.createElement('div');
+        body.className = 'section-body';
+        var children = Array.from(card.children);
+        var pastHeader = false;
+        children.forEach(function(child) {
+          if (child === headerRow) { pastHeader = true; return; }
+          if (pastHeader) body.appendChild(child);
+        });
+        card.appendChild(body);
+        // Restore saved state
+        if (saved[secId]) card.classList.add('collapsed');
+        // Click handler
+        headerRow.addEventListener('click', function(e) {
+          // Don't toggle if clicking ask button or info icon
+          if (e.target.closest('.ask-btn') || e.target.closest('.info-icon')) return;
+          card.classList.toggle('collapsed');
+          persistState();
+        });
+      });
+
+      function persistState() {
+        var state = {};
+        cards.forEach(function(c) {
+          if (c.id && c.classList.contains('collapsed')) state[c.id] = true;
+        });
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+      }
+
+      window.collapseAll = function() {
+        cards.forEach(function(c) { if (c.id) c.classList.add('collapsed'); });
+        persistState();
+      };
+      window.expandAll = function() {
+        cards.forEach(function(c) { c.classList.remove('collapsed'); });
+        persistState();
+      };
+      window.toggleAllSections = function() {
+        var anyExpanded = Array.from(cards).some(function(c) { return !c.classList.contains('collapsed'); });
+        if (anyExpanded) { collapseAll(); } else { expandAll(); }
+      };
+
+      // Side-nav: clicking a collapsed section expands it
+      document.querySelectorAll('#side-nav a.nav-link').forEach(function(link) {
+        link.addEventListener('click', function() {
+          var id = link.getAttribute('href').slice(1);
+          var sec = document.getElementById(id);
+          if (sec && sec.classList.contains('collapsed')) {
+            sec.classList.remove('collapsed');
+            persistState();
+          }
+        });
+      });
+    })();
 
     // --- Draggable FAB + Panel ---
     const DRAG_THRESHOLD = 5;
@@ -2571,12 +2704,17 @@
   // === Annotate terms with tooltips (loaded from data/glossary.yml) ===
   (function() {
     var glossary = {{ glossary_terms | default([]) | tojson }};
-    // Split into free-text acronyms (no context) and contextual labels
+    // Split into free-text acronyms (no context), contextual labels, and pain phrases
     var acronyms = {};
     var contextTerms = {};
+    var painPhrases = {};
     glossary.forEach(function(t) {
-      if (t.context) {
-        contextTerms[t.label] = t.tooltip;
+      if (t.context === 'pain_phrase') {
+        // Pain phrases: store both snake_case and humanized forms
+        painPhrases[t.label.toLowerCase()] = t.tooltip;
+        painPhrases[t.label.replace(/_/g, ' ').toLowerCase()] = t.tooltip;
+      } else if (t.context) {
+        contextTerms[t.label.toLowerCase()] = t.tooltip;
       } else {
         acronyms[t.label] = t.tooltip;
       }
@@ -2584,6 +2722,7 @@
     // Free-text acronym annotation: wrap first occurrence per element
     document.querySelectorAll('main p, main dd, main span, main td').forEach(function(el) {
       if (el.closest('[data-tooltip]') || el.closest('abbr') || el.querySelector('abbr')) return;
+      if (el.closest('.count-detail-tip') || el.closest('#chat-panel')) return;
       for (var acr in acronyms) {
         var re = new RegExp('\\b(' + acr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')\\b');
         if (re.test(el.textContent) && !el.innerHTML.includes('<abbr')) {
@@ -2592,13 +2731,43 @@
         }
       }
     });
-    // Contextual label annotation: find badge/label spans whose text matches a contextual term
-    document.querySelectorAll('main span.badge, main span.inline-block, main span.text-xs, main td').forEach(function(el) {
-      if (el.hasAttribute('data-tooltip') || el.closest('abbr') || el.querySelector('abbr')) return;
+    // Contextual label + pain phrase annotation on chip/badge elements
+    // Walk ALL inline-block spans, bg-*-100 chips, text-xs labels, and td elements
+    document.querySelectorAll('main span[class*="bg-"], main span.inline-block, main span.text-xs, main td, main span[class*="px-"]').forEach(function(el) {
+      if (el.hasAttribute('data-tooltip') || el.closest('[data-tooltip]')) return;
+      if (el.closest('.count-detail-tip') || el.closest('#chat-panel')) return;
       var txt = el.textContent.trim();
-      if (contextTerms[txt]) {
-        el.setAttribute('data-tooltip', contextTerms[txt]);
+      var lower = txt.toLowerCase();
+      // Direct contextual match (case-insensitive)
+      if (contextTerms[lower]) {
+        el.setAttribute('data-tooltip', contextTerms[lower]);
         el.style.cursor = 'help';
+        return;
+      }
+      // Pain phrase match: try the full text as snake_case and as-is
+      var snaked = lower.replace(/\s+/g, '_');
+      if (painPhrases[snaked]) {
+        el.setAttribute('data-tooltip', painPhrases[snaked]);
+        el.style.cursor = 'help';
+        return;
+      }
+      if (painPhrases[lower]) {
+        el.setAttribute('data-tooltip', painPhrases[lower]);
+        el.style.cursor = 'help';
+        return;
+      }
+      // Partial keyword match: if any glossary acronym appears as a word in the chip text
+      if (txt.length > 3) {
+        for (var acr in acronyms) {
+          if (acr.length >= 3) {
+            var kwRe = new RegExp('\\b' + acr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+            if (kwRe.test(txt)) {
+              el.setAttribute('data-tooltip', acronyms[acr]);
+              el.style.cursor = 'help';
+              return;
+            }
+          }
+        }
       }
     });
   })();

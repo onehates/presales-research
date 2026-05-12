@@ -19,6 +19,19 @@
     code { font-size: 0.85em; }
     .client-row:hover { background: #f8fafc; }
     .dark .client-row:hover { background: #1e293b; }
+    /* Collapsible sections */
+    .doc-chevron {
+      width: 18px; height: 18px; flex-shrink: 0; cursor: pointer;
+      transition: transform 0.2s ease; color: #94a3b8;
+    }
+    .doc-section.collapsed .doc-chevron { transform: rotate(-90deg); }
+    .doc-body {
+      overflow: hidden; transition: max-height 0.3s ease, opacity 0.2s ease;
+      max-height: 5000px; opacity: 1;
+    }
+    .doc-section.collapsed .doc-body { max-height: 0 !important; opacity: 0; }
+    .doc-section h3 { cursor: pointer; user-select: none; }
+    @media print { .doc-section.collapsed .doc-body { max-height: none !important; opacity: 1 !important; } .doc-chevron { display: none !important; } }
   </style>
 </head>
 <body class="bg-gray-50 dark:bg-slate-950 text-gray-800 dark:text-slate-200">
@@ -332,20 +345,75 @@ chat_server.py    FastAPI server (homepage, chat, API, status)</pre>
     }
   </script>
 
-  <!-- Scroll spy -->
+  <!-- Scroll spy + collapsible sections -->
   <script>
-    const sections = document.querySelectorAll('main section[id]');
-    const navLinks = document.querySelectorAll('.doc-nav a');
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
+    var docSections = document.querySelectorAll('main section[id]');
+    var navLinks = document.querySelectorAll('.doc-nav a');
+
+    // Scroll spy
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
         if (entry.isIntersecting) {
-          navLinks.forEach(l => l.classList.remove('active'));
-          const link = document.querySelector(`.doc-nav a[href="#${entry.target.id}"]`);
+          navLinks.forEach(function(l) { l.classList.remove('active'); });
+          var link = document.querySelector('.doc-nav a[href="#' + entry.target.id + '"]');
           if (link) link.classList.add('active');
         }
       });
     }, { rootMargin: '-80px 0px -70% 0px' });
-    sections.forEach(s => observer.observe(s));
+    docSections.forEach(function(s) { observer.observe(s); });
+
+    // Collapsible docs sections
+    var DOCS_KEY = 'docs-collapsed';
+    var saved = {};
+    try { saved = JSON.parse(localStorage.getItem(DOCS_KEY)) || {}; } catch(e) {}
+
+    var chevSvg = '<svg class="doc-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>';
+
+    docSections.forEach(function(sec) {
+      sec.classList.add('doc-section');
+      var h3 = sec.querySelector('h3');
+      if (!h3) return;
+      // Insert chevron
+      var span = document.createElement('span');
+      span.innerHTML = chevSvg;
+      span.style.display = 'inline-flex';
+      span.style.verticalAlign = 'middle';
+      span.style.marginRight = '6px';
+      h3.insertBefore(span, h3.firstChild);
+      // Wrap body
+      var body = document.createElement('div');
+      body.className = 'doc-body';
+      var children = Array.from(sec.children);
+      var past = false;
+      children.forEach(function(child) {
+        if (child === h3) { past = true; return; }
+        if (past) body.appendChild(child);
+      });
+      sec.appendChild(body);
+      // Restore state
+      if (saved[sec.id]) sec.classList.add('collapsed');
+      // Click
+      h3.addEventListener('click', function() {
+        sec.classList.toggle('collapsed');
+        var state = {};
+        docSections.forEach(function(s) { if (s.classList.contains('collapsed')) state[s.id] = true; });
+        try { localStorage.setItem(DOCS_KEY, JSON.stringify(state)); } catch(e) {}
+      });
+    });
+
+    // Side-nav: expand collapsed section on click
+    navLinks.forEach(function(link) {
+      link.addEventListener('click', function() {
+        var id = link.getAttribute('href').slice(1);
+        var sec = document.getElementById(id);
+        if (sec && sec.classList.contains('collapsed')) {
+          sec.classList.remove('collapsed');
+          var state = {};
+          docSections.forEach(function(s) { if (s.classList.contains('collapsed')) state[s.id] = true; });
+          try { localStorage.setItem(DOCS_KEY, JSON.stringify(state)); } catch(e) {}
+        }
+      });
+    });
   </script>
 
 </body>
