@@ -119,6 +119,18 @@
     }
     .meddic-notes:focus { border-color: #93c5fd; }
     .meddic-notes::placeholder { color: #cbd5e1; }
+    /* MEDDIC validated row */
+    .meddic-row-validated { background: #f0fdf4 !important; border-left: 3px solid #86efac; }
+    .dark .meddic-row-validated { background: #052e16 !important; border-left-color: #16a34a; }
+    .dark .meddic-row-validated td { color: #d1fae5; }
+    .dark .meddic-row-validated .text-gray-800 { color: #d1fae5 !important; }
+    .dark .meddic-row-validated .text-gray-500,
+    .dark .meddic-row-validated .text-gray-600 { color: #86efac !important; }
+    /* MEDDIC save/unsaved indicators */
+    .meddic-save-btn { transition: all 0.15s; }
+    .meddic-save-btn:hover { opacity: 0.85; }
+    .meddic-saved-indicator { font-size: 10px; }
+    .meddic-unsaved-indicator { font-size: 10px; }
 
     /* Keyboard shortcut overlay */
     .kbd-overlay {
@@ -695,12 +707,17 @@
           Ask
         </button>
       </div>
-      <!-- Progress bar -->
-      <div class="flex items-center gap-3 mb-4 no-print">
+      <!-- Progress bar + action buttons -->
+      <div class="flex items-center gap-3 mb-4 no-print flex-wrap">
         <div class="meddic-progress-bar flex-1 max-w-[240px]">
           <div id="meddic-progress-fill" class="meddic-progress-fill" style="width:0%"></div>
         </div>
         <span id="meddic-progress-label" class="text-xs font-medium text-gray-500">0 / 7 validated</span>
+        <div class="flex gap-2 ml-auto">
+          <button onclick="saveMeddicAll()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded font-medium">Save All</button>
+          <button onclick="clearMeddicAll()" class="bg-gray-200 hover:bg-gray-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-gray-700 dark:text-slate-300 text-xs px-3 py-1 rounded font-medium">Clear All</button>
+          <button onclick="exportDiscoveryPlan()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1 rounded font-medium">Export Discovery Plan</button>
+        </div>
       </div>
       {% if data.meddic_qualification is string %}
       <p class="text-sm text-gray-500 italic">{{ data.meddic_qualification }}</p>
@@ -748,7 +765,12 @@
                   {% endfor %}
                 </div>
                 {% endif %}
-                <textarea class="meddic-notes mt-2 no-print" data-key="{{ key }}" placeholder="Discovery notes..." oninput="saveMeddicState()"></textarea>
+                <textarea class="meddic-notes mt-2 no-print" data-key="{{ key }}" placeholder="Discovery notes..." oninput="markMeddicUnsaved('{{ key }}')"></textarea>
+                <div class="flex items-center gap-2 mt-1 no-print">
+                  <button class="meddic-save-btn bg-blue-600 hover:bg-blue-700 text-white text-xs px-2 py-0.5 rounded" data-key="{{ key }}" onclick="saveMeddicRow('{{ key }}')">Save</button>
+                  <span class="meddic-saved-indicator text-green-600 dark:text-green-400 hidden" data-key="{{ key }}">✓ Saved</span>
+                  <span class="meddic-unsaved-indicator text-amber-600 dark:text-amber-400 hidden" data-key="{{ key }}">● Unsaved</span>
+                </div>
               </td>
               <td class="py-3 px-3">
                 {% if field.gap %}
@@ -2037,17 +2059,94 @@
 
     // --- MEDDIC interactive checklist ---
     const MEDDIC_STORAGE = `meddic_${SLUG}`;
+    const MEDDIC_LABELS = {
+      metrics: 'Metrics', economic_buyer: 'Economic Buyer', decision_criteria: 'Decision Criteria',
+      decision_process: 'Decision Process', identify_pain: 'Identify Pain', champion: 'Champion', competition: 'Competition'
+    };
     function loadMeddicState() {
       try { return JSON.parse(localStorage.getItem(MEDDIC_STORAGE)) || {}; } catch(e) { return {}; }
     }
-    window.saveMeddicState = function() {
+    function getMeddicRowState(key) {
+      const cb = document.querySelector(`.meddic-check[data-key="${key}"]`);
+      const notes = document.querySelector(`.meddic-notes[data-key="${key}"]`);
+      return { checked: cb ? cb.checked : false, notes: notes ? notes.value : '' };
+    }
+    function showMeddicIndicator(key, type) {
+      const saved = document.querySelector(`.meddic-saved-indicator[data-key="${key}"]`);
+      const unsaved = document.querySelector(`.meddic-unsaved-indicator[data-key="${key}"]`);
+      if (saved) saved.classList.toggle('hidden', type !== 'saved');
+      if (unsaved) unsaved.classList.toggle('hidden', type !== 'unsaved');
+      if (type === 'saved' && saved) {
+        const btn = document.querySelector(`.meddic-save-btn[data-key="${key}"]`);
+        if (btn) { btn.textContent = 'Saved ✓'; btn.classList.replace('bg-blue-600','bg-green-600'); btn.classList.replace('hover:bg-blue-700','hover:bg-green-700'); }
+        setTimeout(() => {
+          if (btn) { btn.textContent = 'Save'; btn.classList.replace('bg-green-600','bg-blue-600'); btn.classList.replace('hover:bg-green-700','hover:bg-blue-700'); }
+        }, 2000);
+      }
+    }
+    window.markMeddicUnsaved = function(key) {
+      showMeddicIndicator(key, 'unsaved');
+    };
+    window.saveMeddicRow = function(key) {
+      const state = loadMeddicState();
+      state[key] = getMeddicRowState(key);
+      try { localStorage.setItem(MEDDIC_STORAGE, JSON.stringify(state)); } catch(e) {}
+      showMeddicIndicator(key, 'saved');
+      showToast('Saved: ' + (MEDDIC_LABELS[key] || key));
+    };
+    window.saveMeddicAll = function() {
       const state = {};
       document.querySelectorAll('.meddic-check').forEach(cb => {
-        const key = cb.dataset.key;
-        const notes = document.querySelector(`.meddic-notes[data-key="${key}"]`);
-        state[key] = { checked: cb.checked, notes: notes ? notes.value : '' };
+        state[cb.dataset.key] = getMeddicRowState(cb.dataset.key);
       });
       try { localStorage.setItem(MEDDIC_STORAGE, JSON.stringify(state)); } catch(e) {}
+      Object.keys(state).forEach(k => showMeddicIndicator(k, 'saved'));
+      showToast('All MEDDIC rows saved');
+    };
+    window.clearMeddicAll = function() {
+      if (!confirm('Clear all MEDDIC checkboxes and notes? This cannot be undone.')) return;
+      document.querySelectorAll('.meddic-check').forEach(cb => { cb.checked = false; });
+      document.querySelectorAll('.meddic-notes').forEach(ta => { ta.value = ''; });
+      try { localStorage.removeItem(MEDDIC_STORAGE); } catch(e) {}
+      document.querySelectorAll('.meddic-saved-indicator, .meddic-unsaved-indicator').forEach(el => el.classList.add('hidden'));
+      updateMeddicProgress();
+      showToast('MEDDIC state cleared');
+    };
+    window.exportDiscoveryPlan = function() {
+      const state = loadMeddicState();
+      const account = '{{ data.snapshot.name }}';
+      const entityType = '{{ data.entity_type | default("") }}';
+      const date = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      let md = `# MEDDIC Discovery Plan — ${account}\nDate: ${date}\nAccount: ${entityType}\n`;
+      let validatedCount = 0;
+      const totalCount = Object.keys(MEDDIC_LABELS).length;
+      Object.keys(MEDDIC_LABELS).forEach(key => {
+        const label = MEDDIC_LABELS[key];
+        const rowState = state[key] || {};
+        const isValid = rowState.checked || false;
+        if (isValid) validatedCount++;
+        const statusIcon = isValid ? '✓ VALIDATED' : '◯ NOT VALIDATED';
+        md += `\n## ${label} ${statusIcon}\n`;
+        // Get assessment from DOM
+        const row = document.getElementById('meddic-row-' + key);
+        if (row) {
+          const assessP = row.querySelector('td:nth-child(3) p.text-gray-800, td:nth-child(3) p.dark\\:text-slate-200');
+          if (assessP) md += `Assessment: ${assessP.textContent.trim()}\n`;
+          const gapP = row.querySelector('td:nth-child(4) p');
+          if (gapP) md += `Gap to close: ${gapP.textContent.trim()}\n`;
+          const confBadge = row.querySelector('td:nth-child(5) span[data-tooltip]');
+          if (confBadge) md += `Confidence: ${confBadge.textContent.trim()}\n`;
+        }
+        if (rowState.notes) md += `Discovery notes: ${rowState.notes}\n`;
+      });
+      md += `\n## Discovery Summary\nValidated: ${validatedCount}/${totalCount}\nLast updated: ${date}\n`;
+      const blob = new Blob([md], { type: 'text/markdown' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `meddic-${SLUG}-${new Date().toISOString().slice(0,10)}.md`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      showToast('Discovery plan exported');
     };
     window.updateMeddicProgress = function() {
       const checks = document.querySelectorAll('.meddic-check');
@@ -2062,12 +2161,16 @@
         label.textContent = `${validated} / ${total} validated`;
         label.style.color = validated === total ? '#16a34a' : '#64748b';
       }
-      // Highlight validated rows
+      // Highlight validated rows with CSS class (dark-mode aware)
       checks.forEach(cb => {
         const row = document.getElementById('meddic-row-' + cb.dataset.key);
-        if (row) row.style.background = cb.checked ? '#f0fdf4' : '';
+        if (row) {
+          if (cb.checked) { row.classList.add('meddic-row-validated'); }
+          else { row.classList.remove('meddic-row-validated'); }
+        }
       });
-      saveMeddicState();
+      // Mark checkbox changes as unsaved
+      checks.forEach(cb => { markMeddicUnsaved(cb.dataset.key); });
     };
     // Restore MEDDIC state on load
     (function() {
@@ -2077,8 +2180,16 @@
         const notes = document.querySelector(`.meddic-notes[data-key="${key}"]`);
         if (cb && saved[key].checked) cb.checked = true;
         if (notes && saved[key].notes) notes.value = saved[key].notes;
+        // Show saved indicator for rows that have persisted state
+        if (saved[key].checked || saved[key].notes) showMeddicIndicator(key, 'saved');
       });
       if (document.querySelector('.meddic-check')) updateMeddicProgress();
+      // After initial load, clear unsaved indicators (they're all saved from storage)
+      setTimeout(() => {
+        Object.keys(saved).forEach(key => {
+          if (saved[key].checked || saved[key].notes) showMeddicIndicator(key, 'saved');
+        });
+      }, 100);
     })();
 
     // --- Procurement Flowchart SVG ---
@@ -2379,6 +2490,7 @@
     container.appendChild(el);
     setTimeout(function() { el.classList.add('removing'); setTimeout(function() { el.remove(); }, 200); }, duration);
   };
+  window.showToast = function(msg) { toast(msg, 'green', 2000); };
 
   // === Dark mode ===
   function toggleDarkMode() {
