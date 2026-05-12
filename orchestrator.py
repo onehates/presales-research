@@ -28,6 +28,10 @@ try:
 except ImportError:
     anthropic = None
 
+# Debug: confirm API key is available in this process
+_key = os.environ.get("ANTHROPIC_API_KEY", "")
+print(f"[orchestrator] ANTHROPIC_API_KEY: {_key[:15] + '...' if _key else 'NOT SET'}", flush=True)
+
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
