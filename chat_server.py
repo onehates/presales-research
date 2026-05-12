@@ -22,6 +22,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+import httpx
 import yaml
 
 import anthropic
@@ -474,6 +475,29 @@ async def api_patch_brief(slug: str, date: str, update: BriefMetaUpdate):
 @app.get("/health")
 async def health():
     return {"status": "ok", "briefs": len(list(BRIEFS_DIR.glob("*.json")))}
+
+
+# ---------------------------------------------------------------------------
+# Autocomplete suggestions
+# ---------------------------------------------------------------------------
+
+@app.get("/api/suggest")
+async def suggest(q: str = Query(default="")):
+    """Return autocomplete suggestions from Google's suggestion API."""
+    if not q or len(q) < 2:
+        return {"suggestions": []}
+    try:
+        async with httpx.AsyncClient(timeout=2.0) as client:
+            r = await client.get(
+                "https://suggestqueries.google.com/complete/search",
+                params={"client": "firefox", "q": q},
+            )
+            data = r.json()
+            raw = data[1] if len(data) > 1 else []
+            suggestions = [s for s in raw if len(s) <= 60][:8]
+            return {"suggestions": suggestions}
+    except Exception:
+        return {"suggestions": []}
 
 
 # ---------------------------------------------------------------------------

@@ -101,8 +101,14 @@
     <section class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-6 mb-8">
       <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-1">Research a new account</h2>
       <p class="text-xs text-gray-400 dark:text-slate-500 mb-4">Cost: ~$1.50 fresh, ~$0.40 cached &middot; Time: 5-9 minutes</p>
-      <form id="research-form" class="flex gap-3" onsubmit="launchResearch(event)">
-        <input id="company-input" type="text" placeholder="Enter company or account name..." class="flex-1 border border-gray-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-lg px-4 py-3 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 dark:focus:ring-blue-900" required />
+      <form id="research-form" class="flex gap-3" onsubmit="launchResearch(event)" autocomplete="off">
+        <div class="flex-1 relative">
+          <input id="company-input" type="text" placeholder="Enter company or account name..." class="w-full border border-gray-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-lg px-4 py-3 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 dark:focus:ring-blue-900" required autocomplete="off" />
+          <div id="suggest-spinner" class="hidden absolute right-3 top-1/2 -translate-y-1/2">
+            <svg class="animate-spin h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+          </div>
+          <ul id="suggest-dropdown" class="hidden absolute z-50 left-0 right-0 top-full mt-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden"></ul>
+        </div>
         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap">
           Start Research
         </button>
@@ -315,6 +321,84 @@
     if (e.target.closest('button, a, input')) return;
     if (htmlExists) window.location.href = '/briefs/' + slug + '-' + date + '.html';
   }
+
+  // === Autocomplete suggestions ===
+  (function() {
+    var input = document.getElementById('company-input');
+    var dropdown = document.getElementById('suggest-dropdown');
+    var spinner = document.getElementById('suggest-spinner');
+    var timer = null;
+    var activeIdx = -1;
+    var suggestions = [];
+
+    function showDropdown(items) {
+      suggestions = items;
+      activeIdx = -1;
+      if (!items.length) { dropdown.classList.add('hidden'); return; }
+      dropdown.innerHTML = items.map(function(s, i) {
+        return '<li class="suggest-item px-4 py-2 text-sm text-gray-700 dark:text-slate-200 cursor-pointer hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors" data-idx="' + i + '">' + s.replace(/</g, '&lt;') + '</li>';
+      }).join('');
+      dropdown.classList.remove('hidden');
+    }
+
+    function selectItem(idx) {
+      if (idx >= 0 && idx < suggestions.length) {
+        input.value = suggestions[idx];
+        dropdown.classList.add('hidden');
+        input.focus();
+      }
+    }
+
+    function updateActive() {
+      dropdown.querySelectorAll('.suggest-item').forEach(function(el, i) {
+        el.classList.toggle('bg-blue-50', i === activeIdx);
+        el.classList.toggle('dark:bg-slate-700', i === activeIdx);
+      });
+    }
+
+    input.addEventListener('input', function() {
+      var q = input.value.trim();
+      clearTimeout(timer);
+      if (q.length < 2) { dropdown.classList.add('hidden'); return; }
+      timer = setTimeout(function() {
+        spinner.classList.remove('hidden');
+        fetch('/api/suggest?q=' + encodeURIComponent(q))
+          .then(function(r) { return r.json(); })
+          .then(function(data) { showDropdown(data.suggestions || []); })
+          .catch(function() { dropdown.classList.add('hidden'); })
+          .finally(function() { spinner.classList.add('hidden'); });
+      }, 200);
+    });
+
+    input.addEventListener('keydown', function(e) {
+      if (dropdown.classList.contains('hidden')) return;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        activeIdx = Math.min(activeIdx + 1, suggestions.length - 1);
+        updateActive();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        activeIdx = Math.max(activeIdx - 1, 0);
+        updateActive();
+      } else if (e.key === 'Enter' && activeIdx >= 0) {
+        e.preventDefault();
+        selectItem(activeIdx);
+      } else if (e.key === 'Escape') {
+        dropdown.classList.add('hidden');
+      }
+    });
+
+    dropdown.addEventListener('click', function(e) {
+      var item = e.target.closest('.suggest-item');
+      if (item) selectItem(parseInt(item.dataset.idx));
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('#company-input') && !e.target.closest('#suggest-dropdown')) {
+        dropdown.classList.add('hidden');
+      }
+    });
+  })();
 
   // === Research launcher ===
   function launchResearch(e) {
