@@ -45,6 +45,29 @@
     mark { background: #fef08a; border-radius: 2px; padding: 0 1px; }
     .dark mark { background: #854d0e; color: #fef9c3; }
     @media print { body { background: white !important; color: black !important; } .no-print { display: none !important; } }
+    /* Page fade-in transition */
+    @media (prefers-reduced-motion: no-preference) {
+      body { animation: pageIn 0.25s ease-out; }
+    }
+    @keyframes pageIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    @media print { body { animation: none !important; } }
+    /* Recently viewed strip */
+    .recent-strip { overflow-x: auto; scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; -webkit-overflow-scrolling: touch; }
+    .recent-strip::-webkit-scrollbar { height: 4px; }
+    .recent-strip::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+    .dark .recent-strip::-webkit-scrollbar-thumb { background: #334155; }
+    .recent-card { min-width: 200px; max-width: 240px; flex-shrink: 0; transition: border-color 0.2s, box-shadow 0.2s; cursor: pointer; }
+    .recent-card:hover { border-color: #93c5fd; box-shadow: 0 4px 12px rgba(59,130,246,0.10); }
+    .dark .recent-card:hover { border-color: #3b82f6; }
+    /* Activity sidebar */
+    #activity-sidebar { transition: width 0.2s ease, opacity 0.2s; }
+    #activity-sidebar.collapsed { width: 32px; overflow: hidden; }
+    #activity-sidebar.collapsed .sidebar-content { opacity: 0; pointer-events: none; }
+    .activity-event { transition: background 0.15s; }
+    .activity-event:hover { background: #f8fafc; }
+    .dark .activity-event:hover { background: #1e293b; }
+    /* Skeleton pulse */
+    .skel { border-radius: 6px; }
   </style>
 </head>
 <body class="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 antialiased min-h-screen flex flex-col">
@@ -121,6 +144,12 @@
       </div>
     </section>
 
+    <!-- Recently Viewed -->
+    <section id="recently-viewed" class="mb-8 hidden">
+      <h2 class="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-3">Recently Viewed</h2>
+      <div class="recent-strip flex gap-3 pb-1" id="recent-strip"></div>
+    </section>
+
     <!-- Existing Briefs heading + search -->
     <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
       <h2 class="text-lg font-bold text-gray-900 dark:text-white">Existing Briefs ({{ total_briefs }})</h2>
@@ -157,16 +186,28 @@
     </section>
 
     <!-- No search results message -->
-    <div id="no-results" class="hidden col-span-2 text-center py-12 mb-8">
-      <p class="text-gray-400 dark:text-slate-500 text-sm">No briefs match '<span id="no-results-query"></span>'. <button onclick="document.getElementById('brief-search').value='';filterBriefs()" class="text-blue-600 hover:underline">Clear search</button></p>
+    <div id="no-results" class="hidden text-center py-12 mb-8">
+      <svg class="w-16 h-16 mx-auto text-gray-200 dark:text-slate-700 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      <p class="text-gray-500 dark:text-slate-400 text-sm mb-2">No briefs match '<span id="no-results-query" class="font-medium"></span>'</p>
+      <div class="flex gap-3 justify-center">
+        <button onclick="document.getElementById('brief-search').value='';filterBriefs()" class="text-xs text-blue-600 hover:underline dark:text-blue-400">Clear filters</button>
+        <button onclick="document.getElementById('company-input').value=document.getElementById('brief-search').value;document.getElementById('company-input').focus()" class="text-xs text-blue-600 hover:underline dark:text-blue-400">Research as new account</button>
+      </div>
     </div>
 
     <!-- Brief Cards Grid -->
     <section id="briefs-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
       {% if not briefs %}
       <div class="col-span-2 text-center py-16">
-        <div class="text-gray-300 dark:text-slate-500 text-5xl mb-4">&#128269;</div>
-        <p class="text-gray-500 dark:text-slate-400 text-sm">No briefs yet. Run your first research above.</p>
+        <svg class="w-24 h-24 mx-auto text-gray-200 dark:text-slate-700 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" opacity="0.4"/>
+        </svg>
+        <h3 class="text-lg font-semibold text-gray-600 dark:text-slate-300 mb-2">No briefs yet</h3>
+        <p class="text-sm text-gray-400 dark:text-slate-500 mb-4">Research your first account to get started</p>
+        <button onclick="document.getElementById('company-input').focus()" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium">&uarr; Use the search bar above</button>
       </div>
       {% endif %}
 
@@ -255,6 +296,28 @@
       <span>{{ total_briefs }} brief{{ 's' if total_briefs != 1 else '' }} across {{ unique_accounts }} account{{ 's' if unique_accounts != 1 else '' }}</span>
     </div>
   </footer>
+
+  <!-- Activity Sidebar -->
+  <aside id="activity-sidebar" class="no-print fixed right-0 top-0 bottom-0 w-[280px] bg-white dark:bg-slate-900 border-l border-gray-200 dark:border-slate-800 shadow-lg z-40 flex flex-col collapsed">
+    <button onclick="toggleActivitySidebar()" class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full bg-white dark:bg-slate-900 border border-r-0 border-gray-200 dark:border-slate-800 rounded-l-lg px-1 py-3 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300" title="Activity log">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    </button>
+    <div class="sidebar-content flex flex-col h-full transition-opacity duration-200">
+      <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-slate-800">
+        <h3 class="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Recent Activity</h3>
+        <select id="activity-filter" onchange="renderActivityLog()" class="text-[10px] border border-gray-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 rounded px-1 py-0.5 outline-none">
+          <option value="all">All</option>
+          <option value="research_started">Research</option>
+          <option value="brief_viewed">Views</option>
+          <option value="brief_deleted">Deletes</option>
+        </select>
+      </div>
+      <div id="activity-list" class="flex-1 overflow-y-auto text-xs"></div>
+      <div class="px-4 py-2 border-t border-gray-100 dark:border-slate-800">
+        <button onclick="clearActivityLog()" class="text-[10px] text-gray-400 hover:text-red-500 dark:hover:text-red-400">Clear log</button>
+      </div>
+    </div>
+  </aside>
 
   <!-- Toast container -->
   <div class="toast-container" id="toast-container"></div>
@@ -408,6 +471,7 @@
     const btn = e.target.querySelector('button[type="submit"]');
     btn.textContent = 'Launching...';
     btn.disabled = true;
+    if (window.logActivity) logActivity('research_started', company);
     toast('Research started for ' + company + '... Redirecting to dashboard', 'blue', 4000);
     fetch('/api/research', {
       method: 'POST',
@@ -467,6 +531,7 @@
   function deleteBrief(slug, date, name) {
     if (!confirm('Delete brief for "' + name + '" (' + date + ')? This cannot be undone.')) return;
     fetch('/api/briefs/' + slug + '/' + date, {method: 'DELETE'}).then(r => r.json()).then(() => {
+      if (window.logActivity) logActivity('brief_deleted', name);
       toast('Brief deleted', 'green', 3000);
       const card = document.querySelector('[data-slug="' + slug + '"][data-date="' + date + '"]');
       if (card) { card.style.transition = 'opacity 0.3s, transform 0.3s'; card.style.opacity = '0'; card.style.transform = 'scale(0.95)'; setTimeout(() => card.remove(), 300); }
@@ -632,6 +697,120 @@
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openPalette(); }
     if ((e.metaKey || e.ctrlKey) && e.key === '/') { e.preventDefault(); document.getElementById('brief-search').focus(); }
   });
+
+  // === Recently Viewed Strip ===
+  (function() {
+    var KEY = 'recently-viewed-briefs';
+    var strip = document.getElementById('recent-strip');
+    var section = document.getElementById('recently-viewed');
+    if (!strip || !section) return;
+    try {
+      var items = JSON.parse(localStorage.getItem(KEY)) || [];
+      if (!items.length) return;
+      section.classList.remove('hidden');
+      var vertColors = {{ "{'K-12':'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300','Higher Ed':'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300','Healthcare':'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300','Government':'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300','Retail':'bg-rose-100 text-rose-700 dark:bg-rose-900 dark:text-rose-300'}" | safe }};
+      items.slice(0, 8).forEach(function(item) {
+        var ago = timeAgo(item.viewed_at);
+        var vc = vertColors[item.vertical] || 'bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-slate-300';
+        var card = document.createElement('a');
+        card.href = '/briefs/' + item.slug + '-' + item.date + '.html';
+        card.className = 'recent-card block bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-3';
+        card.innerHTML = '<p class="text-sm font-semibold text-gray-900 dark:text-white truncate">' + esc(item.name) + '</p>' +
+          '<div class="flex items-center gap-2 mt-1.5">' +
+          '<span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ' + vc + '">' + esc(item.vertical || '—') + '</span>' +
+          '<span class="text-[10px] text-gray-400 dark:text-slate-500">' + ago + '</span>' +
+          '</div>';
+        strip.appendChild(card);
+      });
+    } catch(e) {}
+  })();
+
+  function esc(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+  function timeAgo(ts) {
+    if (!ts) return '';
+    var diff = (Date.now() - new Date(ts).getTime()) / 1000;
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+    if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
+    return new Date(ts).toLocaleDateString();
+  }
+
+  // === Activity Log ===
+  var ACTIVITY_KEY = 'activity-log';
+
+  function getActivityLog() {
+    try { return JSON.parse(localStorage.getItem(ACTIVITY_KEY)) || []; } catch(e) { return []; }
+  }
+
+  window.logActivity = function(type, account, extra) {
+    var log = getActivityLog();
+    log.unshift({ type: type, account: account, timestamp: new Date().toISOString(), extra: extra || null });
+    if (log.length > 100) log = log.slice(0, 100);
+    try { localStorage.setItem(ACTIVITY_KEY, JSON.stringify(log)); } catch(e) {}
+  };
+
+  var ACTIVITY_ICONS = {
+    research_started: '<svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>',
+    brief_viewed: '<svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>',
+    brief_deleted: '<svg class="w-3.5 h-3.5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>',
+    brief_generated: '<svg class="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+  };
+  var ACTIVITY_VERBS = {
+    research_started: 'Researched', brief_viewed: 'Viewed', brief_deleted: 'Deleted', brief_generated: 'Generated'
+  };
+
+  window.renderActivityLog = function() {
+    var list = document.getElementById('activity-list');
+    if (!list) return;
+    var log = getActivityLog();
+    var filter = (document.getElementById('activity-filter') || {}).value || 'all';
+    if (filter !== 'all') log = log.filter(function(e) { return e.type === filter; });
+    if (!log.length) {
+      list.innerHTML = '<div class="px-4 py-8 text-center text-gray-400 dark:text-slate-500"><svg class="w-10 h-10 mx-auto mb-2 text-gray-200 dark:text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><p>Activity will appear here as you use the platform</p></div>';
+      return;
+    }
+    list.innerHTML = log.map(function(e) {
+      var icon = ACTIVITY_ICONS[e.type] || ACTIVITY_ICONS.brief_viewed;
+      var verb = ACTIVITY_VERBS[e.type] || e.type;
+      return '<div class="activity-event flex items-start gap-2 px-4 py-2 border-b border-gray-50 dark:border-slate-800">' +
+        '<div class="mt-0.5 flex-shrink-0">' + icon + '</div>' +
+        '<div class="min-w-0 flex-1">' +
+        '<p class="text-gray-700 dark:text-slate-300 truncate">' + verb + ' <span class="font-medium">' + esc(e.account) + '</span></p>' +
+        '<p class="text-[10px] text-gray-400 dark:text-slate-500">' + timeAgo(e.timestamp) + '</p>' +
+        '</div></div>';
+    }).join('');
+  };
+
+  window.clearActivityLog = function() {
+    if (!confirm('Clear all activity history?')) return;
+    try { localStorage.removeItem(ACTIVITY_KEY); } catch(e) {}
+    renderActivityLog();
+    toast('Activity log cleared', 'gray', 2000);
+  };
+
+  window.toggleActivitySidebar = function() {
+    var sb = document.getElementById('activity-sidebar');
+    sb.classList.toggle('collapsed');
+    localStorage.setItem('activity-sidebar-open', sb.classList.contains('collapsed') ? 'false' : 'true');
+  };
+
+  // Init activity sidebar
+  (function() {
+    var sb = document.getElementById('activity-sidebar');
+    if (!sb) return;
+    if (localStorage.getItem('activity-sidebar-open') === 'true') sb.classList.remove('collapsed');
+    renderActivityLog();
+  })();
+
+  // Hook activity logging into existing actions
+  (function() {
+    // Wrap launchResearch to log
+    var origLaunch = window.launchResearch;
+    // Already defined above, just hook the fetch
+    var origDeleteBrief = window.deleteBrief;
+  })();
   </script>
 </body>
 </html>

@@ -11,6 +11,9 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     body { font-family: 'Inter', sans-serif; }
+    @media (prefers-reduced-motion: no-preference) { body { animation: pageIn 0.25s ease-out; } }
+    @keyframes pageIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    @media print { body { animation: none !important; } }
     .source-chip { font-size: 0.65rem; }
     .badge { font-size: 0.6rem; letter-spacing: 0.05em; }
     .section-card { border-left: 3px solid #e5e7eb; }
@@ -1692,6 +1695,22 @@
     const CHAT_URL = "http://localhost:8000/chat";
     let history = [];
     let currentAbort = null;
+
+    // --- Track recently viewed + activity ---
+    (function() {
+      try {
+        var rv = JSON.parse(localStorage.getItem('recently-viewed-briefs')) || [];
+        rv = rv.filter(function(x) { return x.slug !== SLUG || x.date !== DATE; });
+        rv.unshift({ slug: SLUG, date: DATE, name: "{{ data.snapshot.name }}", vertical: "{{ data.snapshot.vertical }}", viewed_at: new Date().toISOString() });
+        if (rv.length > 8) rv = rv.slice(0, 8);
+        localStorage.setItem('recently-viewed-briefs', JSON.stringify(rv));
+        // Activity log
+        var log = JSON.parse(localStorage.getItem('activity-log')) || [];
+        log.unshift({ type: 'brief_viewed', account: "{{ data.snapshot.name }}", timestamp: new Date().toISOString() });
+        if (log.length > 100) log = log.slice(0, 100);
+        localStorage.setItem('activity-log', JSON.stringify(log));
+      } catch(e) {}
+    })();
 
     // --- Scroll-spy with IntersectionObserver ---
     const navLinks = document.querySelectorAll('#side-nav a.nav-link');

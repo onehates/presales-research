@@ -9,6 +9,9 @@
   <style>
     html { scroll-behavior: smooth; }
     body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    @media (prefers-reduced-motion: no-preference) { body { animation: pageIn 0.25s ease-out; } }
+    @keyframes pageIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    @media print { body { animation: none !important; } }
     .doc-nav a.active { color: #2563eb; border-left-color: #2563eb; font-weight: 600; }
     .doc-nav a { border-left: 3px solid transparent; }
     .doc-nav a:hover { color: #2563eb; border-left-color: #93c5fd; }

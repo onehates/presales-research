@@ -48,7 +48,7 @@ SONNET_MODEL = "claude-sonnet-4-6"
 PORT = int(os.environ.get("PORT", 8000))
 STATUS_DIR = Path("/tmp")
 
-app = FastAPI(title="Pre-Sales Research Platform", version="1.0")
+app = FastAPI(title="Pre-Sales Research Platform", version="1.0", docs_url="/api/docs", redoc_url=None)
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
