@@ -39,7 +39,26 @@ In the system prompt (cached):
 
 Synthesize from ALL subagent outputs + persona file. This is NOT propagation — it's cross-subagent synthesis.
 
-Schema per field: `{ "value": "string", "evidence": ["string"], "confidence": "high|medium|inference", "gap": "string", "source_quality": "primary|secondary|weak" }`
+Schema per field:
+```json
+{
+  "value": "string",
+  "evidence": ["string"],
+  "confidence": "high|medium|inference",
+  "gap": "string — single-sentence summary of what's unknown",
+  "gap_questions": [
+    {
+      "text": "string — natural-sounding discovery question",
+      "rationale": "string — 1 sentence on what answer would close the gap",
+      "persona": "champion|economic_buyer|influencer",
+      "priority": "high|medium|low"
+    }
+  ],
+  "source_quality": "primary|secondary|weak"
+}
+```
+
+For `gap_questions`: generate 2-4 specific discovery questions per MEDDIC field. Each question must be concrete and grounded in the account's data — not generic. `priority: high` = ask in first call, `medium` = ask in follow-up, `low` = nice-to-have. `persona` = which buyer persona to ask (use MEDDIC role names: champion, economic_buyer, influencer).
 
 For each MEDDIC field:
 

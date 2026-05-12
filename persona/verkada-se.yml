@@ -770,6 +770,145 @@ personas:
       - cloud_migration_strategy
       - SSO
 
+  Plant_Security_Manager:
+    meddic_role: champion
+    meddic_rationale: "Daily user of physical security systems in manufacturing/industrial settings, strong advocate when solution improves worker safety compliance"
+    care_about:
+      - worker_safety
+      - PPE_compliance
+      - environmental_monitoring
+      - perimeter_security
+      - compliance_audit_footage
+      - incident_investigation
+      - access_control_zones
+    skip_topics:
+      - student_safety
+      - parent_communication
+      - POS_integration
+      - shrink_reduction
+
+  Director_of_Security_Healthcare:
+    meddic_role: champion
+    meddic_rationale: "Owns hospital/clinic security operations, faces daily pressure from workplace violence, elopement, and infant safety — strong advocate for integrated platform"
+    care_about:
+      - patient_safety
+      - workplace_violence_prevention
+      - infant_abduction_prevention
+      - elopement_detection
+      - HIPAA_compliance
+      - visitor_management
+      - emergency_lockdown
+      - badge_management
+    skip_topics:
+      - shrink_reduction
+      - POS_integration
+      - school_safety
+      - federal_funding_alignment
+
+  VP_of_Real_Estate:
+    meddic_role: economic_buyer
+    meddic_rationale: "Controls capital budget for property portfolio, evaluates security as tenant experience and asset protection investment"
+    care_about:
+      - tenant_experience
+      - property_value_protection
+      - common_area_security
+      - multi_property_management
+      - amenity_analytics
+      - visitor_management
+      - insurance_cost_reduction
+    skip_topics:
+      - student_safety
+      - NDAA_compliance
+      - POS_integration
+      - worker_safety
+
+  Director_of_Risk_Management:
+    meddic_role: influencer
+    meddic_rationale: "Evaluates security spend through insurance and liability lens, can accelerate deals when solution reduces risk exposure"
+    care_about:
+      - risk_posture
+      - insurance_cost_reduction
+      - incident_documentation
+      - audit_trail
+      - regulatory_compliance
+      - total_cost_of_ownership
+      - liability_reduction
+    skip_topics:
+      - API_integration
+      - network_architecture
+      - SSO_federation
+      - camera_lens_specifications
+
+  General_Manager_Hospitality:
+    meddic_role: champion
+    meddic_rationale: "Responsible for guest safety and property security at hotel/resort level, daily pain from fragmented systems across properties"
+    care_about:
+      - guest_safety
+      - property_security
+      - multi_property_visibility
+      - visitor_management
+      - incident_response
+      - operational_efficiency
+      - staff_safety
+    skip_topics:
+      - NDAA_compliance
+      - federal_funding_alignment
+      - POS_integration
+      - school_safety
+
+  Director_of_Senior_Living:
+    meddic_role: champion
+    meddic_rationale: "Manages resident safety and regulatory compliance across senior care facilities, strong advocate when solution addresses elopement and fall detection"
+    care_about:
+      - resident_safety
+      - elopement_prevention
+      - fall_detection
+      - family_communication
+      - regulatory_compliance
+      - staff_monitoring
+      - visitor_management
+      - emergency_response
+    skip_topics:
+      - shrink_reduction
+      - POS_integration
+      - school_safety
+      - federal_funding_alignment
+
+  Director_of_Transportation_Security:
+    meddic_role: champion
+    meddic_rationale: "Oversees security across transit hubs, fleet yards, and infrastructure — pain from coverage gaps across distributed sites"
+    care_about:
+      - perimeter_security
+      - license_plate_recognition
+      - multi_site_visibility
+      - incident_response
+      - operational_efficiency
+      - regulatory_compliance
+      - real_time_alerting
+    skip_topics:
+      - student_safety
+      - POS_integration
+      - tenant_experience
+      - shrink_reduction
+
+  CISO:
+    meddic_role: economic_buyer
+    meddic_rationale: "Chief Information Security Officer — converged cyber+physical security authority in enterprises, evaluates cloud security posture of vendors"
+    care_about:
+      - cloud_security_posture
+      - vendor_risk_assessment
+      - SOC2_compliance
+      - data_residency
+      - API_security
+      - SSO_and_directory_sync
+      - audit_trail
+      - cyber_physical_convergence
+    skip_topics:
+      - door_hardware_specs
+      - camera_lens_specifications
+      - guard_tour_workflows
+      - insurance_premiums
+
 # =============================================================================
 # Disqualifiers — Flags That Should Kill an Opportunity
 # =============================================================================
@@ -798,9 +937,18 @@ champion_criteria:
     IT_Director: 1.0
     CIO: 0.95
     CSO: 0.95
+    VP_of_Loss_Prevention: 0.95
+    CISO: 0.90
+    Director_of_Security: 0.90
     Director_of_Facilities: 0.85
     Director_of_Public_Safety: 0.85
+    Plant_Security_Manager: 0.85
+    Director_of_Senior_Living: 0.80
+    Director_of_Transportation_Security: 0.80
+    Director_of_Risk_Management: 0.75
     Director_of_Operations: 0.70
+    General_Manager: 0.70
+    VP_of_Real_Estate: 0.65
     Superintendent: 0.30  # economic buyer, not champion
     Board_Member: 0.20
   champion_topic_signals:
@@ -812,6 +960,14 @@ champion_criteria:
     - physical security modernization
     - school safety technology
     - campus safety
+    - loss prevention technology
+    - organized retail crime
+    - workplace safety compliance
+    - patient safety
+    - resident safety monitoring
+    - hospitality security
+    - transportation security
+    - critical infrastructure protection
   vendor_alumni_indicators:
     - Cisco Meraki
     - Verkada
