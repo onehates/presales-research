@@ -1,4 +1,5 @@
 <style>
+/* Footer */
 .app-footer { margin-top: 3rem; padding: 1.5rem 0; border-top: 1px solid rgba(148, 163, 184, 0.2); font-size: 0.8rem; color: rgb(100, 116, 139); text-align: center; }
 .dark .app-footer { border-top-color: rgba(71, 85, 105, 0.4); color: rgb(148, 163, 184); }
 .footer-content { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
@@ -7,6 +8,182 @@
 .footer-link { color: inherit; text-decoration: none; border-bottom: 1px dotted currentColor; }
 .footer-link:hover { color: rgb(59, 130, 246); }
 @media print { .app-footer { display: none !important; } }
+
+/* ============================================================
+   DARK MODE: high-contrast text inside colored section cards
+   ============================================================
+   Tailwind's 950/900 bg + 300/400 text combos are too dim.
+   Override with bright tints (100/200 level) for readability. */
+
+/* --- BLUE cards (TL;DR, POC strategy, info) --- */
+.dark .bg-blue-950,
+.dark .bg-blue-900 { color: rgb(219, 234, 254); /* blue-100 */ }
+.dark .bg-blue-950 p, .dark .bg-blue-950 li, .dark .bg-blue-950 span:not([class*="bg-"]),
+.dark .bg-blue-950 dd, .dark .bg-blue-950 dt,
+.dark .bg-blue-900 p, .dark .bg-blue-900 li, .dark .bg-blue-900 span:not([class*="bg-"]),
+.dark .bg-blue-900 dd, .dark .bg-blue-900 dt { color: rgb(219, 234, 254); }
+.dark .bg-blue-950 h2, .dark .bg-blue-950 h3, .dark .bg-blue-950 h4,
+.dark .bg-blue-900 h2, .dark .bg-blue-900 h3, .dark .bg-blue-900 h4 { color: rgb(191, 219, 254); /* blue-200 */ }
+.dark .bg-blue-950 .text-blue-300, .dark .bg-blue-950 .text-blue-400,
+.dark .bg-blue-900 .text-blue-300, .dark .bg-blue-900 .text-blue-400 { color: rgb(219, 234, 254) !important; }
+
+/* --- GREEN cards (procurement, validated, expansion) --- */
+.dark .bg-green-950,
+.dark .bg-green-900,
+.dark .bg-emerald-950,
+.dark .bg-emerald-900 { color: rgb(220, 252, 231); /* green-100 */ }
+.dark .bg-green-950 p, .dark .bg-green-950 li, .dark .bg-green-950 span:not([class*="bg-"]),
+.dark .bg-green-950 dd, .dark .bg-green-950 dt,
+.dark .bg-green-900 p, .dark .bg-green-900 li, .dark .bg-green-900 span:not([class*="bg-"]),
+.dark .bg-green-900 dd, .dark .bg-green-900 dt,
+.dark .bg-emerald-950 p, .dark .bg-emerald-950 li, .dark .bg-emerald-950 span:not([class*="bg-"]),
+.dark .bg-emerald-950 dd, .dark .bg-emerald-950 dt,
+.dark .bg-emerald-900 p, .dark .bg-emerald-900 li, .dark .bg-emerald-900 span:not([class*="bg-"]),
+.dark .bg-emerald-900 dd, .dark .bg-emerald-900 dt { color: rgb(220, 252, 231); }
+.dark .bg-green-950 h2, .dark .bg-green-950 h3, .dark .bg-green-950 h4,
+.dark .bg-green-900 h2, .dark .bg-green-900 h3, .dark .bg-green-900 h4,
+.dark .bg-emerald-950 h2, .dark .bg-emerald-950 h3, .dark .bg-emerald-950 h4,
+.dark .bg-emerald-900 h2, .dark .bg-emerald-900 h3, .dark .bg-emerald-900 h4 { color: rgb(187, 247, 208); /* green-200 */ }
+.dark .bg-green-950 .text-green-300, .dark .bg-green-950 .text-green-400,
+.dark .bg-green-900 .text-green-300, .dark .bg-green-900 .text-green-400,
+.dark .bg-emerald-950 .text-emerald-300, .dark .bg-emerald-950 .text-emerald-400,
+.dark .bg-emerald-900 .text-emerald-300, .dark .bg-emerald-900 .text-emerald-400 { color: rgb(220, 252, 231) !important; }
+
+/* --- RED cards (displacement, risks, disqualifiers) --- */
+.dark .bg-red-950,
+.dark .bg-red-900 { color: rgb(254, 226, 226); /* red-100 */ }
+.dark .bg-red-950 p, .dark .bg-red-950 li, .dark .bg-red-950 span:not([class*="bg-"]),
+.dark .bg-red-950 dd, .dark .bg-red-950 dt,
+.dark .bg-red-900 p, .dark .bg-red-900 li, .dark .bg-red-900 span:not([class*="bg-"]),
+.dark .bg-red-900 dd, .dark .bg-red-900 dt { color: rgb(254, 226, 226); }
+.dark .bg-red-950 h2, .dark .bg-red-950 h3, .dark .bg-red-950 h4,
+.dark .bg-red-900 h2, .dark .bg-red-900 h3, .dark .bg-red-900 h4 { color: rgb(254, 202, 202); /* red-200 */ }
+.dark .bg-red-950 .text-red-300, .dark .bg-red-950 .text-red-400,
+.dark .bg-red-900 .text-red-300, .dark .bg-red-900 .text-red-400 { color: rgb(254, 226, 226) !important; }
+
+/* --- PURPLE / VIOLET cards (expansion motion, personas) --- */
+.dark .bg-purple-950,
+.dark .bg-purple-900,
+.dark .bg-violet-950,
+.dark .bg-violet-900 { color: rgb(243, 232, 255); /* purple-100 */ }
+.dark .bg-purple-950 p, .dark .bg-purple-950 li, .dark .bg-purple-950 span:not([class*="bg-"]),
+.dark .bg-purple-950 dd, .dark .bg-purple-950 dt,
+.dark .bg-purple-900 p, .dark .bg-purple-900 li, .dark .bg-purple-900 span:not([class*="bg-"]),
+.dark .bg-purple-900 dd, .dark .bg-purple-900 dt,
+.dark .bg-violet-950 p, .dark .bg-violet-950 li, .dark .bg-violet-950 span:not([class*="bg-"]),
+.dark .bg-violet-950 dd, .dark .bg-violet-950 dt { color: rgb(243, 232, 255); }
+.dark .bg-purple-950 h2, .dark .bg-purple-950 h3, .dark .bg-purple-950 h4,
+.dark .bg-purple-900 h2, .dark .bg-purple-900 h3, .dark .bg-purple-900 h4 { color: rgb(233, 213, 255); /* purple-200 */ }
+.dark .bg-purple-950 .text-purple-300, .dark .bg-purple-950 .text-purple-400,
+.dark .bg-purple-900 .text-purple-300, .dark .bg-purple-900 .text-purple-400 { color: rgb(243, 232, 255) !important; }
+
+/* --- AMBER / YELLOW cards (warnings, medium signals, NDAA) --- */
+.dark .bg-amber-950,
+.dark .bg-amber-900,
+.dark .bg-yellow-950,
+.dark .bg-yellow-900 { color: rgb(254, 243, 199); /* amber-100 */ }
+.dark .bg-amber-950 p, .dark .bg-amber-950 li, .dark .bg-amber-950 span:not([class*="bg-"]),
+.dark .bg-amber-950 dd, .dark .bg-amber-950 dt,
+.dark .bg-amber-900 p, .dark .bg-amber-900 li, .dark .bg-amber-900 span:not([class*="bg-"]),
+.dark .bg-amber-900 dd, .dark .bg-amber-900 dt,
+.dark .bg-yellow-950 p, .dark .bg-yellow-950 li, .dark .bg-yellow-950 span:not([class*="bg-"]),
+.dark .bg-yellow-950 dd, .dark .bg-yellow-950 dt { color: rgb(254, 243, 199); }
+.dark .bg-amber-950 h2, .dark .bg-amber-950 h3, .dark .bg-amber-950 h4,
+.dark .bg-amber-900 h2, .dark .bg-amber-900 h3, .dark .bg-amber-900 h4 { color: rgb(253, 230, 138); /* amber-200 */ }
+.dark .bg-amber-950 .text-amber-300, .dark .bg-amber-950 .text-amber-400, .dark .bg-amber-950 .text-amber-500,
+.dark .bg-amber-900 .text-amber-300, .dark .bg-amber-900 .text-amber-400 { color: rgb(254, 243, 199) !important; }
+.dark .bg-amber-950 .text-amber-800, .dark .bg-amber-950 .text-amber-700,
+.dark .bg-amber-900 .text-amber-800, .dark .bg-amber-900 .text-amber-700 { color: rgb(254, 243, 199) !important; }
+
+/* --- INDIGO cards (software products) --- */
+.dark .bg-indigo-950,
+.dark .bg-indigo-900 { color: rgb(224, 231, 255); /* indigo-100 */ }
+.dark .bg-indigo-950 p, .dark .bg-indigo-950 li, .dark .bg-indigo-950 span:not([class*="bg-"]),
+.dark .bg-indigo-950 dd, .dark .bg-indigo-950 dt,
+.dark .bg-indigo-900 p, .dark .bg-indigo-900 li, .dark .bg-indigo-900 span:not([class*="bg-"]),
+.dark .bg-indigo-900 dd, .dark .bg-indigo-900 dt { color: rgb(224, 231, 255); }
+.dark .bg-indigo-950 h2, .dark .bg-indigo-950 h3, .dark .bg-indigo-950 h4,
+.dark .bg-indigo-900 h2, .dark .bg-indigo-900 h3, .dark .bg-indigo-900 h4 { color: rgb(199, 210, 254); /* indigo-200 */ }
+.dark .bg-indigo-950 .text-indigo-300, .dark .bg-indigo-950 .text-indigo-400,
+.dark .bg-indigo-900 .text-indigo-300, .dark .bg-indigo-900 .text-indigo-400 { color: rgb(224, 231, 255) !important; }
+
+/* --- TEAL cards (influencer badges) --- */
+.dark .bg-teal-950,
+.dark .bg-teal-900 { color: rgb(204, 251, 241); /* teal-100 */ }
+.dark .bg-teal-950 p, .dark .bg-teal-950 li, .dark .bg-teal-950 span:not([class*="bg-"]),
+.dark .bg-teal-950 dd, .dark .bg-teal-950 dt,
+.dark .bg-teal-900 p, .dark .bg-teal-900 li, .dark .bg-teal-900 span:not([class*="bg-"]),
+.dark .bg-teal-900 dd, .dark .bg-teal-900 dt { color: rgb(204, 251, 241); }
+.dark .bg-teal-950 .text-teal-300, .dark .bg-teal-950 .text-teal-400,
+.dark .bg-teal-900 .text-teal-300, .dark .bg-teal-900 .text-teal-400 { color: rgb(204, 251, 241) !important; }
+
+/* --- ORANGE cards (loss prevention categories) --- */
+.dark .bg-orange-950,
+.dark .bg-orange-900 { color: rgb(255, 237, 213); /* orange-100 */ }
+.dark .bg-orange-950 p, .dark .bg-orange-950 li, .dark .bg-orange-950 span:not([class*="bg-"]),
+.dark .bg-orange-950 dd, .dark .bg-orange-950 dt,
+.dark .bg-orange-900 p, .dark .bg-orange-900 li, .dark .bg-orange-900 span:not([class*="bg-"]),
+.dark .bg-orange-900 dd, .dark .bg-orange-900 dt { color: rgb(255, 237, 213); }
+.dark .bg-orange-950 .text-orange-300, .dark .bg-orange-950 .text-orange-400,
+.dark .bg-orange-900 .text-orange-300, .dark .bg-orange-900 .text-orange-400 { color: rgb(255, 237, 213) !important; }
+
+/* --- CYAN cards --- */
+.dark .bg-cyan-950,
+.dark .bg-cyan-900 { color: rgb(207, 250, 254); /* cyan-100 */ }
+.dark .bg-cyan-950 p, .dark .bg-cyan-950 li, .dark .bg-cyan-950 span:not([class*="bg-"]),
+.dark .bg-cyan-900 p, .dark .bg-cyan-900 li, .dark .bg-cyan-900 span:not([class*="bg-"]) { color: rgb(207, 250, 254); }
+
+/* --- ROSE / PINK cards --- */
+.dark .bg-rose-950, .dark .bg-rose-900,
+.dark .bg-pink-950, .dark .bg-pink-900 { color: rgb(255, 228, 230); /* rose-100 */ }
+.dark .bg-rose-950 p, .dark .bg-rose-950 li, .dark .bg-rose-950 span:not([class*="bg-"]),
+.dark .bg-pink-950 p, .dark .bg-pink-950 li, .dark .bg-pink-950 span:not([class*="bg-"]) { color: rgb(255, 228, 230); }
+
+/* --- Subdued text inside ANY colored card --- */
+.dark .bg-blue-950 .text-gray-500, .dark .bg-blue-950 .text-gray-600,
+.dark .bg-blue-950 .text-slate-500, .dark .bg-blue-950 .text-slate-600,
+.dark .bg-green-950 .text-gray-500, .dark .bg-green-950 .text-gray-600,
+.dark .bg-green-950 .text-slate-500, .dark .bg-green-950 .text-slate-600,
+.dark .bg-red-950 .text-gray-500, .dark .bg-red-950 .text-gray-600,
+.dark .bg-red-950 .text-slate-500, .dark .bg-red-950 .text-slate-600,
+.dark .bg-purple-950 .text-gray-500, .dark .bg-purple-950 .text-gray-600,
+.dark .bg-purple-950 .text-slate-500, .dark .bg-purple-950 .text-slate-600,
+.dark .bg-amber-950 .text-gray-500, .dark .bg-amber-950 .text-gray-600,
+.dark .bg-amber-950 .text-slate-500, .dark .bg-amber-950 .text-slate-600,
+.dark .bg-emerald-950 .text-gray-500, .dark .bg-emerald-950 .text-gray-600,
+.dark .bg-emerald-950 .text-slate-500, .dark .bg-emerald-950 .text-slate-600,
+.dark .bg-indigo-950 .text-gray-500, .dark .bg-indigo-950 .text-gray-600,
+.dark .bg-indigo-950 .text-slate-500, .dark .bg-indigo-950 .text-slate-600 { color: rgba(255, 255, 255, 0.7) !important; }
+
+/* --- Links inside colored cards --- */
+.dark .bg-blue-950 a:not([class*="bg-"]), .dark .bg-green-950 a:not([class*="bg-"]),
+.dark .bg-red-950 a:not([class*="bg-"]), .dark .bg-purple-950 a:not([class*="bg-"]),
+.dark .bg-amber-950 a:not([class*="bg-"]), .dark .bg-emerald-950 a:not([class*="bg-"]),
+.dark .bg-indigo-950 a:not([class*="bg-"]), .dark .bg-teal-950 a:not([class*="bg-"]),
+.dark .bg-orange-950 a:not([class*="bg-"]) {
+  color: rgb(255, 255, 255); text-decoration: underline; text-decoration-color: rgba(255, 255, 255, 0.4);
+}
+.dark .bg-blue-950 a:not([class*="bg-"]):hover, .dark .bg-green-950 a:not([class*="bg-"]):hover,
+.dark .bg-red-950 a:not([class*="bg-"]):hover, .dark .bg-purple-950 a:not([class*="bg-"]):hover,
+.dark .bg-amber-950 a:not([class*="bg-"]):hover, .dark .bg-emerald-950 a:not([class*="bg-"]):hover {
+  text-decoration-color: rgba(255, 255, 255, 1);
+}
+
+/* --- Italic/muted text inside colored cards (rationale, gap text) --- */
+.dark .bg-amber-950 .text-amber-600, .dark .bg-amber-950 .text-amber-700,
+.dark .bg-amber-950 .text-amber-800 { color: rgb(253, 230, 138) !important; }
+.dark .bg-blue-950 .text-blue-600, .dark .bg-blue-950 .text-blue-700,
+.dark .bg-blue-950 .text-blue-800 { color: rgb(191, 219, 254) !important; }
+.dark .bg-green-950 .text-green-600, .dark .bg-green-950 .text-green-700,
+.dark .bg-green-950 .text-green-800 { color: rgb(187, 247, 208) !important; }
+.dark .bg-red-950 .text-red-600, .dark .bg-red-950 .text-red-700,
+.dark .bg-red-950 .text-red-800 { color: rgb(254, 202, 202) !important; }
+.dark .bg-purple-950 .text-purple-600, .dark .bg-purple-950 .text-purple-700,
+.dark .bg-purple-950 .text-purple-800 { color: rgb(233, 213, 255) !important; }
+.dark .bg-emerald-950 .text-emerald-600, .dark .bg-emerald-950 .text-emerald-700,
+.dark .bg-emerald-950 .text-emerald-800 { color: rgb(167, 243, 208) !important; }
+.dark .bg-indigo-950 .text-indigo-600, .dark .bg-indigo-950 .text-indigo-700,
+.dark .bg-indigo-950 .text-indigo-800 { color: rgb(199, 210, 254) !important; }
 </style>
 <footer class="app-footer no-print">
   <div class="footer-content">

@@ -69,6 +69,61 @@ app.add_middleware(
 )
 
 # ---------------------------------------------------------------------------
+# Brief loading helpers
+# ---------------------------------------------------------------------------
+
+def find_valid_brief(slug: str, date: str = None) -> tuple[Path | None, dict | None]:
+    """Find the most recent valid brief for a slug.
+
+    Skips .failed.json, .meta.json, .battlecard., .salesreport., .coach. files.
+    Skips briefs with status=error/insufficient_data/parse_error.
+    Requires 'snapshot' field.
+    """
+    if date:
+        pattern = f"{slug}-{date}.json"
+    else:
+        pattern = f"{slug}-*.json"
+
+    for path in sorted(BRIEFS_DIR.glob(pattern), key=lambda p: p.stat().st_mtime, reverse=True):
+        name = path.name
+        if any(x in name for x in ('.failed.', '.meta.', '.battlecard.', '.salesreport.', '.coach.')):
+            continue
+        try:
+            data = json.loads(path.read_text())
+        except (json.JSONDecodeError, OSError):
+            continue
+        if not isinstance(data, dict):
+            continue
+        if data.get('status') in ('error', 'insufficient_data', 'parse_error'):
+            continue
+        if 'snapshot' not in data:
+            continue
+        return path, data
+
+    return None, None
+
+
+def archive_failed_briefs() -> int:
+    """Move .failed.json and broken briefs to briefs/archive/."""
+    archive = BRIEFS_DIR / "archive"
+    archive.mkdir(exist_ok=True)
+    moved = 0
+    for path in list(BRIEFS_DIR.glob("*.json")):
+        if '.failed.' in path.name:
+            path.rename(archive / path.name)
+            moved += 1
+            continue
+        try:
+            data = json.loads(path.read_text())
+            if isinstance(data, dict) and data.get('status') in ('error', 'insufficient_data', 'parse_error'):
+                path.rename(archive / path.name)
+                moved += 1
+        except Exception:
+            pass
+    return moved
+
+
+# ---------------------------------------------------------------------------
 # Schema
 # ---------------------------------------------------------------------------
 
@@ -104,22 +159,11 @@ When asked about discovery questions, reference the trigger-sourced questions fr
 
 @app.post("/chat")
 async def chat(req: ChatRequest):
-    # Find most recent non-failed brief for this slug
-    try:
-        candidates = [p for p in sorted(
-            BRIEFS_DIR.glob(f"{req.slug}-*.json"),
-            key=lambda p: p.stat().st_mtime, reverse=True,
-        ) if ".failed." not in p.name]
-        if not candidates:
-            raise FileNotFoundError(f"No briefs matching {req.slug}-*.json")
-        brief_path = candidates[0]
-        brief_data = json.loads(brief_path.read_text())
-        if not isinstance(brief_data, dict) or not brief_data.get("snapshot"):
-            raise ValueError("Brief missing required 'snapshot' field")
-    except Exception as e:
-        error_msg = f"Brief data is unavailable or corrupted for this account. Try re-running /research, or check briefs/ for {req.slug}. ({e})"
+    brief_path, brief_data = find_valid_brief(req.slug)
+    if not brief_data:
+        error_msg = f"No valid brief found for {req.slug}. Files in briefs/ may be failed or partial. Re-run /research to regenerate."
         def error_stream():
-            yield f"data: {json.dumps({'text': error_msg})}\n\n"
+            yield f"data: {json.dumps({'text': error_msg, 'error': True})}\n\n"
             yield "data: [DONE]\n\n"
         return StreamingResponse(error_stream(), media_type="text/event-stream")
 
@@ -312,7 +356,7 @@ def _list_briefs(include_archived: bool = False) -> list[dict]:
     """List all briefs with metadata, newest first."""
     results = []
     for p in BRIEFS_DIR.glob("*.json"):
-        if ".failed." in p.name or ".meta." in p.name:
+        if any(x in p.name for x in ('.failed.', '.meta.', '.battlecard.', '.salesreport.', '.coach.')):
             continue
         m = _load_brief_metadata(p)
         if m and (include_archived or not m.get("archived")):
@@ -708,9 +752,18 @@ async def suggest(q: str = Query(default="")):
 # Main
 # ---------------------------------------------------------------------------
 
+@app.on_event("startup")
+async def startup_cleanup():
+    moved = archive_failed_briefs()
+    if moved:
+        print(f"  Archived {moved} failed brief(s) to briefs/archive/", flush=True)
+
+
 if __name__ == "__main__":
     import uvicorn
     print(f"Chat server starting on http://localhost:{PORT}")
     print(f"Briefs directory: {BRIEFS_DIR}")
-    print(f"Available briefs: {[p.name for p in BRIEFS_DIR.glob('*.json')]}")
+    valid = [p.name for p in BRIEFS_DIR.glob('*.json')
+             if not any(x in p.name for x in ('.failed.', '.meta.', '.battlecard.', '.salesreport.', '.coach.'))]
+    print(f"Available briefs: {valid}")
     uvicorn.run(app, host="0.0.0.0", port=PORT)
