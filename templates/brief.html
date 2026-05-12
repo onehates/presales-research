@@ -243,6 +243,27 @@
     abbr[title] { text-decoration: underline dotted #94a3b8; text-underline-offset: 2px; cursor: help; }
     .dark abbr[title] { text-decoration-color: #475569; }
 
+    /* Count detail hover tooltips */
+    .count-detail { cursor: help; border-bottom: 1px dotted #94a3b8; }
+    .dark .count-detail { border-bottom-color: #475569; }
+    .count-detail-tip { position: fixed; z-index: 210; min-width: 200px; max-width: 360px; max-height: 400px; background: white; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 12px 40px rgba(0,0,0,0.12); opacity: 0; pointer-events: none; transition: opacity 150ms ease; overflow: hidden; }
+    .count-detail-tip.visible { opacity: 1; pointer-events: auto; }
+    .dark .count-detail-tip { background: #1e293b; border-color: #334155; box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+    .count-detail-tip .cd-header { padding: 8px 12px; border-bottom: 1px solid #f1f5f9; font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em; }
+    .dark .count-detail-tip .cd-header { border-bottom-color: #334155; color: #64748b; }
+    .count-detail-tip .cd-body { max-height: 340px; overflow-y: auto; padding: 4px 0; scrollbar-width: thin; }
+    .count-detail-tip .cd-body::-webkit-scrollbar { width: 4px; }
+    .count-detail-tip .cd-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+    .dark .count-detail-tip .cd-body::-webkit-scrollbar-thumb { background: #475569; }
+    .count-detail-tip .cd-row { display: flex; align-items: center; gap: 8px; padding: 5px 12px; font-size: 12px; color: #374151; cursor: pointer; transition: background 0.1s; }
+    .count-detail-tip .cd-row:hover { background: #f9fafb; }
+    .dark .count-detail-tip .cd-row { color: #e2e8f0; }
+    .dark .count-detail-tip .cd-row:hover { background: #334155; }
+    .count-detail-tip .cd-row .cd-secondary { font-size: 11px; color: #9ca3af; margin-left: auto; flex-shrink: 0; }
+    .dark .count-detail-tip .cd-row .cd-secondary { color: #64748b; }
+    .count-detail-tip .cd-empty { padding: 12px; text-align: center; font-size: 12px; color: #9ca3af; }
+    @media print { .count-detail { border-bottom: none; cursor: default; } .count-detail-tip { display: none !important; } }
+
     /* Toast */
     .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 200; display: flex; flex-direction: column-reverse; gap: 8px; }
     @media (max-width: 639px) { .toast-container { right: 50%; transform: translateX(50%); bottom: 16px; } }
@@ -416,7 +437,7 @@
       </div>
       <div class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-4 text-center">
         <div class="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-1">Key Drivers</div>
-        <div class="text-lg font-bold text-gray-900 dark:text-white">{{ data.vertical_match.key_drivers_present | length }}</div>
+        <div class="text-lg font-bold text-gray-900 dark:text-white"><span class="count-detail" id="cd-key-drivers">{{ data.vertical_match.key_drivers_present | length }}</span></div>
         <div class="text-[10px] text-gray-500 dark:text-slate-400">signals matched</div>
       </div>
     </section>
@@ -545,7 +566,7 @@
       <p class="text-sm text-gray-700 dark:text-slate-300 mb-3">{{ data.vertical_match.match_reasoning }}</p>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
         <div>
-          <dt class="text-gray-500 dark:text-slate-400 text-xs uppercase mb-1">Key Drivers Present</dt>
+          <dt class="text-gray-500 dark:text-slate-400 text-xs uppercase mb-1">Key Drivers Present (<span class="count-detail" id="cd-vert-drivers">{{ data.vertical_match.key_drivers_present | length }}</span>)</dt>
           <div class="flex flex-wrap gap-1">
             {% for d in data.vertical_match.key_drivers_present %}
             <span class="inline-block bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs font-medium dark:bg-green-950 dark:text-green-300">{{ d | humanize_id }}</span>
@@ -553,7 +574,7 @@
           </div>
         </div>
         <div>
-          <dt class="text-gray-500 dark:text-slate-400 text-xs uppercase mb-1">Typical Pain Present</dt>
+          <dt class="text-gray-500 dark:text-slate-400 text-xs uppercase mb-1">Typical Pain Present (<span class="count-detail" id="cd-vert-pain">{{ data.vertical_match.typical_pain_present | length }}</span>)</dt>
           <div class="flex flex-wrap gap-1">
             {% for p in data.vertical_match.typical_pain_present %}
             <span class="inline-block bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-xs font-medium dark:bg-amber-950 dark:text-amber-300">{{ p | humanize_id }}</span>
@@ -566,7 +587,7 @@
     <!-- Leadership -->
     <section id="sec-leadership" class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-6 section-card">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-sm font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wide">Leadership <span class="info-icon" data-tooltip="Named individuals at the account with their titles and recent activity">i</span></h2>
+        <h2 class="text-sm font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wide">Leadership {% if data.leadership is not string and data.leadership != "insufficient_data" %}(<span class="count-detail" id="cd-leadership">{{ data.leadership | length }}</span>){% endif %} <span class="info-icon" data-tooltip="Named individuals at the account with their titles and recent activity">i</span></h2>
         <button class="ask-btn no-print" onclick="askAbout('leadership team and key contacts')">
           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
           Ask
@@ -605,7 +626,7 @@
     {% if data.champion_candidates %}
     <section id="sec-champions" class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-6 section-card">
       <div class="flex items-center justify-between mb-2">
-        <h2 class="text-sm font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wide">Projected Champion Candidates <span class="info-icon" data-tooltip="Individuals most likely to advocate for Verkada internally — scored across 6 dimensions: role fit, recency in role, career arc, public voice, topic affinity, authority">i</span></h2>
+        <h2 class="text-sm font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wide">Projected Champion Candidates (<span class="count-detail" id="cd-champions">{{ data.champion_candidates | length }}</span>) <span class="info-icon" data-tooltip="Individuals most likely to advocate for Verkada internally — scored across 6 dimensions: role fit, recency in role, career arc, public voice, topic affinity, authority">i</span></h2>
         <button class="ask-btn no-print" onclick="askAbout('champion candidates and who to engage first')">
           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
           Ask
@@ -799,7 +820,7 @@
     <!-- Recent Material Events (Timeline) -->
     <section id="sec-events" class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-6 section-card">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-sm font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wide">Recent Material Events <span class="info-icon" data-tooltip="News items from the past 24 months that signal buying intent: incidents, capital projects, leadership changes, restructuring">i</span></h2>
+        <h2 class="text-sm font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wide">Recent Material Events {% if data.recent_material_events is not string %}(<span class="count-detail" id="cd-events">{{ data.recent_material_events | length }}</span>){% endif %} <span class="info-icon" data-tooltip="News items from the past 24 months that signal buying intent: incidents, capital projects, leadership changes, restructuring">i</span></h2>
         <button class="ask-btn no-print" onclick="askAbout('recent material events and their sales relevance')">
           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
           Ask
@@ -847,9 +868,9 @@
       {% if data.technical_footprint.scale_indicators %}
       <div class="flex gap-6 mb-5 text-sm">
         {% set si = data.technical_footprint.scale_indicators %}
-        <div><span class="text-gray-500 dark:text-slate-500 text-xs uppercase">Subdomains</span><br><span class="font-bold text-lg">{{ si.subdomain_count }}</span></div>
-        <div><span class="text-gray-500 dark:text-slate-500 text-xs uppercase">Public Repos</span><br><span class="font-bold text-lg">{{ si.public_repos }}</span></div>
-        <div><span class="text-gray-500 dark:text-slate-500 text-xs uppercase">Languages</span><br><span class="font-bold text-lg">{{ si.language_diversity }}</span></div>
+        <div><span class="text-gray-500 dark:text-slate-500 text-xs uppercase">Subdomains</span><br><span class="font-bold text-lg count-detail" id="cd-subdomains">{{ si.subdomain_count }}</span></div>
+        <div><span class="text-gray-500 dark:text-slate-500 text-xs uppercase">Public Repos</span><br><span class="font-bold text-lg count-detail" id="cd-repos">{{ si.public_repos }}</span></div>
+        <div><span class="text-gray-500 dark:text-slate-500 text-xs uppercase">Languages</span><br><span class="font-bold text-lg count-detail" id="cd-languages">{{ si.language_diversity }}</span></div>
       </div>
       {% endif %}
 
@@ -932,7 +953,7 @@
     {% if data.pain_hypotheses %}
     <section id="sec-pain" class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-6 section-card">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-sm font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wide">Pain Hypotheses <span class="info-icon" data-tooltip="Best-guess problems the account is facing, with multi-source evidence — these are HYPOTHESES, validate via discovery">i</span></h2>
+        <h2 class="text-sm font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wide">Pain Hypotheses (<span class="count-detail" id="cd-pain">{{ data.pain_hypotheses | length }}</span>) <span class="info-icon" data-tooltip="Best-guess problems the account is facing, with multi-source evidence — these are HYPOTHESES, validate via discovery">i</span></h2>
         <button class="ask-btn no-print" onclick="askAbout('pain hypotheses and how to validate them')">
           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
           Ask
@@ -976,7 +997,7 @@
       <p class="text-xs text-gray-400 mb-4">{{ data.practitioner_sentiment.total_posts_analyzed }} posts analyzed from {{ data.practitioner_sentiment.source_subreddits | join(', ') }}</p>
 
       {% if data.practitioner_sentiment.top_pain_themes %}
-      <h3 class="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase mb-2">Top Pain Themes</h3>
+      <h3 class="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase mb-2">Top Pain Themes (<span class="count-detail" id="cd-themes">{{ data.practitioner_sentiment.top_pain_themes | length }}</span>)</h3>
       <div class="space-y-3 mb-5">
         {% for theme in data.practitioner_sentiment.top_pain_themes %}
         <div class="border-l-2 border-purple-300 pl-3">
@@ -1058,7 +1079,7 @@
     {% if data.cooperative_purchasing %}
     <section id="sec-coop" class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-6 section-card">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-sm font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wide">Cooperative Purchasing <span class="info-icon" data-tooltip="Pre-existing public-sector contracts that let this account buy Verkada without a full RFP — fastest path to procurement">i</span></h2>
+        <h2 class="text-sm font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wide">Cooperative Purchasing {% if data.cooperative_purchasing.available_vehicles %}(<span class="count-detail" id="cd-vehicles">{{ data.cooperative_purchasing.available_vehicles | length }}</span> vehicles){% endif %} <span class="info-icon" data-tooltip="Pre-existing public-sector contracts that let this account buy Verkada without a full RFP — fastest path to procurement">i</span></h2>
         <button class="ask-btn no-print" onclick="askAbout('cooperative purchasing vehicles and procurement path')">
           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
           Ask
@@ -1162,7 +1183,7 @@
         <span class="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase">Intensity</span>
         {% set intensity_colors = {'aggressive': 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300', 'steady': 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300', 'thin': 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300', 'minimal': 'bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-400'} %}
         <span class="inline-block px-2 py-0.5 rounded text-xs font-bold {{ intensity_colors.get(hi.intensity_signal, 'bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-400') }}">{{ hi.intensity_signal | upper }}</span>
-        <span class="text-sm text-gray-600 dark:text-slate-300">{{ hi.total_active_reqs }} postings captured</span>
+        <span class="text-sm text-gray-600 dark:text-slate-300"><span class="count-detail" id="cd-postings">{{ hi.total_active_reqs }}</span> postings captured</span>
         {{ confidence_badge(hi.confidence) }}
       </div>
       {% if hi.intensity_caveat %}
@@ -1217,7 +1238,7 @@
 
       <!-- Geographic expansion -->
       {% if data.hiring_signals.geographic_expansion_signal %}
-      <h3 class="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase mb-2">Geographic Signals <span class="info-icon" data-tooltip="Locations where this account is active or expanding">i</span></h3>
+      <h3 class="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase mb-2">Geographic Signals (<span class="count-detail" id="cd-geo">{{ data.hiring_signals.geographic_expansion_signal | length }}</span>) <span class="info-icon" data-tooltip="Locations where this account is active or expanding">i</span></h3>
       <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
         {% for geo in data.hiring_signals.geographic_expansion_signal %}
         <div class="bg-gray-50 dark:bg-slate-800 rounded p-2">
@@ -1378,7 +1399,7 @@
 
       <!-- Primary Bundle -->
       {% if data.recommended_products.primary_bundle %}
-      <h3 class="text-xs font-semibold text-gray-500 dark:text-slate-500 uppercase tracking-wide mb-3">Primary Bundle</h3>
+      <h3 class="text-xs font-semibold text-gray-500 dark:text-slate-500 uppercase tracking-wide mb-3">Primary Bundle (<span class="count-detail" id="cd-primary-bundle">{{ data.recommended_products.primary_bundle | length }}</span>)</h3>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         {% for prod in data.recommended_products.primary_bundle %}
         {% set cat_colors = {
@@ -1524,7 +1545,8 @@
     {% if data.discovery_questions_by_persona %}
     <section id="sec-discovery" class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-6 section-card">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-sm font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wide">Discovery Questions by Persona <span class="info-icon" data-tooltip="Specific questions to ask each persona on a discovery call, tied to fired triggers — each question references customer proof points">i</span></h2>
+        {% set ns = namespace(q_total=0) %}{% for _, qs in data.discovery_questions_by_persona.items() %}{% set ns.q_total = ns.q_total + qs|length %}{% endfor %}
+        <h2 class="text-sm font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wide">Discovery Questions by Persona (<span class="count-detail" id="cd-discovery">{{ ns.q_total }}</span>) <span class="info-icon" data-tooltip="Specific questions to ask each persona on a discovery call, tied to fired triggers — each question references customer proof points">i</span></h2>
         <button class="ask-btn no-print" onclick="askAbout('discovery questions and which persona to lead with')">
           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
           Ask
@@ -2794,6 +2816,210 @@
     var toc = document.getElementById('mini-toc');
     toc.style.display = toc.style.display === 'none' ? 'block' : 'none';
   };
+
+  // === Count Detail Hover Tooltips ===
+  (function() {
+    var briefData = {{ data | tojson }};
+    var tip = null;
+    var enterTimer = null;
+    var leaveTimer = null;
+
+    function esc(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+    function humanize(s) {
+      if (!s) return '';
+      return s.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+    }
+
+    function hideTip() {
+      if (tip) { tip.classList.remove('visible'); setTimeout(function() { if (tip) { tip.remove(); tip = null; } }, 160); }
+    }
+
+    function showTip(anchor, html) {
+      hideTip();
+      var el = document.createElement('div');
+      el.className = 'count-detail-tip';
+      el.innerHTML = html;
+      document.body.appendChild(el);
+      el.addEventListener('mouseenter', function() { clearTimeout(leaveTimer); });
+      el.addEventListener('mouseleave', function() { leaveTimer = setTimeout(hideTip, 200); });
+      // Position below anchor
+      var rect = anchor.getBoundingClientRect();
+      var x = rect.left + rect.width / 2 - el.offsetWidth / 2;
+      var y = rect.bottom + 8;
+      x = Math.max(8, Math.min(x, window.innerWidth - el.offsetWidth - 8));
+      if (y + el.offsetHeight > window.innerHeight - 8) y = rect.top - el.offsetHeight - 8;
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+      requestAnimationFrame(function() { el.classList.add('visible'); });
+      tip = el;
+    }
+
+    function row(label, secondary, onclick) {
+      var cls = onclick ? ' onclick="' + esc(onclick) + '"' : '';
+      return '<div class="cd-row"' + cls + '><span class="truncate">' + esc(label) + '</span>' +
+        (secondary ? '<span class="cd-secondary">' + esc(secondary) + '</span>' : '') + '</div>';
+    }
+
+    function scrollTo(id) {
+      var el = document.getElementById(id) || document.querySelector(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      hideTip();
+    }
+
+    // Build tooltip content per ID
+    var builders = {
+      'cd-key-drivers': function() {
+        var items = briefData.vertical_match.key_drivers_present || [];
+        if (!items.length) return '<div class="cd-empty">No key drivers</div>';
+        return '<div class="cd-header">Key Drivers (' + items.length + ')</div><div class="cd-body">' +
+          items.map(function(d) { return row(humanize(d)); }).join('') + '</div>';
+      },
+      'cd-vert-drivers': function() { return builders['cd-key-drivers'](); },
+      'cd-vert-pain': function() {
+        var items = briefData.vertical_match.typical_pain_present || [];
+        if (!items.length) return '<div class="cd-empty">No typical pain</div>';
+        return '<div class="cd-header">Typical Pain (' + items.length + ')</div><div class="cd-body">' +
+          items.map(function(p) { return row(humanize(p)); }).join('') + '</div>';
+      },
+      'cd-leadership': function() {
+        var people = briefData.leadership;
+        if (!people || typeof people === 'string') return '<div class="cd-empty">No leadership data</div>';
+        return '<div class="cd-header">Leadership (' + people.length + ')</div><div class="cd-body">' +
+          people.map(function(p) { return '<div class="cd-row" style="cursor:pointer" onclick="document.getElementById(\'sec-leadership\').scrollIntoView({behavior:\'smooth\'})"><span class="truncate">' + esc(p.name) + '</span><span class="cd-secondary">' + esc(p.title) + '</span></div>'; }).join('') + '</div>';
+      },
+      'cd-champions': function() {
+        var cands = briefData.champion_candidates || [];
+        if (!cands.length) return '<div class="cd-empty">No candidates</div>';
+        return '<div class="cd-header">Champion Candidates (' + cands.length + ')</div><div class="cd-body">' +
+          cands.map(function(c) {
+            var pct = Math.round((c.champion_fit_score || 0) * 100) + '%';
+            return '<div class="cd-row" style="cursor:pointer" onclick="document.getElementById(\'sec-champions\').scrollIntoView({behavior:\'smooth\'})"><span class="truncate">' + esc(c.name) + '</span><span class="cd-secondary">' + pct + '</span></div>';
+          }).join('') + '</div>';
+      },
+      'cd-events': function() {
+        var events = briefData.recent_material_events;
+        if (!events || typeof events === 'string') return '<div class="cd-empty">No events</div>';
+        return '<div class="cd-header">Material Events (' + events.length + ')</div><div class="cd-body">' +
+          events.map(function(e) {
+            return '<div class="cd-row" style="cursor:pointer" onclick="document.getElementById(\'sec-events\').scrollIntoView({behavior:\'smooth\'})"><span class="truncate">' + esc(e.description ? e.description.substring(0, 60) + (e.description.length > 60 ? '...' : '') : 'Event') + '</span><span class="cd-secondary">' + esc(e.date || '') + '</span></div>';
+          }).join('') + '</div>';
+      },
+      'cd-subdomains': function() {
+        var tf = briefData.technical_footprint;
+        if (!tf || !tf.scale_indicators) return '<div class="cd-empty">No data</div>';
+        var subs = tf.scale_indicators.notable_subdomains || [];
+        if (!subs.length) return '<div class="cd-header">Subdomains (' + (tf.scale_indicators.subdomain_count || 0) + ')</div><div class="cd-body"><div class="cd-empty">List not available — ' + (tf.scale_indicators.subdomain_count || 0) + ' detected</div></div>';
+        return '<div class="cd-header">Subdomains (' + tf.scale_indicators.subdomain_count + ')</div><div class="cd-body">' +
+          subs.map(function(s) { return row(s); }).join('') + '</div>';
+      },
+      'cd-repos': function() {
+        var tf = briefData.technical_footprint;
+        if (!tf || !tf.scale_indicators) return '<div class="cd-empty">No data</div>';
+        var repos = tf.scale_indicators.notable_repos || [];
+        if (!repos.length) return '<div class="cd-header">Public Repos (' + (tf.scale_indicators.public_repos || 0) + ')</div><div class="cd-body"><div class="cd-empty">List not available — ' + (tf.scale_indicators.public_repos || 0) + ' detected</div></div>';
+        return '<div class="cd-header">Public Repos (' + tf.scale_indicators.public_repos + ')</div><div class="cd-body">' +
+          repos.map(function(r) { return row(typeof r === 'string' ? r : r.name || r); }).join('') + '</div>';
+      },
+      'cd-languages': function() {
+        var tf = briefData.technical_footprint;
+        if (!tf || !tf.scale_indicators) return '<div class="cd-empty">No data</div>';
+        var langs = tf.scale_indicators.top_languages || [];
+        if (!langs.length) return '<div class="cd-header">Languages (' + (tf.scale_indicators.language_diversity || 0) + ')</div><div class="cd-body"><div class="cd-empty">List not available — ' + (tf.scale_indicators.language_diversity || 0) + ' detected</div></div>';
+        return '<div class="cd-header">Languages (' + tf.scale_indicators.language_diversity + ')</div><div class="cd-body">' +
+          langs.map(function(l) { return row(typeof l === 'string' ? l : l.name || l); }).join('') + '</div>';
+      },
+      'cd-pain': function() {
+        var pains = briefData.pain_hypotheses || [];
+        if (!pains.length) return '<div class="cd-empty">No pain hypotheses</div>';
+        return '<div class="cd-header">Pain Hypotheses (' + pains.length + ')</div><div class="cd-body">' +
+          pains.map(function(p) {
+            return '<div class="cd-row" style="cursor:pointer" onclick="document.getElementById(\'sec-pain\').scrollIntoView({behavior:\'smooth\'})"><span class="truncate">' + esc(humanize(p.linked_persona_pain || '')) + '</span><span class="cd-secondary">' + esc(p.confidence || '') + '</span></div>';
+          }).join('') + '</div>';
+      },
+      'cd-themes': function() {
+        var sent = briefData.practitioner_sentiment;
+        if (!sent || !sent.top_pain_themes) return '<div class="cd-empty">No themes</div>';
+        var themes = sent.top_pain_themes;
+        return '<div class="cd-header">Pain Themes (' + themes.length + ')</div><div class="cd-body">' +
+          themes.map(function(t) {
+            return '<div class="cd-row"><span class="truncate">' + esc(t.theme) + '</span><span class="cd-secondary">' + t.post_count + ' post' + (t.post_count !== 1 ? 's' : '') + '</span></div>';
+          }).join('') + '</div>';
+      },
+      'cd-vehicles': function() {
+        var coop = briefData.cooperative_purchasing;
+        if (!coop || !coop.available_vehicles) return '<div class="cd-empty">No vehicles</div>';
+        var v = coop.available_vehicles;
+        return '<div class="cd-header">Purchasing Vehicles (' + v.length + ')</div><div class="cd-body">' +
+          v.map(function(veh) {
+            return '<div class="cd-row" style="cursor:pointer" onclick="document.getElementById(\'sec-coop\').scrollIntoView({behavior:\'smooth\'})"><span class="truncate">' + esc(veh.vehicle) + '</span><span class="cd-secondary">' + esc(veh.verkada_contract_status || '') + '</span></div>';
+          }).join('') + '</div>';
+      },
+      'cd-postings': function() {
+        var hi = briefData.hiring_signals ? briefData.hiring_signals.hiring_intensity : null;
+        if (!hi || !hi.category_distribution) return '<div class="cd-empty">No data</div>';
+        var cats = hi.category_distribution;
+        var rows = '';
+        for (var cat in cats) {
+          if (cats[cat] > 0) rows += '<div class="cd-row"><span class="truncate">' + esc(humanize(cat)) + '</span><span class="cd-secondary">' + cats[cat] + '</span></div>';
+        }
+        return '<div class="cd-header">Postings by Category (' + (hi.total_active_reqs || 0) + ')</div><div class="cd-body">' + (rows || '<div class="cd-empty">No breakdown</div>') + '</div>';
+      },
+      'cd-geo': function() {
+        var geos = briefData.hiring_signals ? briefData.hiring_signals.geographic_expansion_signal : null;
+        if (!geos || !geos.length) return '<div class="cd-empty">No locations</div>';
+        return '<div class="cd-header">Locations (' + geos.length + ')</div><div class="cd-body">' +
+          geos.map(function(g) {
+            return '<div class="cd-row"><span class="truncate">' + esc(g.location) + '</span><span class="cd-secondary">' + g.role_count + ' role' + (g.role_count !== 1 ? 's' : '') + '</span></div>';
+          }).join('') + '</div>';
+      },
+      'cd-primary-bundle': function() {
+        var prods = briefData.recommended_products ? briefData.recommended_products.primary_bundle : null;
+        if (!prods || !prods.length) return '<div class="cd-empty">No products</div>';
+        return '<div class="cd-header">Primary Bundle (' + prods.length + ')</div><div class="cd-body">' +
+          prods.map(function(p) {
+            return '<div class="cd-row" style="cursor:pointer" onclick="document.getElementById(\'sec-products\').scrollIntoView({behavior:\'smooth\'})"><span class="truncate">' + esc(p.name) + '</span><span class="cd-secondary">' + esc(humanize(p.category || '')) + '</span></div>';
+          }).join('') + '</div>';
+      },
+      'cd-discovery': function() {
+        var byPersona = briefData.discovery_questions_by_persona;
+        if (!byPersona) return '<div class="cd-empty">No questions</div>';
+        var total = 0;
+        var rows = '';
+        for (var persona in byPersona) {
+          var count = byPersona[persona].length;
+          total += count;
+          if (count > 0) rows += '<div class="cd-row" style="cursor:pointer" onclick="document.getElementById(\'sec-discovery\').scrollIntoView({behavior:\'smooth\'})"><span class="truncate">' + esc(humanize(persona)) + '</span><span class="cd-secondary">' + count + ' Q' + (count !== 1 ? 's' : '') + '</span></div>';
+        }
+        return '<div class="cd-header">Discovery Questions (' + total + ')</div><div class="cd-body">' + (rows || '<div class="cd-empty">No questions</div>') + '</div>';
+      }
+    };
+
+    // Attach events to all .count-detail elements
+    document.querySelectorAll('.count-detail').forEach(function(el) {
+      var id = el.id;
+      if (!id || !builders[id]) return;
+      el.addEventListener('mouseenter', function() {
+        clearTimeout(leaveTimer);
+        enterTimer = setTimeout(function() { showTip(el, builders[id]()); }, 400);
+      });
+      el.addEventListener('mouseleave', function() {
+        clearTimeout(enterTimer);
+        leaveTimer = setTimeout(hideTip, 200);
+      });
+      // Mobile: tap toggle
+      el.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (tip) { hideTip(); } else { showTip(el, builders[id]()); }
+      });
+    });
+
+    // Close on click outside
+    document.addEventListener('click', function(e) {
+      if (tip && !tip.contains(e.target) && !e.target.classList.contains('count-detail')) hideTip();
+    });
+  })();
   </script>
 
 </body>
