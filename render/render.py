@@ -2,6 +2,7 @@
 """Renders a brief JSON file to HTML using the Jinja2 template."""
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -111,6 +112,69 @@ def source_chip(source: dict) -> str:
     )
 
 
+# ---------------------------------------------------------------------------
+# Internal term sanitization — clean agent internals from user-facing prose
+# ---------------------------------------------------------------------------
+
+# Compiled list of (pattern, replacement) pairs applied to all string values
+# in the brief JSON before rendering. Order matters: more specific patterns first.
+_INTERNAL_TERM_REPLACEMENTS = [
+    # Internal file references
+    (re.compile(r'The \w+\.json (?:file )?contains?', re.IGNORECASE), 'The available data shows'),
+    (re.compile(r'\b\w+\.json\b'), ''),
+
+    # Internal config keys / agent internals
+    (re.compile(r'\bhaiku_analysis\b'), 'preliminary analysis'),
+    (re.compile(r'\bhaiku_classification\b'), 'classification'),
+    (re.compile(r'\btrigger_matches\b'), 'signal matches'),
+    (re.compile(r'\bdetect_signals\.[a-z_]+'), 'persona signals'),
+    (re.compile(r'\bdetect_signals\b'), 'persona signals'),
+    (re.compile(r'\bjob_titles\b'), 'job title patterns'),
+    (re.compile(r'\bdiscovery_templates\b'), 'discovery templates'),
+    (re.compile(r'\bleverage_references\b'), 'customer references'),
+    (re.compile(r'\bsynthesis_error\b'), 'synthesis issue'),
+    (re.compile(r'\bsubagent_outputs?\b'), 'analysis output'),
+    (re.compile(r'\bsubagents?\b'), 'analysis step'),
+    (re.compile(r'\bphase\s*[0-3]\b', re.IGNORECASE), 'analysis phase'),
+
+    # "Entry 1 / Match 1 / Result 1" patterns (debug numbering)
+    (re.compile(r'\bEntry\s+\d+:?\s*'), ''),
+    (re.compile(r'\bMatch\s+\d+:?\s*'), ''),
+    (re.compile(r'\bResult\s+\d+:?\s*'), ''),
+
+    # Internal coordinate references
+    (re.compile(r'\bsection\.[a-z_\.]+\b'), 'section data'),
+    (re.compile(r'\bdata\.[a-z_\.]+\b'), ''),
+
+    # Debug-style prose that should never reach users
+    (re.compile(r'\bare false positives?\.?'), 'are not relevant'),
+    (re.compile(r'\bare discarded\.?'), 'are excluded'),
+    (re.compile(r'\bare contextually invalid\b'), 'are not relevant'),
+    (re.compile(r'\bfalse positives?\b'), 'non-matching results'),
+    (re.compile(r'\bboilerplate\b'), 'standard'),
+]
+
+
+def _sanitize_string(s: str) -> str:
+    """Apply internal term replacements to a single string."""
+    for pattern, replacement in _INTERNAL_TERM_REPLACEMENTS:
+        s = pattern.sub(replacement, s)
+    # Clean up double spaces left by removals
+    s = re.sub(r'  +', ' ', s).strip()
+    return s
+
+
+def _sanitize_data(obj):
+    """Recursively sanitize all string values in a dict/list structure."""
+    if isinstance(obj, str):
+        return _sanitize_string(obj)
+    elif isinstance(obj, dict):
+        return {k: _sanitize_data(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [_sanitize_data(item) for item in obj]
+    return obj
+
+
 class _SilentUndefined(Undefined):
     """Return empty string / falsy for missing attributes instead of raising."""
     def __str__(self):
@@ -125,6 +189,7 @@ class _SilentUndefined(Undefined):
 
 def render_battlecard(brief_data: dict, slug: str = "", date: str = "") -> str:
     """Render a battlecard HTML string from brief data."""
+    brief_data = _sanitize_data(brief_data)
     env = Environment(
         loader=FileSystemLoader(str(TEMPLATE_DIR)),
         autoescape=False,
@@ -138,6 +203,7 @@ def render_battlecard(brief_data: dict, slug: str = "", date: str = "") -> str:
 def render_brief(json_path: Path) -> Path:
     with open(json_path) as f:
         data = json.load(f)
+    data = _sanitize_data(data)
 
     env = Environment(
         loader=FileSystemLoader(str(TEMPLATE_DIR)),

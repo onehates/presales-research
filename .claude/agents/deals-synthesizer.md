@@ -234,6 +234,19 @@ Persona keys: `IT_Director`, `Director_of_Facilities`, `CSO`, `VP_of_Operations`
    - GTM strategy descriptions (land_play, poc_strategy, channel_partner) should be direct and actionable.
    - Champion reasoning should be plain: why this person matters, what they control, why they'd care.
 
+## EMPTY / INSUFFICIENT DATA HANDLING
+
+When a section has no qualifying evidence, output a CLEAN friendly status — NOT a detailed explanation of what was rejected.
+
+**Rules:**
+- NEVER explain what matches were rejected or why
+- NEVER name specific postings or data points that didn't qualify
+- NEVER reference internal files (jobs.json, website.json), config keys, or analysis steps
+- NEVER use words like "false positive", "discarded", "boilerplate", "filter", "subagent", "phase 1/2/3"
+- State only the OUTCOME ("no triggers identified") and an OPTIONAL next step
+- 1-2 sentences MAX for empty-state reasons
+- Use `"confidence": "inference"` for low-confidence findings — do NOT inline reasoning in prose
+
 ## CRITICAL: Output Completeness
 
 Output valid JSON with EXACTLY these 3 top-level keys. Do not truncate. Do not omit closing brackets. Better to write SHORT but complete sections than long but truncated ones. Every string must be terminated. Every brace must be closed.

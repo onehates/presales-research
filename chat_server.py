@@ -55,8 +55,8 @@ if STATIC_DIR.exists():
 # Jinja2 env for rendering templates
 _jinja_env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)), autoescape=True)
 
-# Import humanize_id filter from render module
-from render.render import humanize_id
+# Import humanize_id filter and sanitizer from render module
+from render.render import humanize_id, _sanitize_data
 _jinja_env.filters["humanize_id"] = humanize_id
 
 app.add_middleware(
@@ -197,7 +197,7 @@ async def battlecard_page(slug: str, date: str):
     if not brief_path.exists():
         return HTMLResponse("<h1>Brief not found</h1>", status_code=404)
     try:
-        brief_data = json.loads(brief_path.read_text())
+        brief_data = _sanitize_data(json.loads(brief_path.read_text()))
     except Exception:
         return HTMLResponse("<h1>Brief corrupted</h1>", status_code=500)
     template = _jinja_env.get_template("battlecard.html")
@@ -212,7 +212,7 @@ async def salesreport_page(slug: str, date: str):
     if not brief_path.exists():
         return HTMLResponse("<h1>Brief not found</h1>", status_code=404)
     try:
-        brief_data = json.loads(brief_path.read_text())
+        brief_data = _sanitize_data(json.loads(brief_path.read_text()))
     except Exception:
         return HTMLResponse("<h1>Brief corrupted</h1>", status_code=500)
     template = _jinja_env.get_template("salesreport.html")

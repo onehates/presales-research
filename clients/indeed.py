@@ -471,6 +471,78 @@ def write_cache(company_slug: str, data: dict) -> Path:
 # Errors
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Post-fetch employer filtering
+# ---------------------------------------------------------------------------
+
+def _simplify_company_name(name: str) -> str:
+    """Normalize company name for matching: strip suffixes, normalize spacing."""
+    name = name.lower()
+    for suffix in [' inc', ' inc.', ' corporation', ' corp', ' corp.',
+                   ' llc', ' ltd', ' limited', ' company', ' co.', ' co',
+                   ' health system', ' health', ' hospital', ' hospitals',
+                   ' systems', ' group', ' services', ' solutions']:
+        if name.endswith(suffix):
+            name = name[:-len(suffix)]
+    return re.sub(r'\s+', ' ', name).strip()
+
+
+def filter_postings_by_employer(postings: list, target_company: str) -> tuple[list, list]:
+    """Return (matching_postings, rejected_postings).
+
+    A posting matches if its company_name strongly matches the target.
+    Strong match = exact substring OR fuzzy match >= 0.80 score.
+    """
+    from difflib import SequenceMatcher
+
+    target_lower = target_company.lower().strip()
+    target_simplified = _simplify_company_name(target_lower)
+
+    matched = []
+    rejected = []
+
+    for posting in postings:
+        employer_raw = posting.get('company_name', '') or posting.get('company', '') or ''
+        employer_lower = employer_raw.lower().strip()
+        employer_simplified = _simplify_company_name(employer_lower)
+
+        # No employer listed — keep it (benefit of the doubt)
+        if not employer_simplified:
+            posting['match_quality'] = 'unknown_employer'
+            matched.append(posting)
+            continue
+
+        # Strong match: target is substring of employer or vice versa
+        if (target_simplified in employer_simplified
+                or employer_simplified in target_simplified):
+            posting['match_quality'] = 'exact'
+            matched.append(posting)
+            continue
+
+        # Fuzzy match
+        ratio = SequenceMatcher(None, target_simplified, employer_simplified).ratio()
+        if ratio >= 0.80:
+            posting['match_quality'] = 'fuzzy'
+            matched.append(posting)
+            continue
+
+        # Word overlap: all words in target appear in employer (or vice versa)
+        target_words = set(target_simplified.split())
+        employer_words = set(employer_simplified.split())
+        if target_words and target_words.issubset(employer_words):
+            posting['match_quality'] = 'partial'
+            matched.append(posting)
+            continue
+
+        rejected.append({
+            'company_name': employer_raw,
+            'title': posting.get('title', ''),
+            'reason': f'employer mismatch (similarity {ratio:.2f})'
+        })
+
+    return matched, rejected
+
+
 class JobsUnavailableError(Exception):
     pass
 
@@ -551,6 +623,31 @@ def fetch_jobs_data(company_name: str, *, force_refresh: bool = False) -> dict:
             "retrieved_date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
         })
 
+    # Step 2b: Filter out postings from wrong employers
+    postings, rejected_postings = filter_postings_by_employer(postings, company_name)
+    if rejected_postings:
+        print(f"  [jobs] filtered out {len(rejected_postings)} posting(s) from other employers", file=sys.stderr)
+        for r in rejected_postings[:3]:
+            print(f"    ⊘ {r['company_name']}: {r['title'][:50]}", file=sys.stderr)
+
+    # Also filter the raw_jobs list for downstream analysis
+    matched_titles = {p.get("title", "") for p in postings}
+    raw_jobs = [j for j in raw_jobs if j.get("title", "") in matched_titles]
+
+    if not postings:
+        result = {
+            "retrieved_at": datetime.now(timezone.utc).isoformat(),
+            "source": "google_jobs_via_serpapi",
+            "status": "insufficient_data",
+            "reason": f"Job postings found but none confirmed as {company_name} roles.",
+            "company": {"name": company_name},
+            "postings": [],
+            "analysis": {},
+            "rejected_count": len(rejected_postings),
+        }
+        write_cache(company_slug, result)
+        return result
+
     # Step 3: Deterministic categorization (no LLM)
     role_distribution = categorize_roles(raw_jobs)
     total_reqs = len(postings)
@@ -573,6 +670,7 @@ def fetch_jobs_data(company_name: str, *, force_refresh: bool = False) -> dict:
                 else "inference — capped at {0} fetched, actual count likely higher".format(total_reqs),
             "role_distribution": role_distribution,
             "verkada_relevant_signals": sum(len(v) for v in trigger_matches.values()),
+            "rejected_employer_mismatch": len(rejected_postings),
         },
         "trigger_matches": trigger_matches,
         "haiku_analysis": haiku_analysis,

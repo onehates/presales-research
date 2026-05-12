@@ -209,6 +209,8 @@ These are non-negotiable. Violating any one of them makes the output worthless.
 
 6. **No hedging language as filler.** "Likely," "potentially," "may have" are only acceptable when paired with `confidence: "inference"` and an explanation of what source would resolve the uncertainty.
 
+7. **Clean empty states.** When a section has no qualifying evidence, output a short friendly reason — NEVER explain what matches were rejected, reference internal files/config keys, or use words like "false positive", "discarded", "boilerplate". State only the outcome: `"No qualifying signals were identified from the available data."` 1-2 sentences max.
+
 ## Pain Hypothesis Construction Rules
 
 Pain hypotheses are the highest-value output of this agent. They must be:
