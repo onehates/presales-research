@@ -7,7 +7,6 @@
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>tailwind.config={darkMode:'class'}</script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     body { font-family: 'Inter', sans-serif; }
@@ -305,21 +304,50 @@
 
     /* Print */
     @media print {
-      .no-print, #side-nav, #chat-toggle, #chat-panel { display: none !important; }
+      /* Hide interactive UI */
+      .no-print, #side-nav, #chat-toggle, #chat-panel, #cmd-overlay, #kbd-overlay,
+      .ask-btn, .collapse-controls, .section-chevron, .meddic-save-btn,
+      .toast-container { display: none !important; }
+
+      /* Force light mode */
       html, html.dark, body { background: white !important; color: black !important; }
       .section-card, section, table, tr, td, th, div { background-color: white !important; }
+      * { color-adjust: exact !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+      /* Force all sections expanded */
+      .section-card.collapsed .section-body,
+      .section-body {
+        max-height: none !important; opacity: 1 !important;
+        overflow: visible !important;
+      }
+
+      /* Layout reset */
       .section-card { break-inside: avoid; border-left-color: #d1d5db !important; box-shadow: none !important; transform: none !important; }
       main { margin-left: 0 !important; max-width: 100% !important; padding: 0 24px !important; }
       footer { margin-left: 0 !important; max-width: 100% !important; }
       header { position: relative !important; }
-      .ask-btn { display: none !important; }
+
+      /* Page break control */
       section { page-break-inside: avoid; }
       h2 { page-break-after: avoid; }
+
+      /* Typography */
+      body { font-size: 10pt; line-height: 1.4; }
+      h1 { font-size: 18pt; }
+      h2 { font-size: 14pt; }
+      h3 { font-size: 12pt; }
       table { font-size: 11px; }
+
+      /* Links: show URLs inline */
       a { color: inherit !important; text-decoration: none !important; }
+      a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 8px; color: #666; word-break: break-all; }
       .source-chip { background: #f3f4f6 !important; color: #374151 !important; }
       .source-chip::after { content: " (" attr(href) ")"; font-size: 8px; color: #9ca3af; word-break: break-all; }
-      @page { margin: 1.5cm; size: A4; }
+
+      /* Suppress link URL on nav/button elements */
+      nav a::after, header a::after, .nav-link::after { content: none !important; }
+
+      @page { margin: 0.5in; size: letter portrait; }
     }
   </style>
 </head>
@@ -345,7 +373,7 @@
         </div>
       </div>
       <div class="flex items-center gap-3">
-        <button onclick="downloadPDF()" class="tip text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5" data-tip="Download as PDF">
+        <button onclick="downloadPDF()" class="tip text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5" data-tip="Print / Save as PDF">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
           PDF
         </button>
@@ -2774,24 +2802,19 @@
 
   // === Download PDF ===
   function downloadPDF() {
-    if (typeof html2pdf === 'undefined') { toast('PDF library loading, try again in a moment', 'gray', 2000); return; }
-    toast('Generating PDF...', 'blue', 2000);
-    var hideEls = document.querySelectorAll('.no-print, #side-nav, #chat-toggle, #chat-panel');
-    hideEls.forEach(function(e) { e.dataset.prevDisplay = e.style.display; e.style.display = 'none'; });
-    var main = document.querySelector('main');
-    if (main) { main.dataset.prevMl = main.style.marginLeft; main.style.marginLeft = '0'; }
-    var slug = "{{ data.metadata.company_slug }}";
-    html2pdf().set({
-      margin: [10, 10, 10, 10],
-      filename: slug + '-brief.pdf',
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak: { mode: ['avoid-all', 'css'] }
-    }).from(document.body).save().then(function() {
-      hideEls.forEach(function(e) { e.style.display = e.dataset.prevDisplay || ''; });
-      if (main) main.style.marginLeft = main.dataset.prevMl || '';
-      toast('PDF downloaded', 'green', 2000);
-    });
+    // Remember which sections were collapsed so we can restore after print
+    var collapsedSections = document.querySelectorAll('section.section-card.collapsed');
+    collapsedSections.forEach(function(s) { s.classList.remove('collapsed'); });
+
+    toast('Use "Save as PDF" in the print dialog to download', 'blue', 4000);
+
+    setTimeout(function() {
+      window.print();
+      // Restore collapsed state after print dialog closes
+      setTimeout(function() {
+        collapsedSections.forEach(function(s) { s.classList.add('collapsed'); });
+      }, 500);
+    }, 200);
   }
 
   // === Auto-print on ?print=auto ===
