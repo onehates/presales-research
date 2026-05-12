@@ -134,7 +134,14 @@ async def chat(req: ChatRequest):
     messages = [{"role": m.role, "content": m.content} for m in req.history]
     messages.append({"role": "user", "content": req.message})
 
-    client = anthropic.Anthropic(timeout=60.0)
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        def missing_key_stream():
+            yield f"data: {json.dumps({'text': 'ANTHROPIC_API_KEY is not set. Export it in your shell and restart chat_server.py.'})}\n\n"
+            yield "data: [DONE]\n\n"
+        return StreamingResponse(missing_key_stream(), media_type="text/event-stream")
+
+    client = anthropic.Anthropic(timeout=90.0)
 
     def generate():
         try:
@@ -146,10 +153,16 @@ async def chat(req: ChatRequest):
             ) as stream:
                 for text in stream.text_stream:
                     yield f"data: {json.dumps({'text': text})}\n\n"
+        except anthropic.AuthenticationError:
+            yield f"data: {json.dumps({'text': '\n\nAPI key is invalid or expired. Check your ANTHROPIC_API_KEY.', 'error': True})}\n\n"
+        except anthropic.RateLimitError:
+            yield f"data: {json.dumps({'text': '\n\nRate limited by Anthropic API. Wait a moment and retry.', 'error': True})}\n\n"
+        except anthropic.APIConnectionError:
+            yield f"data: {json.dumps({'text': '\n\nCannot reach the Anthropic API. Check your internet connection.', 'error': True})}\n\n"
         except anthropic.APITimeoutError:
-            yield f"data: {json.dumps({'text': '\n\nRequest timed out -- try a shorter question or retry.'})}\n\n"
+            yield f"data: {json.dumps({'text': '\n\nRequest timed out — try a shorter question or retry.', 'error': True})}\n\n"
         except Exception as e:
-            yield f"data: {json.dumps({'text': f'\n\nChat error: {str(e)[:100]}'})}\n\n"
+            yield f"data: {json.dumps({'text': f'\n\nChat error: {str(e)[:150]}', 'error': True})}\n\n"
         yield "data: [DONE]\n\n"
 
     return StreamingResponse(generate(), media_type="text/event-stream")

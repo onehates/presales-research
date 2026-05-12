@@ -87,6 +87,24 @@ def quality_badge(quality: str) -> str:
     return f'<span class="badge inline-block px-1.5 py-0.5 rounded border {css} uppercase font-semibold" data-tooltip="{tip}">{quality}</span>'
 
 
+def priority_badge(priority: str) -> str:
+    if not priority:
+        return ""
+    colors = {
+        "high": "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300",
+        "medium": "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
+        "low": "bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-400",
+    }
+    tooltips = {
+        "high": "High priority — address on the first discovery call",
+        "medium": "Medium priority — address in follow-up conversations",
+        "low": "Low priority — nice-to-have context question, ask if time permits",
+    }
+    css = colors.get(priority, "bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-400")
+    tip = tooltips.get(priority, "")
+    return f'<span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-semibold {css}" data-tooltip="{tip}">{priority}</span>'
+
+
 def source_chip(source: dict) -> str:
     if not source:
         return ""
@@ -212,6 +230,7 @@ def render_brief(json_path: Path) -> Path:
     )
     env.globals["confidence_badge"] = confidence_badge
     env.globals["quality_badge"] = quality_badge
+    env.globals["priority_badge"] = priority_badge
     env.globals["source_chip"] = source_chip
     env.filters["humanize_id"] = humanize_id
 

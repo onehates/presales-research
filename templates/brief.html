@@ -212,6 +212,24 @@
     .dark #chat-header button { border-color: #334155 !important; color: #94a3b8 !important; }
     .dark #chat-input { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
     .dark #chat-messages { color: #e2e8f0; }
+    /* Chat message toolbar */
+    .chat-msg-wrap { position: relative; }
+    .chat-msg-wrap .chat-toolbar { display: none; position: absolute; top: -28px; right: 0; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 2px; gap: 2px; z-index: 10; }
+    .chat-msg-wrap:hover .chat-toolbar { display: flex; }
+    .dark .chat-msg-wrap .chat-toolbar { background: #1e293b; border-color: #334155; }
+    .chat-toolbar button { background: none; border: none; cursor: pointer; padding: 3px 6px; border-radius: 4px; font-size: 11px; color: #64748b; white-space: nowrap; }
+    .chat-toolbar button:hover { background: #f1f5f9; color: #1e293b; }
+    .dark .chat-toolbar button:hover { background: #334155; color: #e2e8f0; }
+    /* Notes panel */
+    #notes-panel { display: none; position: fixed; bottom: 80px; left: 20px; width: 360px; max-height: 500px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); z-index: 55; flex-direction: column; font-family: Inter, system-ui, sans-serif; }
+    .dark #notes-panel { background: #0f172a; border-color: #334155; }
+    #notes-panel.visible { display: flex; }
+    .note-card { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 10px 12px; font-size: 12px; line-height: 1.5; position: relative; }
+    .dark .note-card { background: #1c1917; border-color: #78350f; color: #fef3c7; }
+    .note-card .note-actions { display: none; position: absolute; top: 4px; right: 4px; gap: 2px; }
+    .note-card:hover .note-actions { display: flex; }
+    .note-actions button { background: none; border: none; cursor: pointer; font-size: 11px; color: #92400e; padding: 2px 4px; border-radius: 3px; }
+    .note-actions button:hover { background: #fde68a; }
     .dark .starter-chip { background: #1e293b !important; border-color: #334155 !important; color: #94a3b8 !important; }
     .dark .starter-chip:hover { background: #334155 !important; }
     .dark #slash-menu { background: #0f172a !important; border-color: #1e293b !important; }
@@ -1062,8 +1080,7 @@
                       <span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-semibold {{ persona_colors.get(gq.persona, 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400') }}">{{ gq.persona | replace('_', ' ') }}</span>
                       {% endif %}
                       {% if gq.priority %}
-                      {% set pri_bg = {'high': 'bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300', 'medium': 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300', 'low': 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400'} %}
-                      <span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-semibold {{ pri_bg.get(gq.priority, 'bg-gray-100 text-gray-500') }}">{{ gq.priority }}</span>
+                      {{ priority_badge(gq.priority) }}
                       {% endif %}
                       {# Methodology button for gap question #}
                       {% if gq.rationale %}
@@ -1997,8 +2014,7 @@
                 <span class="inline-block bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 px-2 py-0.5 rounded text-xs">{{ q.source_trigger | humanize_id }}</span>
                 {{ confidence_badge(q.confidence) }}
                 {% if q.priority %}
-                {% set pri_bg = {'high': 'bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300', 'medium': 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300', 'low': 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400'} %}
-                <span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-semibold {{ pri_bg.get(q.priority, '') }}">{{ q.priority }}</span>
+                {{ priority_badge(q.priority) }}
                 {% endif %}
               </div>
               {% if q.evidence is string %}
@@ -2084,8 +2100,7 @@
         {% for oq in data.open_questions %}
         <div class="border-l-2 {{ 'border-red-300' if oq.priority == 'high' else 'border-amber-300' if oq.priority == 'medium' else 'border-gray-200' }} pl-4">
           <div class="flex items-center gap-2 mb-1">
-            {% set pri_colors = {'high': 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300', 'medium': 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300', 'low': 'bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-400'} %}
-            <span class="inline-block px-2 py-0.5 rounded text-xs font-medium {{ pri_colors.get(oq.priority, 'bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-400') }}">{{ oq.priority }}</span>
+            {{ priority_badge(oq.priority) }}
           </div>
           <p class="text-sm text-gray-800 dark:text-slate-200 mb-1">{{ oq.question }}</p>
           <p class="text-xs text-gray-500 dark:text-slate-400">{{ oq.would_resolve }}</p>
@@ -2143,6 +2158,24 @@
   <!-- Chat Panel -->
   <div id="chat-toggle" style="position:fixed;top:0;left:0;width:56px;height:56px;background:#2563eb;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(37,99,235,0.4);z-index:50;touch-action:none;" class="no-print">
     <svg width="24" height="24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+  </div>
+
+  <!-- Notes toggle button -->
+  <button id="notes-toggle" onclick="toggleNotes()" class="no-print" style="position:fixed;bottom:20px;left:20px;width:44px;height:44px;background:#f59e0b;border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(245,158,11,0.4);z-index:50;color:white;font-size:18px;" title="Notes">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16l4-3h6a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/><line x1="8" y1="7" x2="12" y2="7"/><line x1="8" y1="11" x2="12" y2="11"/></svg>
+    <span id="notes-badge" style="position:absolute;top:-4px;right:-4px;background:#dc2626;color:white;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;"></span>
+  </button>
+
+  <!-- Notes panel -->
+  <div id="notes-panel" class="no-print">
+    <div style="padding:12px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;background:#fffbeb;">
+      <div style="font-weight:700;font-size:14px;color:#92400e;">Notes</div>
+      <div style="display:flex;gap:6px;">
+        <button onclick="exportNotes()" style="background:none;border:1px solid #fde68a;border-radius:6px;padding:4px 10px;font-size:11px;color:#92400e;cursor:pointer;" title="Export as Markdown">Export</button>
+        <button onclick="toggleNotes()" style="background:none;border:none;cursor:pointer;font-size:18px;color:#92400e;line-height:1;">&times;</button>
+      </div>
+    </div>
+    <div id="notes-list" style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;"></div>
   </div>
 
   <div id="chat-panel" class="no-print" style="display:none;position:fixed;top:0;left:0;width:420px;height:600px;background:white;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.15);z-index:50;flex-direction:column;overflow:hidden;touch-action:none;">
@@ -2446,19 +2479,27 @@
       currentAbort = controller;
       showStopButton(true);
 
+      // 90-second frontend timeout
+      const timeoutId = setTimeout(() => controller.abort(), 90000);
+      let gotError = false;
+
       fetch(CHAT_URL, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({slug: SLUG, date: DATE, message: text, history: history.slice(0, -1)}),
         signal: controller.signal
       }).then(response => {
+        if (!response.ok) {
+          throw new Error('Server returned ' + response.status);
+        }
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
 
         function read() {
           reader.read().then(({done, value}) => {
             if (done) {
-              history.push({role: 'assistant', content: fullText});
+              clearTimeout(timeoutId);
+              if (!gotError) history.push({role: 'assistant', content: fullText});
               currentAbort = null;
               showStopButton(false);
               return;
@@ -2469,22 +2510,29 @@
               if (line.startsWith('data: ') && line !== 'data: [DONE]') {
                 try {
                   const data = JSON.parse(line.slice(6));
-                  fullText += data.text;
-                  assistantEl.innerHTML = formatMarkdown(fullText);
+                  if (data.error) {
+                    gotError = true;
+                    assistantEl.innerHTML = renderChatError(data.text, text);
+                  } else {
+                    fullText += data.text;
+                    assistantEl.innerHTML = formatMarkdown(fullText);
+                  }
                   scrollToBottom();
                 } catch(e) {}
               }
             }
             read();
           }).catch(err => {
+            clearTimeout(timeoutId);
             if (err.name === 'AbortError') return;
-            assistantEl.innerHTML += '<br><span style="color:#ef4444;">Stream interrupted.</span>';
+            assistantEl.innerHTML = renderChatError('Stream interrupted.', text);
             currentAbort = null;
             showStopButton(false);
           });
         }
         read();
       }).catch(err => {
+        clearTimeout(timeoutId);
         currentAbort = null;
         showStopButton(false);
         if (err.name === 'AbortError') {
@@ -2492,13 +2540,32 @@
             assistantEl.innerHTML = formatMarkdown(fullText) + '<br><span style="color:#94a3b8;font-style:italic;font-size:12px;">Response cancelled by user.</span>';
             history.push({role: 'assistant', content: fullText + '\n[cancelled]'});
           } else {
-            assistantEl.innerHTML = '<span style="color:#94a3b8;font-style:italic;">Response cancelled by user.</span>';
+            assistantEl.innerHTML = renderChatError('Request timed out — the server did not respond in 90 seconds.', text);
           }
           return;
         }
-        assistantEl.innerHTML = '<span style="color:#ef4444;">Connection error — is chat_server.py running on port 8000?</span>';
+        assistantEl.innerHTML = renderChatError('Connection error — is chat_server.py running?', text);
       });
     }
+
+    function renderChatError(msg, originalText) {
+      return '<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;">' +
+        '<span style="color:#dc2626;font-size:13px;">' + msg.replace(/\n/g, '<br>') + '</span>' +
+        (originalText ? '<br><button onclick="retryChat(\'' + originalText.replace(/'/g, "\\'").replace(/\n/g, ' ') + '\')" style="margin-top:8px;background:#2563eb;color:white;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;">Retry</button>' : '') +
+        '</div>';
+    }
+
+    window.retryChat = function(text) {
+      // Remove the error message element
+      const msgs = document.getElementById('chat-messages');
+      const lastChild = msgs.lastElementChild;
+      if (lastChild) msgs.removeChild(lastChild);
+      // Also remove the user message that triggered the error
+      if (msgs.lastElementChild) msgs.removeChild(msgs.lastElementChild);
+      // Remove from history
+      if (history.length && history[history.length - 1].role === 'user') history.pop();
+      doSend(text);
+    };
 
     function showStopButton(show) {
       const sendBtn = document.getElementById('chat-send-btn');
@@ -2522,12 +2589,27 @@
 
     function appendMessage(role, content) {
       const msgs = document.getElementById('chat-messages');
+      if (role === 'user') {
+        const div = document.createElement('div');
+        div.style.cssText = 'align-self:flex-end;background:#2563eb;color:white;border-radius:12px 12px 2px 12px;padding:10px 14px;max-width:85%;font-size:13px;line-height:1.5;';
+        div.innerHTML = content ? formatMarkdown(content) : '';
+        msgs.appendChild(div);
+        scrollToBottom();
+        return div;
+      }
+      // Assistant: wrap with toolbar
+      const wrap = document.createElement('div');
+      wrap.className = 'chat-msg-wrap';
+      wrap.style.cssText = 'align-self:flex-start;max-width:85%;';
+      const toolbar = document.createElement('div');
+      toolbar.className = 'chat-toolbar';
+      toolbar.innerHTML = '<button onclick="copyMsg(this)" title="Copy">Copy</button><button onclick="saveNote(this)" title="Save as Note">Note</button><button onclick="addToMeddic(this)" title="Add to MEDDIC notes">MEDDIC</button>';
+      wrap.appendChild(toolbar);
       const div = document.createElement('div');
-      div.style.cssText = role === 'user'
-        ? 'align-self:flex-end;background:#2563eb;color:white;border-radius:12px 12px 2px 12px;padding:10px 14px;max-width:85%;font-size:13px;line-height:1.5;'
-        : 'align-self:flex-start;background:#f1f5f9;color:#1e293b;border-radius:12px 12px 12px 2px;padding:10px 14px;max-width:85%;font-size:13px;line-height:1.5;';
+      div.style.cssText = 'background:#f1f5f9;color:#1e293b;border-radius:12px 12px 12px 2px;padding:10px 14px;font-size:13px;line-height:1.5;';
       div.innerHTML = content ? formatMarkdown(content) : '<span style="color:#94a3b8;">Thinking...</span>';
-      msgs.appendChild(div);
+      wrap.appendChild(div);
+      msgs.appendChild(wrap);
       scrollToBottom();
       return div;
     }
@@ -2545,6 +2627,109 @@
       msgs.scrollTop = msgs.scrollHeight;
     }
 
+
+    // --- Notes system (localStorage) ---
+    const NOTES_KEY = 'presales-notes-' + SLUG;
+    function loadNotes() { try { return JSON.parse(localStorage.getItem(NOTES_KEY) || '[]'); } catch { return []; } }
+    function saveNotes(notes) { localStorage.setItem(NOTES_KEY, JSON.stringify(notes)); renderNotes(); }
+
+    function getMsgText(btn) {
+      const wrap = btn.closest('.chat-msg-wrap');
+      const bubble = wrap ? wrap.querySelector('div[style*="background"]') : null;
+      return bubble ? bubble.innerText : '';
+    }
+
+    window.copyMsg = function(btn) {
+      const text = getMsgText(btn);
+      navigator.clipboard.writeText(text).then(() => toast('Copied to clipboard', 'green', 1500));
+    };
+
+    window.saveNote = function(btn) {
+      const text = getMsgText(btn);
+      if (!text) return;
+      const notes = loadNotes();
+      notes.push({ text: text, type: 'general', ts: new Date().toISOString() });
+      saveNotes(notes);
+      toast('Saved as note', 'green', 1500);
+    };
+
+    window.addToMeddic = function(btn) {
+      const text = getMsgText(btn);
+      if (!text) return;
+      const notes = loadNotes();
+      notes.push({ text: text, type: 'meddic', ts: new Date().toISOString() });
+      saveNotes(notes);
+      toast('Added to MEDDIC notes', 'green', 1500);
+    };
+
+    window.deleteNote = function(idx) {
+      const notes = loadNotes();
+      notes.splice(idx, 1);
+      saveNotes(notes);
+    };
+
+    window.editNote = function(idx) {
+      const notes = loadNotes();
+      const note = notes[idx];
+      const el = document.querySelector('#notes-list [data-note-idx="' + idx + '"] .note-text');
+      if (!el) return;
+      el.contentEditable = 'true';
+      el.focus();
+      el.addEventListener('blur', function handler() {
+        el.contentEditable = 'false';
+        note.text = el.innerText;
+        saveNotes(notes);
+        el.removeEventListener('blur', handler);
+      }, { once: true });
+    };
+
+    window.toggleNotes = function() {
+      const panel = document.getElementById('notes-panel');
+      panel.classList.toggle('visible');
+      if (panel.classList.contains('visible')) renderNotes();
+    };
+
+    window.exportNotes = function() {
+      const notes = loadNotes();
+      if (!notes.length) return toast('No notes to export', 'amber', 1500);
+      let md = '# Notes — ' + SLUG + '\n\n';
+      const meddic = notes.filter(n => n.type === 'meddic');
+      const general = notes.filter(n => n.type !== 'meddic');
+      if (meddic.length) {
+        md += '## MEDDIC Notes\n\n';
+        meddic.forEach(n => { md += '- ' + n.text.replace(/\n/g, '\n  ') + '\n'; });
+        md += '\n';
+      }
+      if (general.length) {
+        md += '## General Notes\n\n';
+        general.forEach(n => { md += '- ' + n.text.replace(/\n/g, '\n  ') + '\n'; });
+      }
+      const blob = new Blob([md], { type: 'text/markdown' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = SLUG + '-notes.md';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    };
+
+    function renderNotes() {
+      const list = document.getElementById('notes-list');
+      if (!list) return;
+      const notes = loadNotes();
+      const badge = document.getElementById('notes-badge');
+      if (badge) badge.textContent = notes.length || '';
+      if (!notes.length) {
+        list.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:12px;padding:20px;">No notes yet. Use the toolbar on chat messages to save notes.</div>';
+        return;
+      }
+      list.innerHTML = notes.map((n, i) => {
+        const typeLabel = n.type === 'meddic' ? '<span style="background:#dbeafe;color:#1d4ed8;font-size:9px;padding:1px 5px;border-radius:3px;font-weight:600;">MEDDIC</span> ' : '';
+        return '<div class="note-card" data-note-idx="' + i + '">' +
+          '<div class="note-actions"><button onclick="editNote(' + i + ')" title="Edit">Edit</button><button onclick="deleteNote(' + i + ')" title="Delete">Del</button></div>' +
+          typeLabel + '<span class="note-text">' + n.text.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>') + '</span>' +
+          '<div style="margin-top:4px;font-size:9px;color:#a1a1aa;">' + new Date(n.ts).toLocaleDateString() + '</div></div>';
+      }).join('');
+    }
 
     // --- Draft outreach for champion candidates ---
     const CHAMPION_DATA = {{ data.champion_candidates | default([]) | tojson }};
@@ -3200,6 +3385,9 @@
     var isDark = document.documentElement.classList.toggle('dark');
     localStorage.setItem('theme-preference', isDark ? 'dark' : 'light');
   }
+
+  // === Initialize notes badge ===
+  if (typeof renderNotes === 'function') renderNotes();
 
   // === Rich tooltips (data-tooltip) ===
   (function() {
