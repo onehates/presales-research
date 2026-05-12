@@ -232,12 +232,110 @@ SYM_CACHED = "\033[36m✓\033[0m"   # cyan checkmark (cached)
 SYM_INSUF = "\033[33m—\033[0m"    # yellow dash
 SYM_ERROR = "\033[31m✗\033[0m"    # red X
 SYM_RUN = "\033[90m…\033[0m"      # gray dots (running)
+SYM_SKIP = "\033[90m⊘\033[0m"    # gray circle-slash (skipped)
 
 
 COOPERATIVE_CLIENTS = {"sourcewell", "tips", "ga_procurement", "atlanta_procurement", "omnia", "costars", "hgac"}
 
 # Clients that depend on other clients' output and must run after Phase 1
 DEFERRED_CLIENTS = {"champion_signals"}
+
+# ---------------------------------------------------------------------------
+# Vertical-aware source filtering
+# ---------------------------------------------------------------------------
+
+SOURCES_BY_VERTICAL = {
+    "k12": {"github", "news", "nces", "clery", "sam", "sourcewell", "tips", "hhs", "reddit", "ga_procurement", "atlanta_procurement", "sled_procurement", "omnia", "costars", "hgac", "leadership", "champion_signals", "crtsh", "indeed"},
+    "k12_district": {"github", "news", "nces", "clery", "sam", "sourcewell", "tips", "hhs", "reddit", "ga_procurement", "atlanta_procurement", "sled_procurement", "omnia", "costars", "hgac", "leadership", "champion_signals", "crtsh", "indeed"},
+    "higher_ed": {"sec", "github", "news", "clery", "sam", "sourcewell", "reddit", "sled_procurement", "omnia", "leadership", "champion_signals", "crtsh", "indeed"},
+    "healthcare": {"sec", "github", "news", "hhs", "sam", "reddit", "leadership", "champion_signals", "crtsh", "indeed"},
+    "state_local_gov": {"github", "news", "sam", "sourcewell", "ga_procurement", "atlanta_procurement", "sled_procurement", "omnia", "leadership", "champion_signals", "crtsh", "indeed"},
+    "federal": {"github", "news", "sam", "leadership", "champion_signals", "crtsh", "indeed"},
+    "retail": {"sec", "github", "news", "reddit", "leadership", "champion_signals", "crtsh", "indeed", "hhs"},
+    "public_corporation": {"sec", "github", "news", "reddit", "leadership", "champion_signals", "crtsh", "indeed"},
+    "manufacturing": {"sec", "github", "news", "reddit", "leadership", "champion_signals", "crtsh", "indeed"},
+    "hospitality": {"sec", "github", "news", "reddit", "leadership", "champion_signals", "crtsh", "indeed"},
+    "critical_infrastructure": {"sec", "github", "news", "sam", "reddit", "leadership", "champion_signals", "crtsh", "indeed"},
+    "transportation": {"sec", "github", "news", "sam", "reddit", "leadership", "champion_signals", "crtsh", "indeed"},
+    "public_safety": {"github", "news", "sam", "sourcewell", "ga_procurement", "omnia", "leadership", "champion_signals", "crtsh", "indeed"},
+    "senior_living": {"sec", "github", "news", "hhs", "reddit", "leadership", "champion_signals", "crtsh", "indeed"},
+}
+
+# Name-based heuristics for early vertical detection (before any sources run)
+_K12_KEYWORDS = {"public schools", "school district", "unified school", "independent school district", "isd", "county schools", "parish schools", "city schools", "school board"}
+_HIGHER_ED_KEYWORDS = {"university", "college", "community college", "institute of technology", "polytechnic"}
+_HEALTHCARE_KEYWORDS = {"hospital", "medical center", "health system", "healthcare", "health care", "clinic", "ambulatory"}
+_GOV_KEYWORDS = {"city of", "county of", "state of", "department of", "bureau of", "agency", "commission", "authority"}
+_SENIOR_KEYWORDS = {"senior living", "assisted living", "memory care", "nursing", "retirement"}
+
+
+def detect_vertical_early(company: str, slug: str) -> str:
+    """Guess vertical from company name heuristics and any pre-existing cached data.
+
+    Returns an entity_type string or 'unknown'.
+    """
+    name_lower = company.lower()
+
+    # Check cached data first (from prior runs)
+    nces_path = SOURCES_DIR / slug / "nces.json"
+    if nces_path.exists():
+        try:
+            nces = json.loads(nces_path.read_text())
+            if nces.get("district_metadata"):
+                return "k12_district"
+        except Exception:
+            pass
+
+    clery_path = SOURCES_DIR / slug / "clery.json"
+    if clery_path.exists():
+        try:
+            clery = json.loads(clery_path.read_text())
+            if clery.get("status") != "insufficient_data":
+                return "higher_ed"
+        except Exception:
+            pass
+
+    sec_path = SOURCES_DIR / slug / "sec.json"
+    if sec_path.exists():
+        try:
+            sec = json.loads(sec_path.read_text())
+            if sec.get("status") != "insufficient_data" and sec.get("company"):
+                return "public_corporation"
+        except Exception:
+            pass
+
+    # Name-based heuristics
+    for kw in _K12_KEYWORDS:
+        if kw in name_lower:
+            return "k12_district"
+    for kw in _HIGHER_ED_KEYWORDS:
+        if kw in name_lower:
+            return "higher_ed"
+    for kw in _HEALTHCARE_KEYWORDS:
+        if kw in name_lower:
+            return "healthcare"
+    for kw in _SENIOR_KEYWORDS:
+        if kw in name_lower:
+            return "senior_living"
+    for kw in _GOV_KEYWORDS:
+        if kw in name_lower:
+            return "state_local_gov"
+
+    return "unknown"
+
+
+def filter_sources_by_vertical(client_names: list[str], vertical: str) -> tuple[list[str], list[str]]:
+    """Filter source client list by detected vertical.
+
+    Returns (applicable_clients, skipped_clients).
+    If vertical is unknown, all clients run.
+    """
+    applicable_set = SOURCES_BY_VERTICAL.get(vertical)
+    if applicable_set is None:
+        return client_names, []
+    applicable = [n for n in client_names if n in applicable_set]
+    skipped = [n for n in client_names if n not in applicable_set]
+    return applicable, skipped
 
 
 def run_client(client_name: str, company: str, slug: str, force: bool) -> tuple[str, str, str]:
@@ -345,14 +443,25 @@ def _run_cooperative_client(
         return client_name, SYM_INSUF, "insufficient_data"
 
 
-def run_phase1(company: str, slug: str, force: bool) -> dict:
+def run_phase1(company: str, slug: str, force: bool, vertical: str = "unknown") -> dict:
     """Run all clients in parallel (except deferred). Returns {client_name: (symbol, detail)}."""
     results = {}
-    client_names = [n for n in CLIENT_REGISTRY if n not in DEFERRED_CLIENTS]
+    all_client_names = [n for n in CLIENT_REGISTRY if n not in DEFERRED_CLIENTS]
+
+    # Filter by vertical
+    client_names, skipped = filter_sources_by_vertical(all_client_names, vertical)
 
     # Print initial grid
-    print("\n  Phase 1 — Source Data Collection")
+    vert_label = f"  vertical: {vertical}" if vertical != "unknown" else ""
+    print(f"\n  Phase 1 — Source Data Collection{vert_label}")
     print("  " + "─" * 50)
+
+    # Log skipped sources
+    if skipped:
+        for name in skipped:
+            results[name] = (SYM_SKIP, "not applicable")
+            print(f"    {SYM_SKIP} {name:<22} not applicable to {vertical}", flush=True)
+            _write_status("phase1", f"{name}: skipped (not applicable to {vertical})", source=name, source_status="skipped")
 
     with ThreadPoolExecutor(max_workers=6) as pool:
         futures = {
@@ -384,7 +493,11 @@ def run_phase1(company: str, slug: str, force: bool) -> dict:
     ok_count = sum(1 for s, _ in results.values() if s in (SYM_OK, SYM_CACHED))
     insuf_count = sum(1 for s, _ in results.values() if s == SYM_INSUF)
     err_count = sum(1 for s, _ in results.values() if s == SYM_ERROR)
-    print(f"\n    {ok_count} sourced  {insuf_count} insufficient  {err_count} errored")
+    skip_count = sum(1 for s, _ in results.values() if s == SYM_SKIP)
+    summary = f"\n    {ok_count} sourced  {insuf_count} insufficient  {err_count} errored"
+    if skip_count:
+        summary += f"  {skip_count} skipped (not applicable)"
+    print(summary)
 
     if ok_count < 2:
         print(f"\n  ⚠  WARNING: <2 sources returned data. Brief will be thin.", flush=True)
@@ -1103,17 +1216,29 @@ def research(company: str, *, force: bool = False, open_browser: bool = False, u
 
     t0 = time.time()
 
+    # Detect vertical for source filtering
+    vertical = detect_vertical_early(company, slug)
+    if vertical != "unknown":
+        print(f"\n  Detected vertical: {vertical}")
+        _write_status("starting", f"Detected vertical: {vertical}", vertical=vertical)
+    else:
+        _write_status("starting", "Vertical unknown — running all sources", vertical="unknown")
+
     # Phase 1 — Source data collection
     _write_status("phase1", "Collecting source data...")
     t1 = time.time()
-    phase1_results = run_phase1(company, slug, force)
+    phase1_results = run_phase1(company, slug, force, vertical=vertical)
     print(f"  Phase 1 elapsed: {time.time() - t1:.1f}s")
 
     # Phase 1b — Deferred clients (depend on Phase 1 output)
-    if DEFERRED_CLIENTS:
+    applicable_deferred = DEFERRED_CLIENTS
+    if vertical != "unknown":
+        applicable_set = SOURCES_BY_VERTICAL.get(vertical, set())
+        applicable_deferred = {n for n in DEFERRED_CLIENTS if n in applicable_set}
+    if applicable_deferred:
         print(f"\n  Phase 1b — Deferred Clients")
         print("  " + "─" * 50)
-        for name in DEFERRED_CLIENTS:
+        for name in applicable_deferred:
             # Skip champion_signals if leadership.json was fetched within 24h
             if name == "champion_signals":
                 leadership_cache = SOURCES_DIR / slug / "leadership.json"
