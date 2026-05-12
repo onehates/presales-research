@@ -1,0 +1,21 @@
+<style>
+.app-footer { margin-top: 3rem; padding: 1.5rem 0; border-top: 1px solid rgba(148, 163, 184, 0.2); font-size: 0.8rem; color: rgb(100, 116, 139); text-align: center; }
+.dark .app-footer { border-top-color: rgba(71, 85, 105, 0.4); color: rgb(148, 163, 184); }
+.footer-content { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+.footer-separator { margin: 0 0.5rem; opacity: 0.5; }
+.footer-version { font-family: monospace; font-weight: 600; }
+.footer-link { color: inherit; text-decoration: none; border-bottom: 1px dotted currentColor; }
+.footer-link:hover { color: rgb(59, 130, 246); }
+@media print { .app-footer { display: none !important; } }
+</style>
+<footer class="app-footer no-print">
+  <div class="footer-content">
+    <span class="footer-version">v{{ APP_VERSION|default('1.3.0') }}</span>
+    <span class="footer-separator">&middot;</span>
+    <span class="footer-tagline">Pre-sales intelligence for SLED &amp; commercial</span>
+    <span class="footer-separator">&middot;</span>
+    <a href="/docs" class="footer-link">Docs</a>
+    <span class="footer-separator">&middot;</span>
+    <a href="/" class="footer-link">Home</a>
+  </div>
+</footer>

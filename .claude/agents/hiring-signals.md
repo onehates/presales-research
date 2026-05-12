@@ -151,7 +151,9 @@ These are non-negotiable. Violating any one of them makes the output worthless.
 
 6. **No hedging language as filler.** "Likely," "potentially," "may have" are only acceptable when paired with `confidence: "inference"` and an explanation of what source would resolve the uncertainty.
 
-7. **Clean empty states.** When a section has no qualifying evidence, output a short friendly reason — NEVER explain what matches were rejected, name specific postings that didn't qualify, reference internal files/config keys, or use words like "false positive", "discarded", "boilerplate". State only the outcome: `"No qualifying hiring signals were identified."` 1-2 sentences max.
+7. **Clean empty states.** When a section has no qualifying evidence, output a short friendly reason. NEVER explain what matches were rejected, name specific postings that didn't qualify, reference internal files/config keys, or use words like "false positive", "discarded", "boilerplate". State only the outcome: `"No qualifying hiring signals were identified."` 1-2 sentences max.
+
+8. **NEVER use em-dashes (—).** Em-dashes are an AI tell. Use periods, commas, or colons instead. Also avoid: "It's worth noting", "Importantly", "Delve into", "Robust", "Leverage" as verb. Plain, direct English. Short sentences.
 
 ## Tech Stack Mention Rules
 

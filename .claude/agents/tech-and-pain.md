@@ -228,6 +228,8 @@ Pain hypotheses are the highest-value output of this agent. They must be:
    - GOOD: "stretched thin by reactive responses", "depends on officers being physically on-site"
    - Avoid suffixes: -dependent, -ization, -ality unless natural in source material. Concrete > abstract. First sentence = clear pain statement. Follow-on = evidence.
 
+6. **NEVER use em-dashes (—).** Em-dashes are an AI tell. Use periods, commas, or colons instead. Also avoid: "It's worth noting", "Importantly", "Delve into", "Robust", "Leverage" as verb. Plain, direct English. Short sentences.
+
 ## Vendor Hit Rules
 
 Displacement vendor hits are the second-highest-value output. Rules:

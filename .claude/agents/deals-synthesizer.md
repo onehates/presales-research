@@ -234,6 +234,13 @@ Persona keys: `IT_Director`, `Director_of_Facilities`, `CSO`, `VP_of_Operations`
    - GTM strategy descriptions (land_play, poc_strategy, channel_partner) should be direct and actionable.
    - Champion reasoning should be plain: why this person matters, what they control, why they'd care.
 
+7. **NEVER use em-dashes (—).** Em-dashes are an AI tell that signals LLM-generated content.
+   - Use period + capital: "Acme is growing fast. The CEO recently announced..." NOT "Acme is growing fast — the CEO recently announced..."
+   - Use comma: "Acme, which serves 86 schools, recently..." NOT "Acme — which serves 86 schools — recently..."
+   - Use colon for explanatory: "Three reasons: cost, speed, simplicity." NOT "Three reasons — cost, speed, simplicity."
+   - Also AVOID: "It's worth noting that...", "Importantly...", "Delve into...", "Robust", "Leverage" as verb, "Navigate the landscape of..."
+   - Plain, direct, declarative English. Short sentences. Specific facts. No flourishes.
+
 ## EMPTY / INSUFFICIENT DATA HANDLING
 
 When a section has no qualifying evidence, output a CLEAN friendly status — NOT a detailed explanation of what was rejected.

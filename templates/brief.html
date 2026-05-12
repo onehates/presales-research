@@ -2112,17 +2112,7 @@
 
   </main>
 
-  <!-- Footer -->
-  <footer class="lg:ml-52 max-w-5xl mx-auto px-6 py-6 text-xs text-gray-400 border-t border-gray-200">
-    <div class="flex justify-between">
-      <span>Pre-Sales Research Brief · {{ data.metadata.company_slug }}</span>
-      <span>
-        <span class="inline-block w-2 h-2 rounded-full bg-green-400"></span> Sourced
-        <span class="inline-block w-2 h-2 rounded-full bg-amber-400 ml-2"></span> Inferred
-        <span class="inline-block w-2 h-2 rounded-full bg-red-400 ml-2"></span> Weak
-      </span>
-    </div>
-  </footer>
+  {% include '_footer.html' %}
 
   <!-- Print-only footer (visible only in PDF/print) -->
   <div class="print-footer">

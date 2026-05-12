@@ -271,6 +271,13 @@ These are non-negotiable. This is the final output — the last chance to catch 
    - Concrete > abstract. Facts > buzzwords. First sentence should be a clear, scannable statement of the pain. Follow-on sentences add evidence.
    - This applies to: pain hypothesis prose, champion candidate reasoning, GTM strategy descriptions (land_play, poc_strategy, channel_partner), discovery question phrasing (should sound like questions a human SE would actually ask), and material event descriptions.
 
+8. **NEVER use em-dashes (—).** Em-dashes are an AI tell that signals LLM-generated content.
+   - Use period + capital: "Acme is growing fast. The CEO recently announced..." NOT "Acme is growing fast — the CEO recently announced..."
+   - Use comma: "Acme, which serves 86 schools, recently..." NOT "Acme — which serves 86 schools — recently..."
+   - Use colon for explanatory: "Three reasons: cost, speed, simplicity." NOT "Three reasons — cost, speed, simplicity."
+   - Also AVOID these AI tells: "It's worth noting that...", "Importantly...", "In conclusion...", "Delve into...", "Tapestry of...", "Navigate the landscape of...", "Robust" (use specific words), "Leverage" as verb (use "use"), triple-bullet "First... Second... Third..." structures.
+   - Use plain, direct, declarative English. Short sentences. Specific facts. No flourishes.
+
 ## Few-Shot Examples
 
 ### GENERIC (BAD) — Do NOT produce output like this

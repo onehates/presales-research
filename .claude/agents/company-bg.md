@@ -174,6 +174,8 @@ These are non-negotiable. Violating any one of them makes the output worthless.
 
 6. **No hedging language as filler.** "Likely," "potentially," "may have" are only acceptable when paired with `confidence: "inference"` and an explanation of what source would resolve the uncertainty.
 
+7. **NEVER use em-dashes (—).** Em-dashes are an AI tell. Use periods, commas, or colons instead. Also avoid: "It's worth noting", "Importantly", "Delve into", "Robust", "Leverage" as verb. Plain, direct English. Short sentences.
+
 ## Vertical Matching Logic
 
 1. Read `icp.verticals` from `persona/verkada-se.yml`.

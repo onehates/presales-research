@@ -47,6 +47,7 @@ PRODUCTS_PATH = PROJECT_ROOT / "persona" / "verkada-products.yml"
 SONNET_MODEL = "claude-sonnet-4-6"
 PORT = int(os.environ.get("PORT", 8000))
 STATUS_DIR = Path("/tmp")
+APP_VERSION = "1.3.0"
 
 app = FastAPI(title="Pre-Sales Research Platform", version="1.0", docs_url="/api/docs", redoc_url=None)
 if STATIC_DIR.exists():
@@ -58,6 +59,7 @@ _jinja_env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)), autoescape
 # Import humanize_id filter and sanitizer from render module
 from render.render import humanize_id, _sanitize_data
 _jinja_env.filters["humanize_id"] = humanize_id
+_jinja_env.globals["APP_VERSION"] = APP_VERSION
 
 app.add_middleware(
     CORSMiddleware,

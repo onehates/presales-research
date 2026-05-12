@@ -15,6 +15,7 @@ TEMPLATE_DIR = PROJECT_ROOT / "templates"
 BRIEFS_DIR = PROJECT_ROOT / "briefs"
 PERSONA_PATH = PROJECT_ROOT / "persona" / "verkada-se.yml"
 GLOSSARY_PATH = PROJECT_ROOT / "data" / "glossary.yml"
+APP_VERSION = "1.3.0"
 
 
 SPECIAL_CASES = {
@@ -60,9 +61,9 @@ def confidence_badge(confidence: str) -> str:
         "inference": "bg-red-100 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-800",
     }
     tooltips = {
-        "high": "High confidence — directly sourced from primary documents (filings, official sites, named individuals)",
-        "medium": "Medium confidence — sourced but inferred or aggregated from multiple secondary signals",
-        "inference": "Inference — pattern-based deduction without direct evidence. Must validate via discovery",
+        "high": "High confidence: directly sourced from primary documents (filings, official sites, named individuals)",
+        "medium": "Medium confidence: sourced but inferred or aggregated from multiple secondary signals",
+        "inference": "Inference: pattern-based deduction without direct evidence. Must validate via discovery",
     }
     css = colors.get(confidence, "bg-gray-100 text-gray-600 border-gray-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-600")
     tip = tooltips.get(confidence, "")
@@ -78,9 +79,9 @@ def quality_badge(quality: str) -> str:
         "weak": "bg-red-50 text-red-600 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-800",
     }
     tooltips = {
-        "primary": "Primary source — official company filings, primary government sites, direct citations",
-        "secondary": "Secondary source — news articles, third-party reports, expert blogs",
-        "weak": "Weak source — Reddit threads, forums, unverified social media",
+        "primary": "Primary source: official company filings, primary government sites, direct citations",
+        "secondary": "Secondary source: news articles, third-party reports, expert blogs",
+        "weak": "Weak source: Reddit threads, forums, unverified social media",
     }
     css = colors.get(quality, "bg-gray-50 text-gray-500 border-gray-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-600")
     tip = tooltips.get(quality, "")
@@ -96,9 +97,9 @@ def priority_badge(priority: str) -> str:
         "low": "bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-400",
     }
     tooltips = {
-        "high": "High priority — address on the first discovery call",
-        "medium": "Medium priority — address in follow-up conversations",
-        "low": "Low priority — nice-to-have context question, ask if time permits",
+        "high": "High priority: address on the first discovery call",
+        "medium": "Medium priority: address in follow-up conversations",
+        "low": "Low priority: nice-to-have context question, ask if time permits",
     }
     css = colors.get(priority, "bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-400")
     tip = tooltips.get(priority, "")
@@ -170,13 +171,64 @@ _INTERNAL_TERM_REPLACEMENTS = [
     (re.compile(r'\bare contextually invalid\b'), 'are not relevant'),
     (re.compile(r'\bfalse positives?\b'), 'non-matching results'),
     (re.compile(r'\bboilerplate\b'), 'standard'),
+
+    # MEDDIC role references (snake_case → space-separated)
+    (re.compile(r'\beconomic_buyer\b'), 'economic buyer'),
+    (re.compile(r'\bdecision_criteria\b'), 'decision criteria'),
+    (re.compile(r'\bdecision_process\b'), 'decision process'),
+    (re.compile(r'\bidentify_pain\b'), 'identify pain'),
+    (re.compile(r'\bchampion_potential\b'), 'champion potential'),
+    (re.compile(r'\btechnical_buyer\b'), 'technical buyer'),
+    (re.compile(r'\bbusiness_buyer\b'), 'business buyer'),
+    (re.compile(r'\bmeddic_role\b'), 'MEDDIC role'),
+    (re.compile(r'\bbuyer_persona\b'), 'buyer persona'),
+    (re.compile(r'\bdeal_role\b'), 'deal role'),
+    (re.compile(r'\bcompetition_field\b'), 'competition'),
+
+    # Common prose snake_case that should be space-separated
+    (re.compile(r'\bpain_point\b'), 'pain point'),
+    (re.compile(r'\bpain_hypothesis\b'), 'pain hypothesis'),
+    (re.compile(r'\bdeal_strategy\b'), 'deal strategy'),
+    (re.compile(r'\bgo_to_market\b'), 'go-to-market'),
+    (re.compile(r'\bbuying_trigger\b'), 'buying trigger'),
+    (re.compile(r'\btrigger_evidence\b'), 'trigger evidence'),
+    (re.compile(r'\bsource_quality\b'), 'source quality'),
+    (re.compile(r'\bnext_steps?\b'), 'next steps'),
+    (re.compile(r'\bfollow_up\b'), 'follow-up'),
+    (re.compile(r'\bend_state\b'), 'end state'),
+    (re.compile(r'\bcurrent_state\b'), 'current state'),
+    (re.compile(r'\bdesired_state\b'), 'desired state'),
+    (re.compile(r'\bvendor_consolidation\b'), 'vendor consolidation'),
+    (re.compile(r'\bgap_to_close\b'), 'gap to close'),
 ]
 
 
+def _replace_em_dashes(text: str) -> str:
+    """Replace em-dashes with appropriate punctuation. Em-dashes are an AI tell."""
+    if not text or not isinstance(text, str):
+        return text
+
+    def _smart_replace(m):
+        before = m.group(1)
+        after = m.group(2)
+        if after and after[0].isupper():
+            return f"{before}. {after}"
+        return f"{before}, {after}"
+
+    # " — " (em-dash with spaces)
+    text = re.sub(r'(\S+)\s+—\s+(\S+)', _smart_replace, text)
+    # Standalone em-dash (rare but possible)
+    text = text.replace('—', ', ')
+    # "--" used as em-dash substitute (but not in URLs)
+    text = re.sub(r'(?<![:\/])(\S+)\s+--\s+(\S+)', _smart_replace, text)
+    return text
+
+
 def _sanitize_string(s: str) -> str:
-    """Apply internal term replacements to a single string."""
+    """Apply internal term replacements and em-dash removal to a single string."""
     for pattern, replacement in _INTERNAL_TERM_REPLACEMENTS:
         s = pattern.sub(replacement, s)
+    s = _replace_em_dashes(s)
     # Clean up double spaces left by removals
     s = re.sub(r'  +', ' ', s).strip()
     return s
@@ -214,6 +266,7 @@ def render_battlecard(brief_data: dict, slug: str = "", date: str = "") -> str:
         undefined=_SilentUndefined,
     )
     env.filters["humanize_id"] = humanize_id
+    env.globals["APP_VERSION"] = APP_VERSION
     template = env.get_template("battlecard.html")
     return template.render(data=brief_data, slug=slug, date=date)
 
@@ -232,6 +285,7 @@ def render_brief(json_path: Path) -> Path:
     env.globals["quality_badge"] = quality_badge
     env.globals["priority_badge"] = priority_badge
     env.globals["source_chip"] = source_chip
+    env.globals["APP_VERSION"] = APP_VERSION
     env.filters["humanize_id"] = humanize_id
 
     # Load chat starter prompts from persona file
