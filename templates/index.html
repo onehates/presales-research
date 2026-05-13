@@ -10,9 +10,11 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
     body { font-family: 'Inter', sans-serif; }
-    .brief-card { transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; cursor: pointer; }
+    .brief-card { transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; cursor: pointer; position: relative; }
     .brief-card:hover { border-color: #93c5fd; box-shadow: 0 8px 24px rgba(59,130,246,0.10); transform: translateY(-1px); }
     .dark .brief-card:hover { border-color: #3b82f6; box-shadow: 0 8px 24px rgba(59,130,246,0.20); }
+    .card-link { position: absolute; inset: 0; z-index: 1; }
+    .brief-card button, .brief-card a:not(.card-link), .brief-card input { position: relative; z-index: 2; }
     .action-btn { opacity: 0.5; transition: opacity 0.15s, color 0.15s; }
     .action-btn:hover { opacity: 1; }
     .tag-chip { cursor: pointer; transition: all 0.15s; }
@@ -287,12 +289,12 @@
       {% endif %}
 
       {% for b in briefs %}
-      <div class="brief-card bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-5 flex flex-col"
+      <div class="brief-card bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-5 flex flex-col relative"
            data-slug="{{ b.slug }}" data-date="{{ b.date }}" data-vertical="{{ b.vertical }}"
            data-name="{{ b.name }}" data-starred="{{ b.starred }}" data-archived="{{ b.archived }}"
            data-tags="{{ b.tags | join(',') }}" data-generated="{{ b.generated_at }}"
-           data-champion="{{ b.top_champion }}" data-size="{{ b.size_indicator }}"
-           onclick="cardClick(event, '{{ b.slug }}', '{{ b.date }}', {{ b.html_exists | tojson }})">
+           data-champion="{{ b.top_champion }}" data-size="{{ b.size_indicator }}">
+        {% if b.html_exists %}<a href="/briefs/{{ b.slug }}-{{ b.date }}.html" class="card-link" aria-label="Open {{ b.name }} brief"></a>{% endif %}
         <div class="flex items-start justify-between mb-2">
           <div>
             <h3 class="text-base font-bold text-gray-900 dark:text-white brief-name">{{ b.name }}</h3>
@@ -447,12 +449,6 @@
     });
   }
   animateCounters();
-
-  // === Card click (whole card navigates to brief) ===
-  function cardClick(e, slug, date, htmlExists) {
-    if (e.target.closest('button, a, input')) return;
-    if (htmlExists) window.location.href = '/briefs/' + slug + '-' + date + '.html';
-  }
 
   // === Autocomplete suggestions ===
   (function() {
