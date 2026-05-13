@@ -10,15 +10,19 @@
 @media print { .app-footer { display: none !important; } }
 
 /* ===================================================================
-   DARK MODE: NUCLEAR CONTRAST FIX
+   DARK MODE: NUCLEAR CONTRAST FIX (screen only — never print)
    ===================================================================
    Previous fix used .dark .bg-green-950 selectors which DON'T match
    Tailwind CDN classes (elements have class="dark:bg-green-950" with
    the dark: prefix). Attribute selectors [class*="bg-green-9"] match
    both "bg-green-950" and "dark:bg-green-950".
 
+   Wrapped in @media screen to prevent light-text from leaking into
+   print output where backgrounds are forced to light colors.
+
    All rules use !important to beat Tailwind CDN's generated utilities.
    =================================================================== */
+@media screen {
 
 /* --- GREEN family (procurement, validated, expansion) --- */
 html.dark [class*="bg-green-9"],
@@ -200,6 +204,8 @@ html.dark [class*="bg-blue-9"] [class*="bg-"][class*="text-"],
 html.dark [class*="bg-indigo-9"] [class*="bg-"][class*="text-"] {
   /* Let nested badges with their own bg keep their text color */
 }
+
+} /* end @media screen */
 </style>
 <footer class="app-footer no-print">
   <div class="footer-content">

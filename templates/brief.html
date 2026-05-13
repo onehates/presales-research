@@ -489,30 +489,246 @@
       /* --- Print-only footer --- */
       .print-footer { display: block !important; margin-top: 16pt; padding-top: 8pt; border-top: 1px solid #d1d5db; font-size: 8pt; color: #888; text-align: center; }
 
-      /* --- Confidence badges: keep color-coded --- */
-      [class*="bg-green"] { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      [class*="bg-amber"] { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      [class*="bg-red"]   { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      /* =============================================================
+         FIX 1: COLORED CALLOUT BOXES — force light-bg + dark-text
+         The nuclear dark-mode CSS ([class*="bg-green-9"] *) leaks
+         into print because attribute selectors match dark:bg-green-950.
+         Override with higher-specificity print rules.
+         ============================================================= */
 
-      /* --- Dark mode overrides: ensure all dark: classes resolve to light --- */
-      .dark\\:bg-slate-900, .dark\\:bg-slate-950, .dark\\:bg-blue-950, .dark\\:bg-red-950 { background-color: white !important; }
-      .dark\\:text-white, .dark\\:text-slate-200, .dark\\:text-slate-300, .dark\\:text-blue-300 { color: #000 !important; }
-      .dark\\:border-slate-800, .dark\\:border-slate-700, .dark\\:border-blue-800 { border-color: #e5e7eb !important; }
+      /* Kill ALL dark-mode nuclear contrast rules in print */
+      html.dark [class*="bg-green-9"] *,
+      html.dark [class*="bg-emerald-9"] *,
+      html.dark [class*="bg-purple-9"] *,
+      html.dark [class*="bg-violet-9"] *,
+      html.dark [class*="bg-red-9"] *,
+      html.dark [class*="bg-rose-9"] *,
+      html.dark [class*="bg-amber-9"] *,
+      html.dark [class*="bg-yellow-9"] *,
+      html.dark [class*="bg-blue-9"] *,
+      html.dark [class*="bg-sky-9"] *,
+      html.dark [class*="bg-cyan-9"] *,
+      html.dark [class*="bg-indigo-9"] *,
+      html.dark [class*="bg-teal-9"] *,
+      html.dark [class*="bg-orange-9"] *,
+      html.dark [class*="bg-pink-9"] *,
+      [class*="bg-green-9"] *,
+      [class*="bg-emerald-9"] *,
+      [class*="bg-purple-9"] *,
+      [class*="bg-red-9"] *,
+      [class*="bg-amber-9"] *,
+      [class*="bg-blue-9"] *,
+      [class*="bg-indigo-9"] *,
+      [class*="bg-teal-9"] *,
+      [class*="bg-orange-9"] * {
+        color: inherit !important;
+      }
+
+      /* Green callout boxes (POC strategy, procurement, validated) */
+      [class*="bg-green-50"],
+      [class*="bg-green-100"],
+      [class*="bg-emerald-50"],
+      [class*="bg-emerald-100"] {
+        background-color: #dcfce7 !important; /* green-100 */
+        color: #14532d !important; /* green-900 */
+        border-color: #86efac !important;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      }
+      [class*="bg-green-50"] *, [class*="bg-green-100"] *,
+      [class*="bg-emerald-50"] *, [class*="bg-emerald-100"] * {
+        color: #14532d !important;
+      }
+      [class*="bg-green-50"] h2, [class*="bg-green-50"] h3, [class*="bg-green-50"] h4,
+      [class*="bg-green-100"] h2, [class*="bg-green-100"] h3,
+      [class*="bg-emerald-50"] h2, [class*="bg-emerald-50"] h3 {
+        color: #065f46 !important;
+      }
+
+      /* Red/rose callout boxes (displacement, risks) */
+      [class*="bg-red-50"],
+      [class*="bg-red-100"],
+      [class*="bg-rose-50"] {
+        background-color: #fee2e2 !important; /* red-100 */
+        color: #7f1d1d !important; /* red-900 */
+        border-color: #fca5a5 !important;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      }
+      [class*="bg-red-50"] *, [class*="bg-red-100"] *,
+      [class*="bg-rose-50"] * {
+        color: #7f1d1d !important;
+      }
+
+      /* Amber/yellow callout boxes (bundle recommendation, methodology, warnings) */
+      [class*="bg-amber-50"],
+      [class*="bg-amber-100"],
+      [class*="bg-yellow-50"] {
+        background-color: #fef3c7 !important; /* amber-100 */
+        color: #78350f !important; /* amber-900 */
+        border-color: #fcd34d !important;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      }
+      [class*="bg-amber-50"] *, [class*="bg-amber-100"] *,
+      [class*="bg-yellow-50"] * {
+        color: #78350f !important;
+      }
+
+      /* Blue callout boxes (TL;DR, info, POC) */
+      [class*="bg-blue-50"],
+      [class*="bg-blue-100"] {
+        background-color: #dbeafe !important; /* blue-100 */
+        color: #1e3a8a !important; /* blue-900 */
+        border-color: #93c5fd !important;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      }
+      [class*="bg-blue-50"] *, [class*="bg-blue-100"] * {
+        color: #1e3a8a !important;
+      }
+
+      /* Purple callout boxes (expansion motion, personas) */
+      [class*="bg-purple-50"],
+      [class*="bg-purple-100"] {
+        background-color: #f3e8ff !important; /* purple-100 */
+        color: #581c87 !important; /* purple-900 */
+        border-color: #c4b5fd !important;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      }
+      [class*="bg-purple-50"] *, [class*="bg-purple-100"] * {
+        color: #581c87 !important;
+      }
+
+      /* Indigo callout boxes (software) */
+      [class*="bg-indigo-50"],
+      [class*="bg-indigo-100"] {
+        background-color: #e0e7ff !important;
+        color: #312e81 !important;
+        border-color: #a5b4fc !important;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      }
+      [class*="bg-indigo-50"] *, [class*="bg-indigo-100"] * {
+        color: #312e81 !important;
+      }
+
+      /* Teal callout boxes */
+      [class*="bg-teal-50"],
+      [class*="bg-teal-100"] {
+        background-color: #ccfbf1 !important;
+        color: #134e4a !important;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      }
+      [class*="bg-teal-50"] *, [class*="bg-teal-100"] * {
+        color: #134e4a !important;
+      }
+
+      /* Orange callout boxes */
+      [class*="bg-orange-50"],
+      [class*="bg-orange-100"] {
+        background-color: #ffedd5 !important;
+        color: #7c2d12 !important;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      }
+      [class*="bg-orange-50"] *, [class*="bg-orange-100"] * {
+        color: #7c2d12 !important;
+      }
+
+      /* =============================================================
+         FIX 2: BADGES / CHIPS — force readable contrast in print
+         Confidence badges, quality badges, key driver pills, pain
+         pills, leadership chips — all must be readable.
+         ============================================================= */
+
+      .badge, [class*="badge"] {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      /* Gray/slate badges (SECONDARY, unknown) */
+      [class*="bg-gray-50"][class*="text-gray"],
+      [class*="bg-gray-100"][class*="text-gray"],
+      [class*="bg-slate-"][class*="text-slate"] {
+        background-color: #f1f5f9 !important;
+        color: #334155 !important;
+        border-color: #cbd5e1 !important;
+      }
+
+      /* All inline chips/pills with dark-mode classes — reset to light */
+      .inline-block[class*="dark:bg-"] {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      /* Priority badges */
+      [class*="bg-red-100"][class*="text-red"] {
+        background-color: #fee2e2 !important;
+        color: #991b1b !important;
+      }
+      [class*="bg-amber-100"][class*="text-amber"] {
+        background-color: #fef3c7 !important;
+        color: #92400e !important;
+      }
+      [class*="bg-green-100"][class*="text-green"] {
+        background-color: #dcfce7 !important;
+        color: #166534 !important;
+      }
+      [class*="bg-blue-100"][class*="text-blue"] {
+        background-color: #dbeafe !important;
+        color: #1e40af !important;
+      }
+      [class*="bg-indigo-100"][class*="text-indigo"] {
+        background-color: #e0e7ff !important;
+        color: #3730a3 !important;
+      }
+      [class*="bg-teal-100"][class*="text-teal"] {
+        background-color: #ccfbf1 !important;
+        color: #115e59 !important;
+      }
+      [class*="bg-purple-100"][class*="text-purple"] {
+        background-color: #f3e8ff !important;
+        color: #6b21a8 !important;
+      }
+
+      /* =============================================================
+         FIX 3: DECORATIVE PSEUDO-ELEMENTS — hide in print
+         Kill timeline connector lines, tooltip ::after, and any
+         decorative ::before/::after on cards.
+         ============================================================= */
+
+      .section-card::before, .section-card::after,
+      .champion-card::before, .champion-card::after,
+      .tip::after,
+      .timeline-dot::before, .timeline-dot::after {
+        display: none !important;
+        content: none !important;
+      }
+
+      /* Dark mode overrides: force light theme for all Tailwind dark: classes */
+      [class*="dark:bg-slate"], [class*="dark:bg-gray"],
+      [class*="dark:bg-green"], [class*="dark:bg-blue"],
+      [class*="dark:bg-red"], [class*="dark:bg-amber"],
+      [class*="dark:bg-purple"], [class*="dark:bg-indigo"],
+      [class*="dark:bg-emerald"], [class*="dark:bg-teal"],
+      [class*="dark:bg-orange"], [class*="dark:bg-rose"],
+      [class*="dark:bg-cyan"], [class*="dark:bg-pink"],
+      [class*="dark:bg-yellow"], [class*="dark:bg-violet"],
+      [class*="dark:bg-sky"] {
+        /* Don't apply dark bg — the light bg-* class handles it */
+      }
     }
 
     /* Hide print-only footer on screen */
     @media screen { .print-footer { display: none; } }
 
-    /* Critical dark mode contrast — inline fallback (beats Tailwind CDN load order) */
-    html.dark [class*="bg-green-9"] *, html.dark [class*="bg-emerald-9"] * { color: rgb(240, 253, 244) !important; }
-    html.dark [class*="bg-purple-9"] *, html.dark [class*="bg-violet-9"] * { color: rgb(250, 245, 255) !important; }
-    html.dark [class*="bg-red-9"] *, html.dark [class*="bg-rose-9"] * { color: rgb(254, 242, 242) !important; }
-    html.dark [class*="bg-amber-9"] *, html.dark [class*="bg-yellow-9"] * { color: rgb(255, 251, 235) !important; }
-    html.dark [class*="bg-blue-9"] *, html.dark [class*="bg-sky-9"] * { color: rgb(239, 246, 255) !important; }
-    html.dark [class*="bg-indigo-9"] * { color: rgb(238, 242, 255) !important; }
-    html.dark [class*="bg-teal-9"] * { color: rgb(240, 253, 250) !important; }
-    html.dark [class*="bg-orange-9"] * { color: rgb(255, 247, 237) !important; }
-    html.dark [class*="bg-pink-9"] * { color: rgb(253, 242, 248) !important; }
+    /* Critical dark mode contrast — inline fallback (screen only, never print) */
+    @media screen {
+      html.dark [class*="bg-green-9"] *, html.dark [class*="bg-emerald-9"] * { color: rgb(240, 253, 244) !important; }
+      html.dark [class*="bg-purple-9"] *, html.dark [class*="bg-violet-9"] * { color: rgb(250, 245, 255) !important; }
+      html.dark [class*="bg-red-9"] *, html.dark [class*="bg-rose-9"] * { color: rgb(254, 242, 242) !important; }
+      html.dark [class*="bg-amber-9"] *, html.dark [class*="bg-yellow-9"] * { color: rgb(255, 251, 235) !important; }
+      html.dark [class*="bg-blue-9"] *, html.dark [class*="bg-sky-9"] * { color: rgb(239, 246, 255) !important; }
+      html.dark [class*="bg-indigo-9"] * { color: rgb(238, 242, 255) !important; }
+      html.dark [class*="bg-teal-9"] * { color: rgb(240, 253, 250) !important; }
+      html.dark [class*="bg-orange-9"] * { color: rgb(255, 247, 237) !important; }
+      html.dark [class*="bg-pink-9"] * { color: rgb(253, 242, 248) !important; }
+    }
   </style>
 </head>
 <body class="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 antialiased">
