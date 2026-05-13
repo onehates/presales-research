@@ -499,6 +499,17 @@
 
     /* Hide print-only footer on screen */
     @media screen { .print-footer { display: none; } }
+
+    /* Critical dark mode contrast — inline fallback (beats Tailwind CDN load order) */
+    html.dark [class*="bg-green-9"] *, html.dark [class*="bg-emerald-9"] * { color: rgb(240, 253, 244) !important; }
+    html.dark [class*="bg-purple-9"] *, html.dark [class*="bg-violet-9"] * { color: rgb(250, 245, 255) !important; }
+    html.dark [class*="bg-red-9"] *, html.dark [class*="bg-rose-9"] * { color: rgb(254, 242, 242) !important; }
+    html.dark [class*="bg-amber-9"] *, html.dark [class*="bg-yellow-9"] * { color: rgb(255, 251, 235) !important; }
+    html.dark [class*="bg-blue-9"] *, html.dark [class*="bg-sky-9"] * { color: rgb(239, 246, 255) !important; }
+    html.dark [class*="bg-indigo-9"] * { color: rgb(238, 242, 255) !important; }
+    html.dark [class*="bg-teal-9"] * { color: rgb(240, 253, 250) !important; }
+    html.dark [class*="bg-orange-9"] * { color: rgb(255, 247, 237) !important; }
+    html.dark [class*="bg-pink-9"] * { color: rgb(253, 242, 248) !important; }
   </style>
 </head>
 <body class="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 antialiased">
