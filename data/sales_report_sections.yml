@@ -1,0 +1,95 @@
+# Which sales report sections apply to which verticals
+sections:
+  federal_funding_profile:
+    applies_to:
+      - k12
+      - higher_ed
+      - healthcare
+      - public_safety
+      - transportation
+      - state_local_gov
+      - federal
+
+  ndaa_compliance:
+    applies_to:
+      - k12
+      - higher_ed
+      - healthcare
+      - public_safety
+      - state_local_gov
+      - federal
+
+  cooperative_purchasing:
+    applies_to:
+      - k12
+      - higher_ed
+      - healthcare
+      - public_safety
+      - state_local_gov
+      - transportation
+
+  active_shooter_response:
+    applies_to:
+      - k12
+      - higher_ed
+      - healthcare
+      - hospitality
+
+  workplace_violence:
+    applies_to:
+      - healthcare
+      - senior_living
+      - retail
+      - hospitality
+      - state_local_gov
+
+  clery_act:
+    applies_to:
+      - higher_ed
+
+  hipaa_compliance:
+    applies_to:
+      - healthcare
+      - senior_living
+
+  pci_compliance:
+    applies_to:
+      - retail
+      - hospitality
+
+  orc_loss_prevention:
+    applies_to:
+      - retail
+
+  osha_safety:
+    applies_to:
+      - manufacturing
+      - critical_infrastructure
+      - transportation
+
+  nerc_cip_compliance:
+    applies_to:
+      - critical_infrastructure
+
+  tsa_security:
+    applies_to:
+      - transportation
+
+  cjis_compliance:
+    applies_to:
+      - public_safety
+      - state_local_gov
+
+  chain_of_custody:
+    applies_to:
+      - manufacturing
+      - public_safety
+      - healthcare
+
+  gsa_schedule:
+    applies_to:
+      - federal
+
+  ato_rmf:
+    applies_to:
+      - federal

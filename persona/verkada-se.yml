@@ -1028,3 +1028,95 @@ disqualifiers:
     description: >
       Already a Verkada customer. Route to CSM/expansion team, not
       net-new pipeline. Research brief should pivot to expansion signals.
+
+# =============================================================================
+# Vertical Value Propositions — used by sales report template
+# =============================================================================
+
+vertical_value_props:
+  k12:
+    primary: "Student safety + parent confidence + Title I federal funding compliance (NDAA)"
+    pain_points:
+      - active shooter preparedness
+      - vendor sprawl across schools
+      - Hikvision/Dahua replacement
+    proof: "Fulton County, Gwinnett, Clayton — NDAA-compliant deployments at scale"
+
+  higher_ed:
+    primary: "Campus safety + Clery Act reporting + residence life unified visibility"
+    pain_points:
+      - dorm security
+      - Clery incident response
+      - research lab access control
+    proof: "UC Berkeley, Pasadena City College — residence life and campus safety unification"
+
+  healthcare:
+    primary: "Workplace violence prevention + HIPAA-compliant evidence capture + multi-facility visibility"
+    pain_points:
+      - ER security
+      - infant abduction prevention
+      - behavioral health unit safety
+    proof: "Multi-hospital deployments with cloud-native chain of custody"
+
+  senior_living:
+    primary: "Memory care wandering prevention + family confidence + regulatory compliance"
+    pain_points:
+      - elopement prevention
+      - ADL monitoring without intrusion
+      - family transparency
+
+  state_local_gov:
+    primary: "Multi-department unification + cooperative purchasing simplification + FOIA-ready footage"
+    pain_points:
+      - camera sprawl across agencies
+      - cooperative purchasing complexity
+
+  federal:
+    primary: "GSA-available, FedRAMP-aligned, TAA-compliant physical security"
+    pain_points:
+      - ATO requirements
+      - TAA compliance
+      - multi-tenant agency visibility
+
+  public_safety:
+    primary: "Evidence integrity + CJIS compliance + chain of custody + BWC integration"
+    pain_points:
+      - evidence storage
+      - officer-involved incident review
+      - interoperability with CAD/RMS
+
+  transportation:
+    primary: "TSA-aligned access control + passenger flow analytics + cloud-native multi-site"
+    pain_points:
+      - AOA perimeter security
+      - sterile area access
+      - passenger throughput visibility
+
+  manufacturing:
+    primary: "OSHA-aligned plant safety + chain of custody + multi-site corporate visibility"
+    pain_points:
+      - worker safety
+      - OT/IT convergence
+      - regulatory chain of custody
+
+  retail:
+    primary: "ORC investigation enablement + multi-store LP visibility + POS-area awareness"
+    pain_points:
+      - ORC incidents
+      - store-to-corporate footage access
+      - LP team efficiency
+    proof: "Hot Topic, Salt & Straw — multi-unit retail with cloud LP access"
+
+  hospitality:
+    primary: "Guest safety + multi-property unified visibility + brand standard compliance"
+    pain_points:
+      - guest safety in common areas
+      - BOH theft
+      - multi-property management
+
+  critical_infrastructure:
+    primary: "NERC CIP-aligned physical security + substation perimeter + audit-ready logging"
+    pain_points:
+      - substation attacks
+      - physical access to critical assets
+      - NERC CIP audit prep

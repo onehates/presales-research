@@ -220,16 +220,7 @@
     .chat-toolbar button { background: none; border: none; cursor: pointer; padding: 3px 6px; border-radius: 4px; font-size: 11px; color: #64748b; white-space: nowrap; }
     .chat-toolbar button:hover { background: #f1f5f9; color: #1e293b; }
     .dark .chat-toolbar button:hover { background: #334155; color: #e2e8f0; }
-    /* Notes panel */
-    #notes-panel { display: none; position: fixed; bottom: 80px; left: 20px; width: 360px; max-height: 500px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); z-index: 55; flex-direction: column; font-family: Inter, system-ui, sans-serif; }
-    .dark #notes-panel { background: #0f172a; border-color: #334155; }
-    #notes-panel.visible { display: flex; }
-    .note-card { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 10px 12px; font-size: 12px; line-height: 1.5; position: relative; }
-    .dark .note-card { background: #1c1917; border-color: #78350f; color: #fef3c7; }
-    .note-card .note-actions { display: none; position: absolute; top: 4px; right: 4px; gap: 2px; }
-    .note-card:hover .note-actions { display: flex; }
-    .note-actions button { background: none; border: none; cursor: pointer; font-size: 11px; color: #92400e; padding: 2px 4px; border-radius: 3px; }
-    .note-actions button:hover { background: #fde68a; }
+    /* Notes (badge on brief-action-btn) */
     .dark .starter-chip { background: #1e293b !important; border-color: #334155 !important; color: #94a3b8 !important; }
     .dark .starter-chip:hover { background: #334155 !important; }
     .dark #slash-menu { background: #0f172a !important; border-color: #1e293b !important; }
@@ -259,6 +250,18 @@
     .champion-card { transition: box-shadow 0.2s, transform 0.2s; }
     .champion-card:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
     .timeline-item { transition: transform 0.15s; }
+
+    /* Brief action buttons (Notes, Chat FABs) */
+    .brief-action-btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.5rem 0.9rem; border-radius: 8px;
+      background: rgba(15, 23, 42, 0.06); border: 1px solid rgba(15, 23, 42, 0.08);
+      font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.15s;
+      text-decoration: none; color: #334155;
+    }
+    .brief-action-btn:hover { background: rgba(15, 23, 42, 0.12); border-color: rgba(15, 23, 42, 0.15); }
+    .dark .brief-action-btn { background: rgba(148, 163, 184, 0.1); border-color: rgba(148, 163, 184, 0.2); color: #e2e8f0; }
+    .dark .brief-action-btn:hover { background: rgba(148, 163, 184, 0.2); }
 
     /* Tooltip (inline short) */
     .tip { position: relative; }
@@ -2171,23 +2174,12 @@
     <svg width="24" height="24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
   </div>
 
-  <!-- Notes toggle button -->
-  <button id="notes-toggle" onclick="toggleNotes()" class="no-print" style="position:fixed;bottom:20px;left:20px;width:44px;height:44px;background:#f59e0b;border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(245,158,11,0.4);z-index:50;color:white;font-size:18px;" title="Notes">
-    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16l4-3h6a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/><line x1="8" y1="7" x2="12" y2="7"/><line x1="8" y1="11" x2="12" y2="11"/></svg>
-    <span id="notes-badge" style="position:absolute;top:-4px;right:-4px;background:#dc2626;color:white;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;"></span>
-  </button>
-
-  <!-- Notes panel -->
-  <div id="notes-panel" class="no-print">
-    <div style="padding:12px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;background:#fffbeb;">
-      <div style="font-weight:700;font-size:14px;color:#92400e;">Notes</div>
-      <div style="display:flex;gap:6px;">
-        <button onclick="exportNotes()" style="background:none;border:1px solid #fde68a;border-radius:6px;padding:4px 10px;font-size:11px;color:#92400e;cursor:pointer;" title="Export as Markdown">Export</button>
-        <button onclick="toggleNotes()" style="background:none;border:none;cursor:pointer;font-size:18px;color:#92400e;line-height:1;">&times;</button>
-      </div>
-    </div>
-    <div id="notes-list" style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;"></div>
-  </div>
+  <!-- Notes button (opens dedicated page) -->
+  <a href="/notes?slug={{ data.metadata.company_slug }}&date={{ data.metadata.generated_at[:10] }}" id="notes-toggle" class="no-print brief-action-btn" style="position:fixed;bottom:20px;left:20px;z-index:50;" title="Open Notes page">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v12l3-2h5a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/><line x1="7" y1="6" x2="11" y2="6"/><line x1="7" y1="9" x2="11" y2="9"/></svg>
+    <span>Notes</span>
+    <span id="notes-badge" style="position:absolute;top:-4px;right:-4px;background:#dc2626;color:white;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:none;align-items:center;justify-content:center;"></span>
+  </a>
 
   <div id="chat-panel" class="no-print" style="display:none;position:fixed;top:0;left:0;width:420px;height:600px;background:white;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.15);z-index:50;flex-direction:column;overflow:hidden;touch-action:none;">
     <!-- Chat Header (drag handle) -->
@@ -2642,7 +2634,7 @@
     // --- Notes system (localStorage) ---
     const NOTES_KEY = 'presales-notes-' + SLUG;
     function loadNotes() { try { return JSON.parse(localStorage.getItem(NOTES_KEY) || '[]'); } catch { return []; } }
-    function saveNotes(notes) { localStorage.setItem(NOTES_KEY, JSON.stringify(notes)); renderNotes(); }
+    function saveNotes(notes) { localStorage.setItem(NOTES_KEY, JSON.stringify(notes)); }
 
     function getMsgText(btn) {
       const wrap = btn.closest('.chat-msg-wrap');
@@ -2658,89 +2650,55 @@
     window.saveNote = function(btn) {
       const text = getMsgText(btn);
       if (!text) return;
+      // Save in new note format for /notes page
       const notes = loadNotes();
-      notes.push({ text: text, type: 'general', ts: new Date().toISOString() });
+      const question = btn.dataset.question || '';
+      notes.unshift({
+        id: 'note_' + Date.now(),
+        title: question ? (question.length > 60 ? question.slice(0, 57) + '...' : question) : 'Chat Note',
+        body: text,
+        question: question || null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
       saveNotes(notes);
-      toast('Saved as note', 'green', 1500);
+      toast('Saved to Notes', 'green', 1500);
+      updateNotesBadge();
+      // Open notes page in new tab
+      window.open('/notes?slug=' + SLUG + '&date=' + DATE, '_blank');
     };
 
     window.addToMeddic = function(btn) {
       const text = getMsgText(btn);
       if (!text) return;
       const notes = loadNotes();
-      notes.push({ text: text, type: 'meddic', ts: new Date().toISOString() });
+      notes.unshift({
+        id: 'note_' + Date.now(),
+        title: 'MEDDIC Note',
+        body: text,
+        question: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
       saveNotes(notes);
-      toast('Added to MEDDIC notes', 'green', 1500);
+      toast('Added to Notes', 'green', 1500);
+      updateNotesBadge();
     };
 
-    window.deleteNote = function(idx) {
-      const notes = loadNotes();
-      notes.splice(idx, 1);
-      saveNotes(notes);
-    };
-
-    window.editNote = function(idx) {
-      const notes = loadNotes();
-      const note = notes[idx];
-      const el = document.querySelector('#notes-list [data-note-idx="' + idx + '"] .note-text');
-      if (!el) return;
-      el.contentEditable = 'true';
-      el.focus();
-      el.addEventListener('blur', function handler() {
-        el.contentEditable = 'false';
-        note.text = el.innerText;
-        saveNotes(notes);
-        el.removeEventListener('blur', handler);
-      }, { once: true });
-    };
-
-    window.toggleNotes = function() {
-      const panel = document.getElementById('notes-panel');
-      panel.classList.toggle('visible');
-      if (panel.classList.contains('visible')) renderNotes();
-    };
-
-    window.exportNotes = function() {
-      const notes = loadNotes();
-      if (!notes.length) return toast('No notes to export', 'amber', 1500);
-      let md = '# Notes — ' + SLUG + '\n\n';
-      const meddic = notes.filter(n => n.type === 'meddic');
-      const general = notes.filter(n => n.type !== 'meddic');
-      if (meddic.length) {
-        md += '## MEDDIC Notes\n\n';
-        meddic.forEach(n => { md += '- ' + n.text.replace(/\n/g, '\n  ') + '\n'; });
-        md += '\n';
-      }
-      if (general.length) {
-        md += '## General Notes\n\n';
-        general.forEach(n => { md += '- ' + n.text.replace(/\n/g, '\n  ') + '\n'; });
-      }
-      const blob = new Blob([md], { type: 'text/markdown' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = SLUG + '-notes.md';
-      a.click();
-      URL.revokeObjectURL(a.href);
-    };
-
-    function renderNotes() {
-      const list = document.getElementById('notes-list');
-      if (!list) return;
+    function updateNotesBadge() {
       const notes = loadNotes();
       const badge = document.getElementById('notes-badge');
-      if (badge) badge.textContent = notes.length || '';
-      if (!notes.length) {
-        list.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:12px;padding:20px;">No notes yet. Use the toolbar on chat messages to save notes.</div>';
-        return;
+      if (badge) {
+        if (notes.length > 0) {
+          badge.textContent = notes.length;
+          badge.style.display = 'flex';
+        } else {
+          badge.style.display = 'none';
+        }
       }
-      list.innerHTML = notes.map((n, i) => {
-        const typeLabel = n.type === 'meddic' ? '<span style="background:#dbeafe;color:#1d4ed8;font-size:9px;padding:1px 5px;border-radius:3px;font-weight:600;">MEDDIC</span> ' : '';
-        return '<div class="note-card" data-note-idx="' + i + '">' +
-          '<div class="note-actions"><button onclick="editNote(' + i + ')" title="Edit">Edit</button><button onclick="deleteNote(' + i + ')" title="Delete">Del</button></div>' +
-          typeLabel + '<span class="note-text">' + n.text.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>') + '</span>' +
-          '<div style="margin-top:4px;font-size:9px;color:#a1a1aa;">' + new Date(n.ts).toLocaleDateString() + '</div></div>';
-      }).join('');
     }
+    // Update badge on load
+    updateNotesBadge();
 
     // --- Draft outreach for champion candidates ---
     const CHAMPION_DATA = {{ data.champion_candidates | default([]) | tojson }};
@@ -3398,7 +3356,7 @@
   }
 
   // === Initialize notes badge ===
-  if (typeof renderNotes === 'function') renderNotes();
+  if (typeof updateNotesBadge === 'function') updateNotesBadge();
 
   // === Rich tooltips (data-tooltip) ===
   (function() {

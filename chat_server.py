@@ -44,6 +44,8 @@ SOURCES_DIR = PROJECT_ROOT / "sources"
 CLIENTS_DIR = PROJECT_ROOT / "clients"
 STATIC_DIR = PROJECT_ROOT / "static"
 PRODUCTS_PATH = PROJECT_ROOT / "persona" / "verkada-products.yml"
+PERSONA_PATH = PROJECT_ROOT / "persona" / "verkada-se.yml"
+SECTIONS_PATH = PROJECT_ROOT / "data" / "sales_report_sections.yml"
 SONNET_MODEL = "claude-sonnet-4-6"
 PORT = int(os.environ.get("PORT", 8000))
 STATUS_DIR = Path("/tmp")
@@ -121,6 +123,42 @@ def archive_failed_briefs() -> int:
         except Exception:
             pass
     return moved
+
+
+# ---------------------------------------------------------------------------
+# Vertical detection helper
+# ---------------------------------------------------------------------------
+
+_VERTICAL_SLUG_MAP = {
+    "K-12": "k12", "K-12 District": "k12", "K12": "k12",
+    "Higher Ed": "higher_ed", "Higher Education": "higher_ed",
+    "Healthcare": "healthcare", "Hospital": "healthcare",
+    "Senior Living": "senior_living",
+    "State & Local Gov": "state_local_gov", "Government": "state_local_gov",
+    "Federal": "federal",
+    "Public Safety": "public_safety", "Law Enforcement": "public_safety",
+    "Transportation": "transportation",
+    "Manufacturing": "manufacturing",
+    "Retail": "retail",
+    "Hospitality": "hospitality",
+    "Critical Infrastructure": "critical_infrastructure",
+}
+
+def _detect_vertical_slug(brief_data: dict) -> str:
+    """Extract a normalized vertical slug from brief data."""
+    raw = (brief_data.get("snapshot", {}).get("vertical", "")
+           or brief_data.get("entity_type", "")
+           or brief_data.get("vertical_match", {}).get("entity_type", ""))
+    if raw in _VERTICAL_SLUG_MAP:
+        return _VERTICAL_SLUG_MAP[raw]
+    # Try case-insensitive
+    for k, v in _VERTICAL_SLUG_MAP.items():
+        if k.lower() == raw.lower():
+            return v
+    # Already a slug?
+    if raw.lower().replace(" ", "_") in [v for v in _VERTICAL_SLUG_MAP.values()]:
+        return raw.lower().replace(" ", "_")
+    return raw.lower().replace(" ", "_") if raw else "unknown"
 
 
 # ---------------------------------------------------------------------------
@@ -274,8 +312,32 @@ async def salesreport_page(slug: str, date: str):
         brief_data = _sanitize_data(json.loads(brief_path.read_text()))
     except Exception:
         return HTMLResponse("<h1>Brief corrupted</h1>", status_code=500)
+
+    # Load vertical-aware config
+    section_visibility = {}
+    if SECTIONS_PATH.exists():
+        try:
+            section_visibility = yaml.safe_load(SECTIONS_PATH.read_text()).get("sections", {})
+        except Exception:
+            pass
+    vertical_value_props = {}
+    if PERSONA_PATH.exists():
+        try:
+            persona = yaml.safe_load(PERSONA_PATH.read_text())
+            vertical_value_props = persona.get("vertical_value_props", {})
+        except Exception:
+            pass
+
+    # Determine vertical slug
+    vertical = _detect_vertical_slug(brief_data)
+
     template = _jinja_env.get_template("salesreport.html")
-    return template.render(data=brief_data, slug=slug, date=date)
+    return template.render(
+        data=brief_data, slug=slug, date=date,
+        vertical=vertical,
+        section_visibility=section_visibility,
+        vertical_value_props=vertical_value_props,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -714,6 +776,22 @@ async def coach_page(slug: str = Query(...), date: str = Query(...)):
         account_name=account_name,
         existing_analysis=existing_analysis,
     )
+
+
+# ---------------------------------------------------------------------------
+# Notes page
+# ---------------------------------------------------------------------------
+
+@app.get("/notes", response_class=HTMLResponse)
+async def notes_page(slug: str = Query(...), date: str = Query(...)):
+    if ".." in slug or ".." in date:
+        return HTMLResponse("<h1>Invalid</h1>", status_code=400)
+    brief_path, brief_data = find_valid_brief(slug, date)
+    if not brief_data:
+        return HTMLResponse("<h1>Brief not found</h1>", status_code=404)
+    brief_name = brief_data.get("snapshot", {}).get("name", slug)
+    template = _jinja_env.get_template("notes.html")
+    return template.render(slug=slug, date=date, brief_name=brief_name)
 
 
 # ---------------------------------------------------------------------------
