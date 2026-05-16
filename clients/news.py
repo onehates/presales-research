@@ -105,6 +105,12 @@ QUERY_ANGLES = [
         "maps_to_triggers": ["capital_project_signal", "vendor_consolidation_signal", "executive_leadership_change"],
         "description": "M&A, HQ moves, restructuring (signals greenfield security needs)",
     },
+    {
+        "id": "security_vendors",
+        "template": '"{company}" "loss prevention" OR "security cameras" OR LPR OR "license plate" OR Avigilon OR Genetec OR "Flock Safety" OR Milestone OR Honeywell security OR "security vendor"',
+        "maps_to_triggers": ["incumbent_vendor_detected", "vendor_consolidation_signal"],
+        "description": "Security vendor deployments, LP technology, incumbent systems",
+    },
 ]
 
 

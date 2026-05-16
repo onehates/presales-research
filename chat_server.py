@@ -26,7 +26,7 @@ import httpx
 import yaml
 
 import anthropic
-from fastapi import FastAPI, Query, Request
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -59,7 +59,7 @@ if STATIC_DIR.exists():
 _jinja_env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)), autoescape=True)
 
 # Import humanize_id filter and sanitizer from render module
-from render.render import humanize_id, _sanitize_data
+from render.render import humanize_id, _sanitize_data, _resolve_company_domain
 _jinja_env.filters["humanize_id"] = humanize_id
 _jinja_env.globals["APP_VERSION"] = APP_VERSION
 
@@ -88,7 +88,7 @@ def find_valid_brief(slug: str, date: str = None) -> tuple[Path | None, dict | N
 
     for path in sorted(BRIEFS_DIR.glob(pattern), key=lambda p: p.stat().st_mtime, reverse=True):
         name = path.name
-        if any(x in name for x in ('.failed.', '.meta.', '.battlecard.', '.salesreport.', '.coach.')):
+        if any(x in name for x in ('.failed.', '.meta.', '.battlecard.', '.salesreport.', '.discovery.', '.coach.', '.product-selection.')):
             continue
         try:
             data = json.loads(path.read_text())
@@ -283,6 +283,27 @@ async def status_html():
 
 
 # ---------------------------------------------------------------------------
+# Slug-only brief resolver (handles stale localStorage entries with no date)
+# ---------------------------------------------------------------------------
+
+@app.get("/brief/{slug}")
+async def brief_by_slug(slug: str):
+    if ".." in slug or "/" in slug:
+        return JSONResponse({"error": "Invalid slug"}, status_code=400)
+    files = sorted(BRIEFS_DIR.glob(f"{slug}-*.html"), reverse=True)
+    files = [f for f in files if not any(
+        x in f.name for x in ('.battlecard.', '.salesreport.', '.discovery.', '.failed.', '.meta.', '.coach.')
+    )]
+    if not files:
+        return HTMLResponse(
+            f"<h1>Brief not found</h1><p>No brief exists for slug: {slug}</p>"
+            f"<p><a href='/'>← Back to dashboard</a></p>",
+            status_code=404,
+        )
+    return FileResponse(files[0], media_type="text/html")
+
+
+# ---------------------------------------------------------------------------
 # Battlecard page
 # ---------------------------------------------------------------------------
 
@@ -298,7 +319,47 @@ async def battlecard_page(slug: str, date: str):
     except Exception:
         return HTMLResponse("<h1>Brief corrupted</h1>", status_code=500)
     template = _jinja_env.get_template("battlecard.html")
-    return template.render(data=brief_data, slug=slug, date=date)
+    real_slug = brief_data.get("metadata", {}).get("company_slug", slug)
+    real_date = (brief_data.get("metadata", {}).get("generated_at", "") or "")[:10] or date
+    brief_data = _filter_products(brief_data, real_slug, real_date)
+    company_domain = _resolve_company_domain(real_slug, brief_data, brief_path)
+    return template.render(data=brief_data, slug=slug, date=date, company_domain=company_domain)
+
+
+@app.get("/briefs/{slug}-{date}.discovery.html", response_class=HTMLResponse)
+async def discovery_page(slug: str, date: str):
+    if ".." in slug or ".." in date:
+        return HTMLResponse("<h1>Invalid</h1>", status_code=400)
+    brief_path = BRIEFS_DIR / f"{slug}-{date}.json"
+    if not brief_path.exists():
+        return HTMLResponse("<h1>Brief not found</h1>", status_code=404)
+    try:
+        brief_data = _sanitize_data(json.loads(brief_path.read_text()))
+    except Exception:
+        return HTMLResponse("<h1>Brief corrupted</h1>", status_code=500)
+    # Build subtitle
+    snap = brief_data.get("snapshot", {})
+    parts = []
+    v = snap.get("vertical", "")
+    if v:
+        parts.append(v)
+    hq_city = snap.get("headquarters_city", "")
+    hq_state = snap.get("headquarters_state", "")
+    if hq_city and hq_state:
+        parts.append(f"{hq_city}, {hq_state}")
+    elif hq_state:
+        parts.append(hq_state)
+    ticker = snap.get("ticker")
+    if ticker and ticker != "None" and ticker.lower() != "null":
+        exchange = snap.get("ticker_exchange") or "NYSE"
+        parts.append(f"{exchange}: {ticker}")
+    brief_subtitle = " \u00b7 ".join(parts)
+    template = _jinja_env.get_template("discovery.html")
+    real_slug = brief_data.get("metadata", {}).get("company_slug", slug)
+    real_date = (brief_data.get("metadata", {}).get("generated_at", "") or "")[:10] or date
+    brief_data = _filter_products(brief_data, real_slug, real_date)
+    company_domain = _resolve_company_domain(real_slug, brief_data, brief_path)
+    return template.render(data=brief_data, slug=slug, date=date, brief_subtitle=brief_subtitle, company_domain=company_domain)
 
 
 @app.get("/briefs/{slug}-{date}.salesreport.html", response_class=HTMLResponse)
@@ -332,12 +393,60 @@ async def salesreport_page(slug: str, date: str):
     vertical = _detect_vertical_slug(brief_data)
 
     template = _jinja_env.get_template("salesreport.html")
+    real_slug = brief_data.get("metadata", {}).get("company_slug", slug)
+    real_date = (brief_data.get("metadata", {}).get("generated_at", "") or "")[:10] or date
+    brief_data = _filter_products(brief_data, real_slug, real_date)
+    company_domain = _resolve_company_domain(real_slug, brief_data, brief_path)
     return template.render(
         data=brief_data, slug=slug, date=date,
         vertical=vertical,
         section_visibility=section_visibility,
         vertical_value_props=vertical_value_props,
+        company_domain=company_domain,
     )
+
+
+# ---------------------------------------------------------------------------
+# Product selection persistence
+# ---------------------------------------------------------------------------
+
+def _load_product_deselected(slug: str, date: str) -> set:
+    """Load set of deselected product IDs for a brief."""
+    p = BRIEFS_DIR / f"{slug}-{date}.product-selection.json"
+    if p.exists():
+        try:
+            return set(json.loads(p.read_text()).get("deselected", []))
+        except Exception:
+            pass
+    return set()
+
+
+def _filter_products(brief_data: dict, slug: str, date: str) -> dict:
+    """Return brief_data with deselected products removed."""
+    deselected = _load_product_deselected(slug, date)
+    if not deselected:
+        return brief_data
+    rp = brief_data.get("recommended_products") or {}
+    if not rp:
+        return brief_data
+    out = dict(brief_data)
+    out["recommended_products"] = {
+        "primary_bundle": [p for p in rp.get("primary_bundle", []) if p.get("product_id") not in deselected],
+        "secondary_bundle": [p for p in rp.get("secondary_bundle", []) if p.get("product_id") not in deselected],
+        "vertical_fit_notes": rp.get("vertical_fit_notes"),
+    }
+    return out
+
+
+@app.post("/api/briefs/{slug}/{date}/product-selection")
+async def save_product_selection(slug: str, date: str, request: Request):
+    if ".." in slug or ".." in date:
+        return JSONResponse({"error": "Invalid path"}, status_code=400)
+    body = await request.json()
+    deselected = body.get("deselected", [])
+    out_path = BRIEFS_DIR / f"{slug}-{date}.product-selection.json"
+    out_path.write_text(json.dumps({"deselected": deselected}))
+    return {"ok": True, "deselected_count": len(deselected)}
 
 
 # ---------------------------------------------------------------------------
@@ -357,6 +466,81 @@ async def serve_brief(filename: str):
     if filename.endswith(".html"):
         return FileResponse(path, media_type="text/html")
     return JSONResponse(json.loads(path.read_text()))
+
+
+@app.get("/api/brief-pdf/{slug}/{date}")
+async def brief_pdf(slug: str, date: str):
+    """Server-side PDF generation via Playwright — no browser headers/footers."""
+    if ".." in slug or ".." in date:
+        raise HTTPException(400, "Invalid parameters")
+    html_path = (BRIEFS_DIR / f"{slug}-{date}.html").resolve()
+    if not html_path.exists():
+        raise HTTPException(404, "Brief HTML not found — render it first")
+    pdf_path = BRIEFS_DIR / f"{slug}-{date}.pdf"
+
+    # Load product deselections and inject into HTML for headless rendering
+    json_path = BRIEFS_DIR / f"{slug}-{date}.json"
+    real_slug = slug
+    real_date = date
+    if json_path.exists():
+        try:
+            bd = json.loads(json_path.read_text())
+            real_slug = bd.get("metadata", {}).get("company_slug", slug)
+            real_date = (bd.get("metadata", {}).get("generated_at", "") or "")[:10] or date
+        except Exception:
+            pass
+    deselected = _load_product_deselected(real_slug, real_date)
+
+    import tempfile
+    html_content = html_path.read_text()
+    if deselected:
+        # Inject a script that hides deselected products before render
+        deselected_js = json.dumps(list(deselected))
+        inject = (
+            f'<script>document.addEventListener("DOMContentLoaded",function(){{'
+            f'var ds={deselected_js};'
+            f'document.querySelectorAll("[data-product-id]").forEach(function(el){{'
+            f'if(ds.indexOf(el.dataset.productId)!==-1)el.style.display="none";'
+            f'}});}});</script></head>'
+        )
+        html_content = html_content.replace('</head>', inject, 1)
+
+    tmp = tempfile.NamedTemporaryFile(suffix=".html", delete=False, dir=str(BRIEFS_DIR))
+    tmp.write(html_content.encode())
+    tmp.close()
+    tmp_path = Path(tmp.name).resolve()
+
+    try:
+        from playwright.async_api import async_playwright
+        async with async_playwright() as p:
+            browser = await p.chromium.launch()
+            page = await browser.new_page()
+            await page.goto(f"file://{tmp_path}", wait_until="networkidle", timeout=30000)
+            try:
+                await page.wait_for_function(
+                    "Array.from(document.images).every(img => img.complete)",
+                    timeout=10000
+                )
+            except Exception:
+                pass  # proceed even if some images time out
+            await page.emulate_media(media="print")
+            await page.pdf(
+                path=str(pdf_path),
+                format="Letter",
+                print_background=True,
+                display_header_footer=False,
+                margin={"top": "0.5in", "right": "0.5in",
+                        "bottom": "0.5in", "left": "0.5in"},
+            )
+            await browser.close()
+    finally:
+        tmp_path.unlink(missing_ok=True)
+
+    return FileResponse(
+        pdf_path,
+        media_type="application/pdf",
+        filename=f"{slug}-{date}.pdf",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -418,7 +602,7 @@ def _list_briefs(include_archived: bool = False) -> list[dict]:
     """List all briefs with metadata, newest first."""
     results = []
     for p in BRIEFS_DIR.glob("*.json"):
-        if any(x in p.name for x in ('.failed.', '.meta.', '.battlecard.', '.salesreport.', '.coach.')):
+        if any(x in p.name for x in ('.failed.', '.meta.', '.battlecard.', '.salesreport.', '.discovery.', '.coach.', '.product-selection.')):
             continue
         m = _load_brief_metadata(p)
         if m and (include_archived or not m.get("archived")):
@@ -593,58 +777,333 @@ async def api_patch_brief(slug: str, date: str, update: BriefMetaUpdate):
 # Similar Accounts suggester
 # ---------------------------------------------------------------------------
 
-class SimilarAccountsRequest(BaseModel):
-    slug: str
-    date: str
+def _extract_slug_from_stem(stem: str) -> str:
+    """Extract company slug from brief filename stem like 'target-corporation-2026-05-09'."""
+    # Find the date portion (YYYY-MM-DD at end) and strip it
+    import re
+    m = re.match(r'^(.+?)-(\d{4}-\d{2}-\d{2})$', stem)
+    return m.group(1) if m else stem
 
-@app.post("/api/similar-accounts")
-async def api_similar_accounts(req: SimilarAccountsRequest):
-    brief_path = BRIEFS_DIR / f"{req.slug}-{req.date}.json"
-    if not brief_path.exists():
-        return JSONResponse({"error": "Brief not found"}, status_code=404)
-    brief = json.loads(brief_path.read_text())
 
+def _compute_size_tier(brief: dict) -> str:
+    """Compute size tier from brief data: small / mid / large / enterprise."""
     snap = brief.get("snapshot", {})
-    prompt = f"""Given this account, suggest 5 similar accounts that a Verkada SE would also research.
+    si = snap.get("size_indicator", "").lower()
+    # Enterprise signals
+    if any(x in si for x in ["large accelerated filer", "fortune ", "100,000", "200,000", "300,000", "400,000", "500,000",
+                              "1,000", "2,000", "4,000"]) and any(x in si for x in ["store", "location", "employee"]):
+        return "enterprise"
+    # Large signals
+    if any(x in si for x in ["50,", "40,", "30,", "20,", "10,000", "large", "1,000-bed", "level 1", "500+"]):
+        return "large"
+    # Mid
+    if any(x in si for x in ["5,", "1,", "2,", "3,", "mid", "medium"]):
+        return "mid"
+    return "small"
 
-Source account: {snap.get('name', 'unknown')}
-Vertical: {brief.get('vertical_match', {}).get('entity_type', brief.get('entity_type', 'unknown'))}
-Size: {snap.get('size_indicator', 'unknown')}
-Geography: {snap.get('headquarters_state', 'unknown')}, {snap.get('city', 'unknown')}
-Pain patterns: {json.dumps([h.get('id', h.get('pain', '')) for h in brief.get('pain_hypotheses', [])[:3]])}
-Federal funding: {json.dumps(brief.get('federal_funding_profile', {}).get('ndaa_exposure', 'unknown'))}
 
-Return 5 similar accounts as JSON. Each entry includes:
-- name: full legal name of the suggested account
-- vertical: same as source (or related)
-- size_estimate: rough size descriptor
-- geography: state/region
-- similarity_score: 0-100, how similar to source
-- why_similar: 1-2 sentences explaining the match
-- opportunity_hypothesis: 1 sentence on the likely pain/opportunity
+_VERTICAL_PEERS: dict[str, list[dict]] = {
+    "Retail": [
+        {"name": "Lowe's", "reasons": ["Home improvement retail", "Large store footprint", "LP + ORC focus"]},
+        {"name": "Costco", "reasons": ["Warehouse retail", "High-value inventory", "Membership-based LP"]},
+        {"name": "Kroger", "reasons": ["Grocery/retail chain", "2,700+ locations", "Pharmacy + fuel security"]},
+        {"name": "Best Buy", "reasons": ["Electronics retail", "High-shrink category", "ORC target"]},
+        {"name": "Floor & Decor", "reasons": ["Specialty retail", "Large format stores", "Growing footprint"]},
+        {"name": "Dollar General", "reasons": ["High store count (19,000+)", "Rural locations", "Safety concerns"]},
+        {"name": "Walgreens", "reasons": ["Pharmacy retail", "Urban shrink hotspots", "ORC target"]},
+        {"name": "TJX Companies", "reasons": ["Off-price retail", "High-volume stores", "LP challenges"]},
+        {"name": "Ross Stores", "reasons": ["Off-price retail", "Multi-region footprint", "Shrink management"]},
+        {"name": "Albertsons", "reasons": ["Grocery chain", "Pharmacy security", "Multi-banner operation"]},
+    ],
+    "K-12": [
+        {"name": "Gwinnett County Public Schools", "reasons": ["Large GA district", "140+ schools", "NDAA pressure"]},
+        {"name": "Fulton County Schools", "reasons": ["Large GA district", "100+ sites", "Federal funding exposure"]},
+        {"name": "Cobb County School District", "reasons": ["Large GA district", "110+ schools", "Bond-funded upgrades"]},
+        {"name": "DeKalb County School District", "reasons": ["Large GA district", "130+ schools", "Urban/suburban mix"]},
+        {"name": "Houston ISD", "reasons": ["Mega-district", "270+ schools", "TX state funding"]},
+        {"name": "Dallas ISD", "reasons": ["Large TX district", "230+ schools", "Urban security focus"]},
+        {"name": "Broward County Public Schools", "reasons": ["FL mega-district", "Alyssa's Law", "MSD shooting response"]},
+        {"name": "Clark County School District", "reasons": ["Largest NV district", "360+ schools", "Rapid growth"]},
+        {"name": "Charlotte-Mecklenburg Schools", "reasons": ["Large NC district", "180+ schools", "Security modernization"]},
+        {"name": "Fairfax County Public Schools", "reasons": ["Large VA district", "200+ schools", "NDAA compliance"]},
+    ],
+    "Healthcare": [
+        {"name": "Piedmont Healthcare", "reasons": ["GA health system", "Multi-campus", "ED security needs"]},
+        {"name": "Emory Healthcare", "reasons": ["Academic medical center", "Large GA campus", "Research facility security"]},
+        {"name": "WellStar Health System", "reasons": ["Large GA system", "11 hospitals", "Campus consolidation"]},
+        {"name": "Northside Hospital", "reasons": ["GA health system", "5 hospitals", "Growing footprint"]},
+        {"name": "Memorial Hermann", "reasons": ["TX mega-system", "17 hospitals", "Infant security"]},
+        {"name": "HCA Healthcare", "reasons": ["Largest US hospital operator", "180+ hospitals", "Standardization play"]},
+        {"name": "Tenet Healthcare", "reasons": ["Large system", "60+ hospitals", "Multi-state operations"]},
+        {"name": "Atrium Health", "reasons": ["Large SE system", "40+ hospitals", "Wake Forest affiliation"]},
+        {"name": "Intermountain Health", "reasons": ["Large Western system", "33 hospitals", "Innovation leader"]},
+        {"name": "Providence Health", "reasons": ["Large Western system", "50+ hospitals", "Multi-state"]},
+    ],
+    "HigherEd": [
+        {"name": "Georgia State University", "reasons": ["Large GA university", "Urban campus", "Clery Act"]},
+        {"name": "University of Georgia", "reasons": ["Large GA campus", "800+ acres", "Multi-building security"]},
+        {"name": "Kennesaw State University", "reasons": ["Growing GA university", "Dual campus", "Rapid expansion"]},
+        {"name": "Georgia Southern University", "reasons": ["Multi-campus GA university", "Growing enrollment"]},
+        {"name": "Arizona State University", "reasons": ["Largest US university", "Multiple campuses", "Innovation focus"]},
+        {"name": "University of Central Florida", "reasons": ["70,000+ students", "Large campus", "Urban setting"]},
+        {"name": "Ohio State University", "reasons": ["Mega-campus", "60,000+ students", "Big Ten security"]},
+        {"name": "Penn State University", "reasons": ["Multi-campus system", "24 campuses", "Standardization need"]},
+        {"name": "University of Texas at Austin", "reasons": ["50,000+ students", "Large campus", "Urban setting"]},
+        {"name": "Texas A&M University", "reasons": ["70,000+ students", "Multiple campuses", "Research security"]},
+    ],
+    "Manufacturing": [
+        {"name": "Gulfstream Aerospace", "reasons": ["GA manufacturer", "High-security facilities", "ITAR compliance"]},
+        {"name": "Lockheed Martin Marietta", "reasons": ["GA defense manufacturer", "Classified facility security"]},
+        {"name": "Kia Georgia", "reasons": ["Auto manufacturing", "Large plant", "Worker safety focus"]},
+        {"name": "Caterpillar", "reasons": ["Heavy equipment mfg", "Multi-site operations", "Safety compliance"]},
+        {"name": "Tyson Foods", "reasons": ["Food manufacturing", "OSHA compliance", "Multi-plant operations"]},
+        {"name": "Tesla Gigafactory", "reasons": ["Advanced manufacturing", "Large campus", "IT/OT convergence"]},
+        {"name": "Procter & Gamble", "reasons": ["CPG manufacturer", "100+ global plants", "Environmental monitoring"]},
+        {"name": "3M Company", "reasons": ["Diversified manufacturer", "Multi-site", "Environmental sensors"]},
+    ],
+    "CRE_Hospitality": [
+        {"name": "Marriott International", "reasons": ["Largest hotel chain", "8,000+ properties", "Guest safety"]},
+        {"name": "Hilton Hotels", "reasons": ["Major hotel chain", "Multi-brand portfolio", "Global operations"]},
+        {"name": "CBRE Group", "reasons": ["Largest CRE firm", "Property management", "Multi-tenant access"]},
+        {"name": "Prologis", "reasons": ["Industrial REIT", "Warehouse/logistics", "Perimeter security"]},
+        {"name": "Simon Property Group", "reasons": ["Largest mall REIT", "Retail properties", "Common area security"]},
+        {"name": "Brookfield Asset Management", "reasons": ["Major CRE owner", "Office + retail", "Multi-tenant"]},
+    ],
+    "Government": [
+        {"name": "City of Atlanta", "reasons": ["Large GA municipality", "Multiple facilities", "Public safety"]},
+        {"name": "Fulton County Government", "reasons": ["GA county government", "Courthouse security", "Multiple buildings"]},
+        {"name": "City of Dallas", "reasons": ["Large TX city", "Municipal buildings", "Public safety integration"]},
+        {"name": "City of Phoenix", "reasons": ["Large AZ city", "Rapid growth", "Infrastructure modernization"]},
+        {"name": "City of Charlotte", "reasons": ["Large NC city", "Growing metro", "Smart city initiatives"]},
+        {"name": "Miami-Dade County", "reasons": ["Large FL county", "Multi-facility", "Hurricane resilience"]},
+    ],
+    "SeniorLiving": [
+        {"name": "Brookdale Senior Living", "reasons": ["Largest US operator", "680+ communities", "Elopement risk"]},
+        {"name": "Five Star Senior Living", "reasons": ["Large operator", "Multi-state", "Access control needs"]},
+        {"name": "Sunrise Senior Living", "reasons": ["Premium operator", "300+ communities", "Family trust"]},
+        {"name": "Atria Senior Living", "reasons": ["200+ communities", "Growing footprint", "Standardization"]},
+    ],
+}
 
-Prefer accounts in the same vertical, similar size, same geographic region. Diversify slightly — include 1-2 stretch options.
+# SIC-code based peers — maps SIC to additional company suggestions
+_SIC_PEERS: dict[str, list[dict]] = {
+    "5211": [  # Lumber & Home Improvement
+        {"name": "Lowe's", "reasons": ["Direct competitor", "Same SIC 5211", "Home improvement"]},
+        {"name": "Menards", "reasons": ["Regional competitor", "Same SIC 5211", "Midwest focus"]},
+        {"name": "Floor & Decor", "reasons": ["Specialty home improvement", "Large format", "Growing chain"]},
+        {"name": "Tractor Supply Co.", "reasons": ["Rural home/farm retail", "2,000+ stores", "LP needs"]},
+    ],
+    "5331": [  # Variety Stores / General Merchandise
+        {"name": "Dollar General", "reasons": ["Same SIC 5331", "19,000+ stores", "High-count footprint"]},
+        {"name": "Dollar Tree", "reasons": ["Same SIC 5331", "15,000+ stores", "Shrink management"]},
+        {"name": "Five Below", "reasons": ["Same SIC 5331", "Growing chain", "Value retail"]},
+    ],
+    "8211": [  # Elementary & Secondary Schools
+        {"name": "Los Angeles Unified School District", "reasons": ["Largest CA district", "1,000+ schools", "Bond funding"]},
+        {"name": "Chicago Public Schools", "reasons": ["3rd largest US district", "600+ schools", "Safety focus"]},
+        {"name": "Miami-Dade County Public Schools", "reasons": ["4th largest US district", "400+ schools", "FL funding"]},
+    ],
+    "8062": [  # General Medical & Surgical Hospitals
+        {"name": "Ascension Health", "reasons": ["Largest nonprofit system", "140+ hospitals", "Standardization"]},
+        {"name": "CommonSpirit Health", "reasons": ["Large Catholic system", "140+ hospitals", "Multi-state"]},
+        {"name": "Kaiser Permanente", "reasons": ["Integrated health system", "39 hospitals", "Innovation leader"]},
+    ],
+}
 
-Format: {{"accounts": [...]}}"""
 
-    client = anthropic.Anthropic()
-    response = client.messages.create(
-        model=SONNET_MODEL,
-        max_tokens=2000,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    text = response.content[0].text
+@app.get("/api/briefs/{slug}/similar")
+async def find_similar_briefs(
+    slug: str,
+    page: int = Query(default=1),
+    exclude: str = Query(default=""),
+):
+    """Similar-account matching with pagination. Page 1 = static peers. Page 2+ = AI-generated."""
+    # Find the current brief
+    current_path = None
+    for p in BRIEFS_DIR.glob(f"{slug}-*.json"):
+        if any(x in p.name for x in ('.failed.', '.meta.', '.battlecard.', '.salesreport.', '.discovery.', '.coach.', '.product-selection.', '.notes.')):
+            continue
+        current_path = p
+        break
+    if not current_path or not current_path.exists():
+        return JSONResponse({"error": "Brief not found"}, status_code=404)
+
+    current = json.loads(current_path.read_text())
+    cur_snap = current.get("snapshot", {})
+    cur_name = cur_snap.get("name", slug).lower()
+    cur_vertical = cur_snap.get("vertical", "")
+    cur_entity = current.get("entity_type", "")
+    cur_state = cur_snap.get("headquarters_state", "")
+    cur_size_tier = _compute_size_tier(current)
+    cur_sic = cur_snap.get("sic_code", "")
+
+    # Parse exclude list
+    exclude_names = set()
+    if exclude:
+        exclude_names = {n.strip().lower() for n in exclude.split("|") if n.strip()}
+
+    # --- Page 2+: AI-generated suggestions ---
+    if page > 1:
+        return await _generate_more_peers(cur_vertical, cur_state, cur_name, page, exclude_names)
+
+    # --- Page 1: Static matching ---
+
+    # Part 1: Match existing briefs
+    existing_names = {cur_name}
+    results = []
+    for p in sorted(BRIEFS_DIR.glob("*.json"), key=lambda x: x.stat().st_mtime, reverse=True):
+        if any(x in p.name for x in ('.failed.', '.meta.', '.battlecard.', '.salesreport.', '.discovery.', '.coach.', '.product-selection.', '.notes.')):
+            continue
+        other_slug = _extract_slug_from_stem(p.stem)
+        if other_slug == slug:
+            continue
+        try:
+            other = json.loads(p.read_text())
+        except Exception:
+            continue
+
+        o_snap = other.get("snapshot", {})
+        o_vertical = o_snap.get("vertical", "")
+        o_name = o_snap.get("name", other_slug)
+        existing_names.add(o_name.lower())
+
+        if not cur_vertical or not o_vertical or cur_vertical.lower() != o_vertical.lower():
+            continue
+
+        score = 50
+        reasons = [f"Same vertical: {cur_vertical}"]
+
+        o_entity = other.get("entity_type", "")
+        if cur_entity and o_entity and cur_entity.lower() == o_entity.lower():
+            score += 20
+            reasons.append(f"Same type: {cur_entity}")
+
+        o_state = o_snap.get("headquarters_state", "")
+        if cur_state and o_state and cur_state.lower() == o_state.lower():
+            score += 25
+            reasons.append(f"Same state: {cur_state}")
+
+        o_size_tier = _compute_size_tier(other)
+        if cur_size_tier == o_size_tier:
+            score += 15
+            reasons.append(f"Similar scale: {cur_size_tier}")
+
+        o_sic = o_snap.get("sic_code", "")
+        if cur_sic and o_sic and cur_sic == o_sic:
+            score += 10
+            reasons.append(f"Same SIC: {cur_sic}")
+
+        results.append({
+            "slug": other_slug,
+            "company_name": o_name,
+            "vertical": o_vertical,
+            "score": min(score, 100),
+            "match_reasons": reasons,
+            "url": f"/brief/{other_slug}",
+        })
+
+    results.sort(key=lambda x: -x["score"])
+
+    # Part 2: Static suggestions from peer knowledge base
+    suggestions = []
+    seen_names = set(existing_names)
+
+    for v_key, peers in _VERTICAL_PEERS.items():
+        if cur_vertical and cur_vertical.lower() == v_key.lower():
+            for peer in peers:
+                pname = peer["name"].lower()
+                if pname not in seen_names:
+                    seen_names.add(pname)
+                    suggestions.append({
+                        "company_name": peer["name"],
+                        "match_reasons": peer["reasons"],
+                        "source": "vertical",
+                    })
+
+    if cur_sic and cur_sic in _SIC_PEERS:
+        sic_suggestions = []
+        for peer in _SIC_PEERS[cur_sic]:
+            pname = peer["name"].lower()
+            if pname not in seen_names:
+                seen_names.add(pname)
+                sic_suggestions.append({
+                    "company_name": peer["name"],
+                    "match_reasons": peer["reasons"],
+                    "source": "sic_code",
+                })
+        suggestions = sic_suggestions + suggestions
+
+    return {
+        "results": results[:5],
+        "suggestions": suggestions[:10],
+        "page": 1,
+        "has_more": True,
+    }
+
+
+async def _generate_more_peers(vertical: str, state: str, company_name: str, page: int, exclude_names: set):
+    """Generate additional peer suggestions via Haiku for pages 2+."""
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key or page > 5:
+        return {"results": [], "suggestions": [], "page": page, "has_more": False}
+
+    v = vertical or "companies"
+    state_hint = f" in or near {state}" if state else ""
+
+    angles = [
+        f"national {v} organizations with large facility footprints that would benefit from cloud-managed physical security",
+        f"mid-size {v} organizations{state_hint} that are growing, expanding campuses, or modernizing infrastructure",
+        f"{v} organizations with unique or high-value security needs — distribution centers, campuses, public-facing facilities",
+        f"smaller or regional {v} organizations{state_hint} with multi-site operations and physical security budgets",
+    ]
+    angle = angles[(page - 2) % len(angles)]
+
+    exclude_clause = ""
+    if exclude_names:
+        exclude_list = ", ".join(sorted(exclude_names)[:40])
+        exclude_clause = f"\n\nDo NOT include any of these already-listed organizations: {exclude_list}"
+
     try:
-        data = json.loads(text)
-    except json.JSONDecodeError:
-        # Try to extract JSON from markdown fences
-        import re
-        m = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
-        if m:
-            data = json.loads(m.group(1))
-        else:
-            data = {"accounts": [], "error": "Could not parse response"}
-    return data
+        client = anthropic.Anthropic(timeout=20.0)
+        resp = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=800,
+            messages=[{
+                "role": "user",
+                "content": (
+                    f"List 8-10 real {v} organizations that would be strong prospects for "
+                    f"Verkada physical security (cameras, access control, sensors). "
+                    f"Focus on {angle}.{exclude_clause}\n\n"
+                    f"For each, provide a brief reason why they'd be a good prospect.\n\n"
+                    f"Return ONLY a JSON array: "
+                    f'[{{"name": "Org Name", "reasons": ["reason1", "reason2"]}}]\n'
+                    f"No markdown, no explanation, just the JSON array."
+                ),
+            }],
+        )
+        text = resp.content[0].text.strip()
+        if text.startswith("```"):
+            text = text.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
+        if text.startswith("["):
+            items = json.loads(text)
+            suggestions = []
+            for item in items:
+                if isinstance(item, dict) and item.get("name"):
+                    if item["name"].lower() not in exclude_names:
+                        suggestions.append({
+                            "company_name": item["name"],
+                            "match_reasons": item.get("reasons", []),
+                            "source": "ai_suggestion",
+                        })
+            return {
+                "results": [],
+                "suggestions": suggestions[:10],
+                "page": page,
+                "has_more": page < 5 and len(suggestions) >= 5,
+            }
+    except Exception:
+        pass
+    return {"results": [], "suggestions": [], "page": page, "has_more": False}
 
 
 # ---------------------------------------------------------------------------
@@ -671,111 +1130,6 @@ async def api_batch_research(req: BatchResearchRequest):
     return {"queued": results, "count": len(results)}
 
 
-# ---------------------------------------------------------------------------
-# Discovery Call Coach
-# ---------------------------------------------------------------------------
-
-class CoachRequest(BaseModel):
-    slug: str
-    date: str
-    transcript: str
-
-@app.post("/api/coach-call")
-async def api_coach_call(req: CoachRequest):
-    brief_path = BRIEFS_DIR / f"{req.slug}-{req.date}.json"
-    brief = json.loads(brief_path.read_text()) if brief_path.exists() else {}
-    snap = brief.get("snapshot", {})
-    champs = brief.get("champion_candidates", [])
-
-    prompt = f"""Analyze this discovery call transcript against the MEDDIC framework.
-
-ACCOUNT CONTEXT:
-Account: {snap.get('name', 'Unknown')}
-Vertical: {brief.get('vertical_match', {}).get('entity_type', brief.get('entity_type', 'unknown'))}
-Key personas: {json.dumps([p.get('name', '') for p in champs[:3]])}
-
-TRANSCRIPT:
-{req.transcript}
-
-Analyze the call against each MEDDIC field. For each, output:
-- status: "validated" | "partially_validated" | "missed" | "not_applicable"
-- evidence: direct quote from transcript that proves this status (or empty string if missed)
-- score: 0-100 confidence the field was addressed
-- gap: what's still unknown for this field
-- suggested_followup: a specific next question to ask to fill the gap
-
-MEDDIC fields:
-- metrics: Did rep validate quantifiable business impact and tie it to a specific value driver?
-- economic_buyer: Was the actual signing authority identified by name? Were they on the call?
-- decision_criteria: What technical/commercial requirements does the buyer evaluate against?
-- decision_process: Steps from now to close — RFP? Procurement? Board? Timeline?
-- identify_pain: Was a specific, validated pain point uncovered? Acknowledged by buyer?
-- champion: Did anyone on the buyer side advocate for the rep's solution, or volunteer to help internally?
-- competition: What incumbents or competitors were mentioned?
-
-Also output:
-- overall_score: 0-100 weighted average of MEDDIC field scores
-- call_quality: "strong" | "decent" | "needs_work" based on overall_score
-- top_3_strengths: array of short bullet strings
-- top_3_gaps: array of short bullet strings — what to focus on next call
-- next_call_recommendation: 1 paragraph on suggested next step
-
-Output valid JSON only. No markdown fences. No other text."""
-
-    client = anthropic.Anthropic()
-    response = client.messages.create(
-        model=SONNET_MODEL,
-        max_tokens=4000,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    text = response.content[0].text
-    try:
-        data = json.loads(text)
-    except json.JSONDecodeError:
-        import re
-        m = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
-        if m:
-            data = json.loads(m.group(1))
-        else:
-            data = {"error": "Could not parse coach response"}
-
-    # Persist coaching analysis
-    coach_path = BRIEFS_DIR / f"{req.slug}-{req.date}.coach.json"
-    coach_path.write_text(json.dumps({
-        "analyzed_at": datetime.now().isoformat(),
-        "transcript_preview": req.transcript[:500],
-        "analysis": data,
-    }, indent=2))
-
-    return data
-
-
-@app.get("/coach", response_class=HTMLResponse)
-async def coach_page(slug: str = Query(...), date: str = Query(...)):
-    if ".." in slug or ".." in date:
-        return HTMLResponse("<h1>Invalid</h1>", status_code=400)
-    brief_path = BRIEFS_DIR / f"{slug}-{date}.json"
-    if not brief_path.exists():
-        return HTMLResponse("<h1>Brief not found</h1>", status_code=404)
-    brief = json.loads(brief_path.read_text())
-    account_name = brief.get("snapshot", {}).get("name", slug)
-
-    # Check for existing coach analysis
-    coach_path = BRIEFS_DIR / f"{slug}-{date}.coach.json"
-    existing_analysis = None
-    if coach_path.exists():
-        try:
-            existing_analysis = json.loads(coach_path.read_text())
-        except Exception:
-            pass
-
-    template = _jinja_env.get_template("coach.html")
-    return template.render(
-        slug=slug,
-        date=date,
-        account_name=account_name,
-        existing_analysis=existing_analysis,
-    )
 
 
 # ---------------------------------------------------------------------------
@@ -801,6 +1155,326 @@ async def notes_page(slug: str = Query(...), date: str = Query(...)):
 @app.get("/health")
 async def health():
     return {"status": "ok", "briefs": len(list(BRIEFS_DIR.glob("*.json")))}
+
+
+# ---------------------------------------------------------------------------
+# Nearby company search — location-based vertical search
+# ---------------------------------------------------------------------------
+
+# Top US metro areas for autocomplete (city, state abbreviation)
+_US_METROS: list[dict] = [
+    {"city": "Atlanta", "state": "GA"}, {"city": "Austin", "state": "TX"}, {"city": "Baltimore", "state": "MD"},
+    {"city": "Birmingham", "state": "AL"}, {"city": "Boise", "state": "ID"}, {"city": "Boston", "state": "MA"},
+    {"city": "Buffalo", "state": "NY"}, {"city": "Charlotte", "state": "NC"}, {"city": "Chicago", "state": "IL"},
+    {"city": "Cincinnati", "state": "OH"}, {"city": "Cleveland", "state": "OH"}, {"city": "Columbus", "state": "OH"},
+    {"city": "Dallas", "state": "TX"}, {"city": "Denver", "state": "CO"}, {"city": "Des Moines", "state": "IA"},
+    {"city": "Detroit", "state": "MI"}, {"city": "El Paso", "state": "TX"}, {"city": "Fort Worth", "state": "TX"},
+    {"city": "Fresno", "state": "CA"}, {"city": "Grand Rapids", "state": "MI"}, {"city": "Greensboro", "state": "NC"},
+    {"city": "Hartford", "state": "CT"}, {"city": "Honolulu", "state": "HI"}, {"city": "Houston", "state": "TX"},
+    {"city": "Indianapolis", "state": "IN"}, {"city": "Jacksonville", "state": "FL"}, {"city": "Kansas City", "state": "MO"},
+    {"city": "Knoxville", "state": "TN"}, {"city": "Las Vegas", "state": "NV"}, {"city": "Little Rock", "state": "AR"},
+    {"city": "Los Angeles", "state": "CA"}, {"city": "Louisville", "state": "KY"}, {"city": "Memphis", "state": "TN"},
+    {"city": "Miami", "state": "FL"}, {"city": "Milwaukee", "state": "WI"}, {"city": "Minneapolis", "state": "MN"},
+    {"city": "Nashville", "state": "TN"}, {"city": "New Orleans", "state": "LA"}, {"city": "New York", "state": "NY"},
+    {"city": "Newark", "state": "NJ"}, {"city": "Norfolk", "state": "VA"}, {"city": "Oakland", "state": "CA"},
+    {"city": "Oklahoma City", "state": "OK"}, {"city": "Omaha", "state": "NE"}, {"city": "Orlando", "state": "FL"},
+    {"city": "Philadelphia", "state": "PA"}, {"city": "Phoenix", "state": "AZ"}, {"city": "Pittsburgh", "state": "PA"},
+    {"city": "Portland", "state": "OR"}, {"city": "Providence", "state": "RI"}, {"city": "Raleigh", "state": "NC"},
+    {"city": "Richmond", "state": "VA"}, {"city": "Riverside", "state": "CA"}, {"city": "Rochester", "state": "NY"},
+    {"city": "Sacramento", "state": "CA"}, {"city": "Salt Lake City", "state": "UT"}, {"city": "San Antonio", "state": "TX"},
+    {"city": "San Diego", "state": "CA"}, {"city": "San Francisco", "state": "CA"}, {"city": "San Jose", "state": "CA"},
+    {"city": "Seattle", "state": "WA"}, {"city": "St. Louis", "state": "MO"}, {"city": "Tampa", "state": "FL"},
+    {"city": "Tucson", "state": "AZ"}, {"city": "Tulsa", "state": "OK"}, {"city": "Virginia Beach", "state": "VA"},
+    {"city": "Washington", "state": "DC"}, {"city": "Albuquerque", "state": "NM"}, {"city": "Anchorage", "state": "AK"},
+    {"city": "Bakersfield", "state": "CA"}, {"city": "Baton Rouge", "state": "LA"}, {"city": "Charleston", "state": "SC"},
+    {"city": "Colorado Springs", "state": "CO"}, {"city": "Columbia", "state": "SC"}, {"city": "Dayton", "state": "OH"},
+    {"city": "Durham", "state": "NC"}, {"city": "Greenville", "state": "SC"}, {"city": "Huntsville", "state": "AL"},
+    {"city": "Jackson", "state": "MS"}, {"city": "Lexington", "state": "KY"}, {"city": "Lincoln", "state": "NE"},
+    {"city": "Madison", "state": "WI"}, {"city": "McAllen", "state": "TX"}, {"city": "Savannah", "state": "GA"},
+    {"city": "Spokane", "state": "WA"}, {"city": "Syracuse", "state": "NY"}, {"city": "Tallahassee", "state": "FL"},
+    {"city": "Toledo", "state": "OH"}, {"city": "Wichita", "state": "KS"}, {"city": "Winston-Salem", "state": "NC"},
+    {"city": "Marietta", "state": "GA"}, {"city": "Decatur", "state": "GA"}, {"city": "Sandy Springs", "state": "GA"},
+    {"city": "Alpharetta", "state": "GA"}, {"city": "Roswell", "state": "GA"}, {"city": "Kennesaw", "state": "GA"},
+    {"city": "Duluth", "state": "GA"}, {"city": "Lawrenceville", "state": "GA"}, {"city": "Peachtree City", "state": "GA"},
+    {"city": "Stockbridge", "state": "GA"}, {"city": "Macon", "state": "GA"}, {"city": "Augusta", "state": "GA"},
+    {"city": "Athens", "state": "GA"}, {"city": "Valdosta", "state": "GA"}, {"city": "Columbus", "state": "GA"},
+]
+
+# Vertical → search query templates for nearby search
+_VERTICAL_SEARCH_QUERIES: dict[str, list[str]] = {
+    "retail": [
+        '"{vertical}" retail stores near {location} within {radius} miles',
+        'largest retailers headquarters near {location}',
+    ],
+    "k-12": [
+        'school districts near {location}',
+        'largest public school districts {state}',
+    ],
+    "healthcare": [
+        'hospitals health systems near {location}',
+        'largest healthcare providers {location} area',
+    ],
+    "higher ed": [
+        'colleges universities near {location}',
+        'largest university campuses {state}',
+    ],
+    "manufacturing": [
+        'manufacturing plants factories near {location}',
+        'largest manufacturers {location} area',
+    ],
+    "government": [
+        'government offices agencies near {location}',
+        'city county government {location}',
+    ],
+    "senior living": [
+        'senior living communities near {location}',
+        'assisted living facilities {location} area',
+    ],
+    "hospitality": [
+        'hotels resorts near {location}',
+        'largest hospitality companies {location} area',
+    ],
+    "commercial real estate": [
+        'commercial real estate companies near {location}',
+        'office building management {location}',
+    ],
+    "critical infrastructure": [
+        'utility companies power plants near {location}',
+        'data centers warehouses {location} area',
+    ],
+}
+
+
+@app.get("/api/cities/suggest")
+async def suggest_cities(q: str = Query(default="")):
+    """Return matching US metro areas for autocomplete."""
+    if not q or len(q) < 2:
+        return {"suggestions": []}
+    q_lower = q.lower()
+    matches = []
+    for m in _US_METROS:
+        label = f"{m['city']}, {m['state']}"
+        # Match on city name or state
+        if q_lower in m["city"].lower() or q_lower in m["state"].lower() or q_lower in label.lower():
+            matches.append({"label": label, "city": m["city"], "state": m["state"]})
+            if len(matches) >= 8:
+                break
+    return {"suggestions": matches}
+
+
+@app.get("/api/search/nearby")
+async def search_nearby(
+    vertical: str = Query(default=""),
+    location: str = Query(default=""),
+    radius: int = Query(default=50),
+    page: int = Query(default=1),
+    exclude: str = Query(default=""),
+):
+    """Search for companies in a vertical near a location. Supports pagination via page + exclude."""
+    if not location:
+        return JSONResponse({"error": "Location is required"}, status_code=400)
+
+    # Parse exclude list (comma-separated company names already shown)
+    exclude_names = set()
+    if exclude:
+        exclude_names = {n.strip().lower() for n in exclude.split("|") if n.strip()}
+
+    tavily_key = os.environ.get("TAVILY_API_KEY", "")
+    if not tavily_key:
+        return await _fallback_nearby_search(vertical, location, radius, page, exclude_names)
+
+    # Build search queries
+    v_lower = (vertical or "").lower()
+    state = ""
+    if "," in location:
+        parts = location.split(",")
+        state = parts[-1].strip()
+
+    templates = _VERTICAL_SEARCH_QUERIES.get(v_lower, [
+        '{vertical} companies near {location} within {radius} miles',
+    ])
+
+    # Run up to 2 Tavily searches
+    all_results = []
+    seen_titles = set()
+
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        for tmpl in templates[:2]:
+            query = tmpl.format(
+                vertical=vertical or "companies",
+                location=location,
+                radius=radius,
+                state=state or location,
+            )
+            try:
+                r = await client.post(
+                    "https://api.tavily.com/search",
+                    json={
+                        "api_key": tavily_key,
+                        "query": query,
+                        "max_results": 8,
+                        "search_depth": "basic",
+                        "include_answer": False,
+                        "include_raw_content": False,
+                    },
+                )
+                if r.status_code == 200:
+                    data = r.json()
+                    for result in data.get("results", []):
+                        title = result.get("title", "")
+                        if title and title not in seen_titles:
+                            seen_titles.add(title)
+                            all_results.append(result)
+            except Exception:
+                continue
+
+    # Extract company names from search results — try AI extraction first, fall back to heuristics
+    companies = await _extract_companies_ai(all_results, vertical, location)
+    if not companies:
+        companies = _extract_companies_from_search(all_results, vertical, location)
+
+    # Filter out excludes
+    companies = [c for c in companies if c["company_name"].lower() not in exclude_names]
+
+    return {"results": companies, "location": location, "vertical": vertical, "radius": radius, "page": page, "has_more": True}
+
+
+async def _extract_companies_ai(results: list[dict], vertical: str, location: str) -> list[dict]:
+    """Use Haiku to extract company names from search results."""
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key or not results:
+        return []
+    try:
+        snippets = "\n".join(
+            f"- Title: {r.get('title', '')} | Snippet: {r.get('content', '')[:200]}"
+            for r in results[:15]
+        )
+        client = anthropic.Anthropic(timeout=15.0)
+        resp = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=500,
+            messages=[{
+                "role": "user",
+                "content": f"Extract specific company/organization names from these search results about {vertical} near {location}. Return ONLY a JSON array of objects with 'name' and 'context' (one-line description). No markdown, no explanation. Max 10 companies. Skip generic list pages.\n\n{snippets}",
+            }],
+        )
+        text = resp.content[0].text.strip()
+        # Parse JSON array
+        if text.startswith("["):
+            items = json.loads(text)
+            return [
+                {"company_name": item["name"], "context": item.get("context", ""), "source": "search"}
+                for item in items if isinstance(item, dict) and item.get("name")
+            ][:10]
+    except Exception:
+        pass
+    return []
+
+
+def _extract_companies_from_search(results: list[dict], vertical: str, location: str) -> list[dict]:
+    """Extract company names and context from Tavily search results."""
+    companies = []
+    seen = set()
+
+    for r in results:
+        title = r.get("title", "")
+        content = r.get("content", "")
+        url = r.get("url", "")
+
+        # Clean title: remove "- Wikipedia", "| ...", "... - ..." suffixes
+        clean_title = title.split(" - ")[0].split(" | ")[0].split(" — ")[0].strip()
+
+        # Skip generic/list pages
+        skip_words = ["best", "top ", "list of", "ranking", "review", "yelp", "indeed", "glassdoor", "map", "directory"]
+        if any(w in title.lower() for w in skip_words):
+            # But still try to extract names from the content snippet
+            pass
+        elif clean_title and clean_title.lower() not in seen and len(clean_title) < 80:
+            seen.add(clean_title.lower())
+            companies.append({
+                "company_name": clean_title,
+                "context": content[:200] if content else "",
+                "source_url": url,
+                "source": "search",
+            })
+
+    return companies[:12]
+
+
+async def _fallback_nearby_search(vertical: str, location: str, radius: int, page: int = 1, exclude_names: set = None):
+    """Fallback when Tavily is unavailable — use Haiku to list companies in the area."""
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        return {"results": [], "location": location, "vertical": vertical, "radius": radius,
+                "page": page, "has_more": False,
+                "error": "No search API configured. Set TAVILY_API_KEY or ANTHROPIC_API_KEY."}
+
+    v = vertical or "companies"
+    exclude_names = exclude_names or set()
+
+    # Build exclude clause for Haiku
+    exclude_clause = ""
+    if exclude_names:
+        exclude_list = ", ".join(sorted(exclude_names)[:30])
+        exclude_clause = f"\n\nDo NOT include any of these already-listed companies: {exclude_list}"
+
+    # Vary the prompt angle per page to get diverse results
+    page_angles = [
+        "large or notable organizations that would be good Verkada physical security prospects (multi-site, significant facilities, security needs)",
+        "mid-size organizations with growing campuses, new construction, or recent security incidents — the kind of accounts an SE would prospect",
+        "organizations with unique security needs — warehouses, distribution centers, data centers, mixed-use campuses, or facilities open to the public",
+        "smaller but fast-growing organizations expanding facilities, or niche players with high-value assets needing physical security",
+        "public-sector organizations, nonprofits, religious institutions, or community organizations with physical security needs",
+    ]
+    angle = page_angles[(page - 1) % len(page_angles)]
+
+    # Stop after 5 pages
+    if page > 5:
+        return {"results": [], "location": location, "vertical": vertical, "radius": radius,
+                "page": page, "has_more": False}
+
+    try:
+        client = anthropic.Anthropic(timeout=20.0)
+        resp = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=800,
+            messages=[{
+                "role": "user",
+                "content": (
+                    f"List 8-10 real {v} organizations/companies headquartered or with major "
+                    f"facilities within {radius} miles of {location}. Focus on {angle}.{exclude_clause}\n\n"
+                    f"Return ONLY a JSON array of objects: "
+                    f'[{{"name": "Company Name", "context": "Brief 1-line description with location detail"}}]\n'
+                    f"No markdown, no explanation, just the JSON array."
+                ),
+            }],
+        )
+        text = resp.content[0].text.strip()
+        # Strip markdown fencing if present
+        if text.startswith("```"):
+            text = text.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
+        if text.startswith("["):
+            items = json.loads(text)
+            # Filter out excludes (in case Haiku ignores the instruction)
+            results = []
+            for item in items:
+                if isinstance(item, dict) and item.get("name"):
+                    if item["name"].lower() not in exclude_names:
+                        results.append({
+                            "company_name": item["name"],
+                            "context": item.get("context", ""),
+                            "source": "ai_suggestion",
+                        })
+            return {
+                "results": results[:10],
+                "location": location, "vertical": vertical, "radius": radius,
+                "page": page, "has_more": page < 5 and len(results) >= 5,
+            }
+        return {"results": [], "location": location, "vertical": vertical, "radius": radius,
+                "page": page, "has_more": False, "error": "Search returned unexpected format"}
+    except Exception as e:
+        return {"results": [], "location": location, "vertical": vertical, "radius": radius,
+                "page": page, "has_more": False, "error": f"Search failed: {str(e)[:100]}"}
 
 
 # ---------------------------------------------------------------------------
@@ -842,6 +1516,6 @@ if __name__ == "__main__":
     print(f"Chat server starting on http://localhost:{PORT}")
     print(f"Briefs directory: {BRIEFS_DIR}")
     valid = [p.name for p in BRIEFS_DIR.glob('*.json')
-             if not any(x in p.name for x in ('.failed.', '.meta.', '.battlecard.', '.salesreport.', '.coach.'))]
+             if not any(x in p.name for x in ('.failed.', '.meta.', '.battlecard.', '.salesreport.', '.discovery.', '.coach.', '.product-selection.'))]
     print(f"Available briefs: {valid}")
     uvicorn.run(app, host="0.0.0.0", port=PORT)

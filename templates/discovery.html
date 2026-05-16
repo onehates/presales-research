@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ data.snapshot.name }} — Discovery Prep</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .no-print { display: none !important; }
+      @page { margin: 0.5in; size: letter portrait; }
+      .question-card { break-inside: avoid; }
+      .meddic-card { break-inside: avoid; }
+      .persona-section { break-before: auto; }
+    }
+    .note-lines {
+      height: 56px;
+      background-image: repeating-linear-gradient(
+        transparent, transparent 17px, #e2e8f0 17px, #e2e8f0 18px
+      );
+    }
+  </style>
+</head>
+<body class="bg-white text-gray-900 p-6 max-w-4xl mx-auto">
+  <!-- Print button -->
+  <div class="no-print fixed top-4 right-4 flex gap-2 z-50">
+    <a href="/briefs/{{ slug }}-{{ date }}.html" class="px-3 py-1.5 text-xs bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 border border-gray-200">Back to Brief</a>
+    <button onclick="window.print()" class="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700">Print</button>
+  </div>
+
+  <!-- Header -->
+  <div class="border-b border-gray-200 pb-4 mb-6">
+    <div class="flex items-start justify-between">
+      <div class="flex items-center gap-4">
+        <div style="width:56px; height:56px; flex-shrink:0; border-radius:10px; overflow:hidden; display:flex; align-items:center; justify-content:center; background:#f8fafc; border:1px solid #e2e8f0;">
+          {% if company_domain %}
+          <img src="https://logo.clearbit.com/{{ company_domain }}"
+               onerror="this.onerror=function(){this.style.display='none'; this.parentNode.innerHTML='<span style=font-size:20px;font-weight:700;color:#94a3b8>{{ data.snapshot.name[:2] | upper }}</span>';}; this.src='https://www.google.com/s2/favicons?sz=128&domain={{ company_domain }}';"
+               alt="" style="width:100%; height:100%; object-fit:contain;">
+          {% else %}
+          <span style="font-size:20px; font-weight:700; color:#94a3b8;">{{ data.snapshot.name[:2] | upper }}</span>
+          {% endif %}
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-gray-900">{{ data.snapshot.name }}</h1>
+          <p class="text-xs text-gray-500 mt-1">{{ data.snapshot.vertical }}{% if brief_subtitle %} · {{ brief_subtitle }}{% endif %}</p>
+        </div>
+      </div>
+      <div class="text-right">
+        <p class="text-[10px] text-gray-400 uppercase font-semibold tracking-wider">Discovery Prep</p>
+        <p class="text-[10px] text-gray-400">{{ data.metadata.generated_at[:10] if data.metadata else date }}</p>
+      </div>
+    </div>
+    {% if data.tldr and data.tldr.bullets %}
+    <div class="mt-3 bg-blue-50 border border-blue-200 rounded-lg px-4 py-2.5">
+      <p class="text-[10px] font-semibold text-blue-700 uppercase mb-1">30-Second Context</p>
+      <ul class="space-y-0.5">
+        {% for bullet in data.tldr.bullets[:3] %}
+        <li class="text-[11px] text-blue-900 leading-snug">{{ bullet }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- SECTION 1: MEDDIC Snapshot -->
+  {% if data.meddic_qualification is mapping %}
+  <div class="mb-8">
+    <h2 class="text-xs font-bold text-gray-600 uppercase tracking-wider mb-3 flex items-center gap-2">
+      <span class="w-5 h-5 rounded bg-indigo-100 text-indigo-700 flex items-center justify-center text-[10px] font-bold">M</span>
+      MEDDIC Snapshot — What We Know & What to Confirm
+    </h2>
+    <div class="grid grid-cols-1 gap-2.5">
+      {% set pillar_meta = {
+        'metrics': {'label': 'Metrics', 'color': 'blue', 'letter': 'M'},
+        'economic_buyer': {'label': 'Economic Buyer', 'color': 'purple', 'letter': 'E'},
+        'decision_criteria': {'label': 'Decision Criteria', 'color': 'green', 'letter': 'D'},
+        'decision_process': {'label': 'Decision Process', 'color': 'amber', 'letter': 'D'},
+        'identify_pain': {'label': 'Identify Pain', 'color': 'red', 'letter': 'I'},
+        'champion': {'label': 'Champion', 'color': 'indigo', 'letter': 'C'},
+        'competition': {'label': 'Competition', 'color': 'orange', 'letter': 'C'}
+      } %}
+      {% for key, pillar in data.meddic_qualification.items() %}
+      {% if pillar is mapping %}
+      {% set meta = pillar_meta.get(key, {'label': key, 'color': 'gray', 'letter': '?'}) %}
+      <div class="meddic-card border border-gray-200 rounded-lg p-3 flex gap-3">
+        <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-{{ meta.color }}-100 text-{{ meta.color }}-700 flex items-center justify-center text-xs font-bold">{{ meta.letter }}</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs font-semibold text-gray-800">{{ meta.label }}</span>
+            {% if pillar.confidence == 'high' %}
+            <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">Sourced</span>
+            {% elif pillar.confidence == 'medium' %}
+            <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-yellow-100 text-yellow-700 font-medium">Medium</span>
+            {% else %}
+            <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">Inference</span>
+            {% endif %}
+          </div>
+          <p class="text-[11px] text-gray-600 leading-snug mb-1.5">{{ pillar.value[:200] }}{% if pillar.value|length > 200 %}...{% endif %}</p>
+          {% if pillar.gap %}
+          <div class="bg-amber-50 border border-amber-200 rounded px-2.5 py-1.5">
+            <p class="text-[10px] font-semibold text-amber-700">What to confirm:</p>
+            <p class="text-[10px] text-amber-900 leading-snug">{{ pillar.gap[:180] }}{% if pillar.gap|length > 180 %}...{% endif %}</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- SECTION 2: Discovery Questions by Persona -->
+  {% if data.discovery_questions_by_persona is mapping %}
+  <div class="mb-6">
+    <h2 class="text-xs font-bold text-gray-600 uppercase tracking-wider mb-4 flex items-center gap-2">
+      <span class="w-5 h-5 rounded bg-violet-100 text-violet-700 flex items-center justify-center text-[10px] font-bold">Q</span>
+      Discovery Questions by Persona
+    </h2>
+    {% for persona, pdata in data.discovery_questions_by_persona.items() %}
+      {% set qlist = pdata.questions if pdata is mapping and pdata.questions is iterable else pdata %}
+      {% if qlist is iterable and qlist is not string and qlist|length > 0 %}
+      <div class="persona-section mb-6">
+        <h3 class="text-sm font-semibold text-gray-800 mb-2 pb-1 border-b border-gray-100">{{ persona | humanize_id }}</h3>
+        {% for q in qlist %}
+        {% set qtext = q.question if q is mapping and q.question else (q.text if q is mapping and q.text else q) %}
+        <div class="question-card mb-4">
+          <div class="flex items-start gap-2 mb-1">
+            <span class="flex-shrink-0 w-5 h-5 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center text-[10px] font-bold mt-0.5">{{ loop.index }}</span>
+            <div class="flex-1">
+              <p class="text-[13px] text-gray-800 leading-snug">{{ qtext }}</p>
+              <div class="flex items-center gap-2 mt-1">
+                {% if q is mapping and q.source_trigger %}
+                <span class="text-[9px] px-1.5 py-0.5 rounded bg-violet-100 text-violet-600 font-medium">{{ q.source_trigger | humanize_id }}</span>
+                {% endif %}
+                {% if q is mapping and q.confidence %}
+                {% if q.confidence == 'high' %}
+                <span class="text-[9px] px-1.5 py-0.5 rounded bg-green-50 text-green-600 font-medium">High conf.</span>
+                {% elif q.confidence == 'medium' %}
+                <span class="text-[9px] px-1.5 py-0.5 rounded bg-yellow-50 text-yellow-600 font-medium">Medium conf.</span>
+                {% else %}
+                <span class="text-[9px] px-1.5 py-0.5 rounded bg-red-50 text-red-600 font-medium">{{ q.confidence }}</span>
+                {% endif %}
+                {% endif %}
+              </div>
+              {% if q is mapping and q.evidence_that_fired_trigger %}
+              <p class="text-[10px] text-gray-400 mt-1 leading-snug italic">{{ q.evidence_that_fired_trigger[:150] }}{% if q.evidence_that_fired_trigger|length > 150 %}...{% endif %}</p>
+              {% endif %}
+            </div>
+          </div>
+          <!-- Handwritten notes space for print -->
+          <div class="note-lines ml-7 mt-1 rounded"></div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Footer -->
+  <div class="border-t border-gray-200 pt-3 mt-8 text-center">
+    <p class="text-[10px] text-gray-400 italic">
+      Generated {{ data.metadata.generated_at[:10] if data.metadata else date }}
+      {% if data.metadata and data.metadata.agents_used %} · Agents: {{ data.metadata.agents_used | join(', ') }}{% endif %}
+    </p>
+  </div>
+</body>
+</html>

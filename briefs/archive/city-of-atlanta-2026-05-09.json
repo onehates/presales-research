@@ -1,0 +1,56 @@
+{
+  "status": "insufficient_data",
+  "reason": "company-bg subagent failed \u2014 cannot generate brief without company snapshot",
+  "subagent_outputs": {
+    "company-bg": {
+      "status": "insufficient_data",
+      "reason": "rate_limited_after_3_retries"
+    },
+    "tech-and-pain": {
+      "status": "insufficient_data",
+      "reason": "rate_limited_after_3_retries"
+    },
+    "hiring-signals": {
+      "status": "insufficient_data",
+      "reason": "rate_limited_after_3_retries"
+    }
+  },
+  "metadata": {
+    "company_slug": "city-of-atlanta",
+    "company_name": "City of Atlanta",
+    "vertical": "unknown",
+    "generated_at": "2026-05-09T10:44:52.257030+00:00",
+    "agents_used": [
+      "company-bg",
+      "tech-and-pain",
+      "hiring-signals"
+    ],
+    "models_used": {
+      "subagents": "sonnet",
+      "synthesizer": "opus"
+    },
+    "runtime_seconds": 41.3,
+    "phase1_status": {
+      "sec": "No SEC-registered company found matching 'City of Atlanta'. Try using the stock ",
+      "nces": "ok",
+      "clery": "insufficient_data",
+      "sourcewell": "ok (4 keywords)",
+      "tips": "ok (4 keywords)",
+      "sam": "ok",
+      "indeed": "ok",
+      "ga_procurement": "ok (4 keywords)",
+      "atlanta_procurement": "ok (4 keywords)",
+      "hhs": "no_matches",
+      "omnia": "ok (4 keywords)",
+      "costars": "ok (4 keywords)",
+      "hgac": "ok (4 keywords)",
+      "sled_procurement": "insufficient_data",
+      "github": "insufficient_data",
+      "leadership": "insufficient_data",
+      "news": "ok",
+      "reddit": "ok",
+      "crtsh": "ok",
+      "champion_signals": "insufficient_data"
+    }
+  }
+}

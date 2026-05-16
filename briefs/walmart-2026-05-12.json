@@ -1,0 +1,1133 @@
+{
+  "metadata": {
+    "company_slug": "walmart",
+    "company_name": "Walmart Inc.",
+    "vertical": "Retail",
+    "generated_at": "2026-05-12T02:00:00Z",
+    "agents_used": [
+      "company-bg",
+      "tech-and-pain",
+      "hiring-signals"
+    ],
+    "models_used": {
+      "subagents": "sonnet",
+      "synthesizer": "opus"
+    },
+    "runtime_seconds": 443.7,
+    "phase1_status": {
+      "nces": "insufficient_data",
+      "clery": "insufficient_data",
+      "github": "ok",
+      "sourcewell": "ok (4 keywords)",
+      "tips": "ok (4 keywords)",
+      "sam": "ok",
+      "hhs": "no_matches",
+      "ga_procurement": "ok (4 keywords)",
+      "atlanta_procurement": "ok (4 keywords)",
+      "sled_procurement": "insufficient_data",
+      "omnia": "ok (4 keywords)",
+      "costars": "ok (4 keywords)",
+      "hgac": "ok (4 keywords)",
+      "indeed": "ok",
+      "reddit": "ok",
+      "news": "ok",
+      "sec": "ok",
+      "crtsh": "timeout (>60s)",
+      "leadership": "timeout (>60s)",
+      "champion_signals": "cached (leadership <24h)"
+    }
+  },
+  "tldr": {
+    "bullets": [
+      "Walmart operates 4,700+ U.S. stores and just completed a 350-acre, 12-building corporate campus in Bentonville, AR (opened January 2025) \u2014 zero security vendor is mentioned across 8 facility opening articles, making the HQ campus a potential greenfield physical security deployment.",
+      "Walmart's 10-Q (Q3 FY2026) disclosed ~$0.8B in higher self-insured general liability claims over 9 months, a documented parking lot shooting (Chicago, January 2023) that triggered legal questions about camera coverage adequacy, and an LPO pepper-sprayed in Gainesville FL with footage used only for post-incident ID \u2014 not real-time detection.",
+      "Zero physical security vendor fingerprints found across all OSINT sources (no subdomain data collected, no LP/security roles in 50 captured job postings, no vendor names in news or facility coverage) \u2014 incumbent vendor identification requires direct discovery before any displacement conversation."
+    ],
+    "confidence": "medium"
+  },
+  "entity_type": "public_corporation",
+  "snapshot": {
+    "name": "Walmart Inc.",
+    "vertical": "Retail",
+    "ticker": "WMT",
+    "sic_code": "5331",
+    "sic_description": "Retail-Variety Stores",
+    "headquarters_state": "AR",
+    "size_indicator": "Large accelerated filer (NYSE: WMT); $18.6B capex (9M FY2026); 4,700+ U.S. stores referenced in cybersecurity risk modeling; Delaware incorporation",
+    "confidence": "high",
+    "source_quality": "primary",
+    "sources": [
+      {
+        "url": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000055/wmt-20260131.htm",
+        "title": "Walmart Inc. 10-K Filing \u2014 FY2026 (period ending 2026-01-31)",
+        "retrieved_at": "2026-05-12T01:04:48.483813+00:00"
+      },
+      {
+        "url": "https://www.sec.gov/Archives/edgar/data/104169/000010416925000191/wmt-20251031.htm",
+        "title": "Walmart Inc. 10-Q Filing \u2014 Q3 FY2026 (period ending 2025-10-31)",
+        "retrieved_at": "2026-05-12T01:04:48.483813+00:00"
+      }
+    ]
+  },
+  "federal_funding_profile": null,
+  "leadership": "insufficient_data",
+  "recent_material_events": [
+    {
+      "date": "2025-01-12",
+      "description": "Walmart completed its move to the new 350-acre Home Office campus in Bentonville, Arkansas, opening the final Upstream Building. The campus comprises 12 office buildings constructed from mass timber \u2014 the largest such application in the U.S. \u2014 across approximately 897,500 sq ft in Zone 1 alone, with Mercer Mass Timber supplying 21,000 cubic meters of CLT and glulam. Civil engineering began in 2019. New security infrastructure decisions for this campus-scale deployment represent a material physical security opportunity.",
+      "category": "capital_project",
+      "verkada_relevant": true,
+      "confidence": "high",
+      "source_quality": "secondary",
+      "source_caveat": null,
+      "source": {
+        "url": "https://www.constructiondive.com/news/walmart-mass-timber-new-corporate-hq/744590/",
+        "title": "Walmart adds mass timber to new corporate HQ campus | Construction Dive",
+        "retrieved_at": "2026-05-12T01:04:30.285898+00:00"
+      }
+    },
+    {
+      "date": "2025-01-17",
+      "description": "Walmart officially opened its New Home Office in Bentonville, AR \u2014 a 350-acre campus integrated into the city with 12 uniquely designed office buildings, outdoor patios, rooftop terraces, fitness and childcare facilities, and miles of bike/walking paths. The campus replaces the legacy building at 8th Street. Walmart corporate press release describes this as a complete workplace reinvention, signaling clean-sheet infrastructure decisions including physical security.",
+      "category": "capital_project",
+      "verkada_relevant": true,
+      "confidence": "high",
+      "source_quality": "primary",
+      "source_caveat": null,
+      "source": {
+        "url": "https://corporate.walmart.com/news/2025/01/17/the-future-of-better-begins-here-welcome-to-walmarts-new-home-office",
+        "title": "The Future of Better Begins Here: Welcome to Walmart's New Home Office \u2014 Walmart Corporate",
+        "retrieved_at": "2026-05-12T01:04:30.285898+00:00"
+      }
+    },
+    {
+      "date": null,
+      "description": "Walmart cut hundreds of corporate jobs and consolidated offices nationwide, urging employees to relocate to Bentonville, AR or Hoboken, NJ (with Hoboken slated to shed ~100 roles by May 1). Office consolidations of this scale typically force security infrastructure rationalization across vacated and receiving sites.",
+      "category": "restructuring",
+      "verkada_relevant": true,
+      "confidence": "medium",
+      "source_quality": "secondary",
+      "source_caveat": null,
+      "source": {
+        "url": "https://finance.yahoo.com/news/walmart-reshapes-workforce-shuts-offices-165221545.html",
+        "title": "Walmart Reshapes Workforce, Shuts Offices As It Consolidates \u2014 Yahoo Finance",
+        "retrieved_at": "2026-05-12T01:04:30.285898+00:00"
+      }
+    },
+    {
+      "date": "2023-01-04",
+      "description": "A shooting in the parking lot of the Pullman Walmart at 10900 S. Doty Avenue in Chicago, IL left 2 injured and 1 in critical condition. A plaintiff's law firm raised questions about what physical security measures Walmart had in place at that location to prevent the incident. District 05 Chicago PD reported a 31% increase in shooting incidents from 2021 to 2022.",
+      "category": "safety_incident",
+      "verkada_relevant": true,
+      "confidence": "medium",
+      "source_quality": "weak",
+      "source_caveat": "Source is a plaintiff's law firm blog post (Mickelsen Dalton) written to solicit clients for litigation \u2014 not a neutral news report. Incident details (date, location, injury count) may be accurate but framing is adversarial. Corroboration from a news source would strengthen confidence.",
+      "source": {
+        "url": "https://www.mickelsendalton.com/blog/is-walmart-responsible-shooting-incident-pullman-walmart-parking-lot-in-chicago-illinois-january-4-2023-2-injured-and-1-in-critical-condition",
+        "title": "Shooting Incident \u2014 Pullman Walmart Parking Lot, Chicago, IL \u2014 January 4, 2023",
+        "retrieved_at": "2026-05-12T01:04:30.285898+00:00"
+      }
+    },
+    {
+      "date": null,
+      "description": "A Gainesville, FL Walmart Loss Prevention Officer was pepper-sprayed by a shoplifter attempting to exit the northwest location at 5700 NW 23rd Street with $185 in stolen merchandise. Surveillance footage captured the suspect entering at 7:26 p.m. on November 20 and was used to identify her by face and tattoos. The LPO required decontamination. Incident illustrates active use of Walmart surveillance cameras for LP identification and a documented workplace violence exposure for LP staff.",
+      "category": "safety_incident",
+      "verkada_relevant": true,
+      "confidence": "medium",
+      "source_quality": "secondary",
+      "source_caveat": null,
+      "source": {
+        "url": "https://newsfinale.com/crime/gainesville-shopper-arrested-after-pepper-spray-incident-during-walmart-theft-attempt",
+        "title": "Gainesville Shopper Arrested After Pepper Spray Incident During Walmart Theft Attempt \u2014 NewsFinale",
+        "retrieved_at": "2026-05-12T01:04:30.285898+00:00"
+      }
+    },
+    {
+      "date": "2025-12-03",
+      "description": "Walmart's 10-Q (period ending 2025-10-31) disclosed approximately $0.8 billion in higher self-insured general liability claims expense during the nine months ended October 31, 2025, driven by rising costs to resolve claims across retail and related industries. This 22\u201326 basis point margin drag signals elevated physical liability exposure across Walmart's retail footprint \u2014 a financial pressure point that upgraded physical security (incident documentation, deterrence) can directly address.",
+      "category": "regulatory",
+      "verkada_relevant": true,
+      "confidence": "high",
+      "source_quality": "primary",
+      "source_caveat": null,
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/104169/000010416925000191/wmt-20251031.htm",
+        "title": "Walmart Inc. 10-Q \u2014 Q3 FY2026 (period ending 2025-10-31)",
+        "retrieved_at": "2026-05-12T01:04:48.483813+00:00"
+      }
+    },
+    {
+      "date": "2026-03-13",
+      "description": "Walmart's FY2026 10-K explicitly lists active shooter situations in stores as a named operational risk under 'Natural disasters, climate change, geopolitical events,' stating such events could cause physical damage, closures, and workforce shortages. This is the sole Verkada-relevant risk flag in 3 filings analyzed (1 of 15 risks in the 10-K tagged verkada_relevant: true).",
+      "category": "regulatory",
+      "verkada_relevant": true,
+      "confidence": "high",
+      "source_quality": "primary",
+      "source_caveat": null,
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000055/wmt-20260131.htm",
+        "title": "Walmart Inc. 10-K \u2014 FY2026 (period ending 2026-01-31), Operational Risks section",
+        "retrieved_at": "2026-05-12T01:04:48.483813+00:00"
+      }
+    }
+  ],
+  "vertical_match": {
+    "matched_vertical": "Retail",
+    "match_confidence": "high",
+    "match_reasoning": "Walmart Inc. is classified under SIC 5331 (Retail-Variety Stores) in SEC EDGAR filings, operates 4,700+ U.S. stores per cybersecurity risk modeling in news sources, and is the world's largest brick-and-mortar retailer \u2014 directly matching the persona's Retail ICP vertical.",
+    "key_drivers_present": [
+      "ORC",
+      "shrink",
+      "safe_transaction_zones"
+    ],
+    "typical_pain_present": [
+      "high_camera_count_low_usability",
+      "LP_team_cant_review_footage_remotely",
+      "inconsistent_systems_across_stores"
+    ]
+  },
+  "technical_footprint": {
+    "cloud_native_indicators": [
+      {
+        "signal": "GitHub org exists but has zero public repos \u2014 engineering activity hidden behind walmartlabs org",
+        "evidence": "github.com/walmart org shows 0 public repos, 0 public members, last updated 2018-03-27. Blog field redirects to https://github.com/walmartlabs, indicating primary open-source activity occurs under the walmartlabs organization, not the walmart org.",
+        "confidence": "medium",
+        "source_quality": "primary",
+        "source_caveat": null,
+        "source": {
+          "url": "https://github.com/walmart",
+          "title": "Walmart GitHub org \u2014 walmart",
+          "retrieved_at": "2026-05-12T01:03:54.044619+00:00"
+        }
+      }
+    ],
+    "saas_stack_inferred": "insufficient_data",
+    "security_engineering_signals": "insufficient_data",
+    "physical_security_indicators": [
+      {
+        "signal": "Active in-store surveillance camera infrastructure confirmed by LP incident documentation",
+        "evidence": "News article: Gainesville Walmart LPO incident November 20 \u2014 'Footage from Walmart's surveillance cameras reportedly captured the woman entering the store at 7:26 p.m., selecting 16 pieces of clothing along with a loaf of bread.' Surveillance footage was used to identify suspect by face and tattoos.",
+        "confidence": "high",
+        "source_quality": "secondary",
+        "source_caveat": null,
+        "source": {
+          "url": "https://newsfinale.com/crime/gainesville-shopper-arrested-after-pepper-spray-incident-during-walmart-theft-attempt",
+          "title": "Gainesville Shopper Arrested After Pepper Spray Incident During Walmart Theft Attempt",
+          "retrieved_at": "2026-05-12T01:04:30.285898+00:00"
+        }
+      },
+      {
+        "signal": "Parking lot security incidents at store locations raise questions about camera coverage and response time",
+        "evidence": "January 4, 2023 shooting at Pullman Walmart parking lot (Chicago, 10900 S Doty Ave) \u2014 2 injured, 1 critical. Legal analysis questioned 'What security measures did the Pullman Walmart have in place to prevent something like this?' in the context of a 31% increase in District 05 shooting incidents from 2021 to 2022.",
+        "confidence": "high",
+        "source_quality": "secondary",
+        "source_caveat": null,
+        "source": {
+          "url": "https://www.mickelsendalton.com/blog/is-walmart-responsible-shooting-incident-pullman-walmart-parking-lot-in-chicago-illinois-january-4-2023-2-injured-and-1-in-critical-condition",
+          "title": "Is Walmart Responsible? Shooting Incident \u2014 Pullman Walmart Parking Lot in Chicago, Illinois \u2014 January 4, 2023",
+          "retrieved_at": "2026-05-12T01:04:30.285898+00:00"
+        }
+      },
+      {
+        "signal": "New 350-acre Bentonville Home Office campus (12 buildings, opened January 2025) requires fresh physical security infrastructure deployment",
+        "evidence": "Walmart completed move to new 350-acre Home Office in Bentonville, Arkansas on January 12, 2025 \u2014 12 uniquely designed office buildings, with the Upstream Building being the final to open. Campus was constructed from ground up starting 2019. No security vendor mentioned in any of 8 facility expansion articles.",
+        "confidence": "high",
+        "source_quality": "secondary",
+        "source_caveat": null,
+        "source": {
+          "url": "https://corporate.walmart.com/news/2025/01/17/the-future-of-better-begins-here-welcome-to-walmarts-new-home-office",
+          "title": "The Future of Better Begins Here: Welcome to Walmart's New Home Office",
+          "retrieved_at": "2026-05-12T01:04:30.285898+00:00"
+        }
+      },
+      {
+        "signal": "Store renovations actively disrupting physical operations at curbside fulfillment areas",
+        "evidence": "Reddit r/Sparkdriver post (May 12, 2026): 'Walmart renovations happening at curbside. Anyone else go through this? They shut down spark until it's done?' \u2014 signals active store-level construction projects in progress across the network.",
+        "confidence": "medium",
+        "source_quality": "weak",
+        "source_caveat": "Reddit post from Spark driver (Walmart delivery contractor), not a Walmart employee. Reflects a single location's renovation, not confirmed network-wide pattern.",
+        "source": {
+          "url": "https://www.reddit.com/r/Sparkdriver/comments/1talors/walmart_renovations_happening_at_curbside_anyone/",
+          "title": "Walmart renovations happening at curbside",
+          "retrieved_at": "2026-05-12T01:04:14.217633+00:00"
+        }
+      }
+    ],
+    "scale_indicators": {
+      "public_repos": 0,
+      "subdomain_count": 0,
+      "language_diversity": null
+    }
+  },
+  "practitioner_sentiment": {
+    "source_subreddits": [
+      "r/sysadmin",
+      "r/walmart",
+      "r/Sparkdriver",
+      "r/WalmartEmployees"
+    ],
+    "total_posts_analyzed": 30,
+    "top_pain_themes": [
+      {
+        "theme": "Undocumented cloud infrastructure / lost AWS account ownership",
+        "post_count": 1,
+        "representative_quote": "We have a Walmart account, and a document listing images saved in an AWS store. We have zero record of any AWS accounts here. The previous ecom 'experts' won't provide any info (if they even had it).",
+        "linked_persona_pain": null,
+        "confidence": "inference",
+        "source_quality": "weak",
+        "source_caveat": "Reddit post from r/sysadmin by an employee at a company that sells on Walmart Marketplace \u2014 not a Walmart IT employee. The AWS account in question belongs to a third-party ecommerce reseller, not Walmart corporate.",
+        "source": {
+          "url": "https://www.reddit.com/r/sysadmin/comments/1lel6nu/find_aws_account/",
+          "title": "Find AWS account?",
+          "retrieved_at": "2026-05-12T01:04:14.217633+00:00"
+        }
+      },
+      {
+        "theme": "Camera monitoring using consumer-grade Roku TVs with display instability",
+        "post_count": 1,
+        "representative_quote": "a division at my job has one PC (Windows 11 Enterprise) that they use for camera watching. It is hooked up to four wall mounted TVs (from Walmart, Roku TVs) via HDMI. The issue: Every now and then, seemingly at random, the displays will flicker and any open window will move to a random monitor.",
+        "linked_persona_pain": "high_camera_count_low_usability",
+        "confidence": "inference",
+        "source_quality": "weak",
+        "source_caveat": "Reddit r/sysadmin post from an unidentified company IT admin who purchased TVs at Walmart \u2014 this is not a Walmart IT post and does not describe Walmart's internal camera infrastructure.",
+        "source": {
+          "url": "https://www.reddit.com/r/sysadmin/comments/1qksbvk/a_weird_issue_with_multiple_tvs_to_one_pc/",
+          "title": "A Weird Issue With Multiple TVs to One PC",
+          "retrieved_at": "2026-05-12T01:04:14.217633+00:00"
+        }
+      }
+    ],
+    "vendor_mentions": [
+      {
+        "vendor": "AWS",
+        "sentiment": "negative",
+        "mention_count": 1,
+        "representative_quote": "We have zero record of any AWS accounts here. The previous ecom 'experts' won't provide any info.",
+        "is_displacement_target": false,
+        "confidence": "inference",
+        "source_quality": "weak",
+        "source_caveat": "Mentioned by a third-party Walmart Marketplace seller, not a Walmart employee. Not applicable to Walmart's internal infrastructure posture.",
+        "source": {
+          "url": "https://www.reddit.com/r/sysadmin/comments/1lel6nu/find_aws_account/",
+          "title": "Find AWS account?",
+          "retrieved_at": "2026-05-12T01:04:14.217633+00:00"
+        }
+      },
+      {
+        "vendor": "Workday",
+        "sentiment": "neutral",
+        "mention_count": 1,
+        "representative_quote": "Searched the username on workday and it's not showing up on there either, can't find out who's nil picking the items.",
+        "is_displacement_target": false,
+        "confidence": "inference",
+        "source_quality": "weak",
+        "source_caveat": "Reddit post from r/walmart by a store associate \u2014 confirms Workday is Walmart's HR system of record, but this is general knowledge. Post itself describes a phantom user in the order picking system not reconcilable in Workday.",
+        "source": {
+          "url": "https://www.reddit.com/r/walmart/comments/1tam8bn/nil_pick_name_doesnt_match_any_associates_in_store/",
+          "title": "Nil pick name doesn't match any associates in store",
+          "retrieved_at": "2026-05-12T01:04:14.217633+00:00"
+        }
+      }
+    ],
+    "trigger_evidence": [
+      {
+        "trigger_id": "capital_project_signal",
+        "evidence": "r/Sparkdriver post dated May 12, 2026: 'Walmart renovations happening at curbside. Anyone else go through this? They shut down spark until it's done?' \u2014 indicates active store-level renovation projects disrupting operations.",
+        "confidence": "inference",
+        "source_quality": "weak",
+        "source_caveat": "Single Spark driver post describing one store location's curbside renovation. Cannot confirm network-wide renovation program from this post alone.",
+        "source": {
+          "url": "https://www.reddit.com/r/Sparkdriver/comments/1talors/walmart_renovations_happening_at_curbside_anyone/",
+          "title": "Walmart renovations happening at curbside",
+          "retrieved_at": "2026-05-12T01:04:14.217633+00:00"
+        }
+      }
+    ]
+  },
+  "incident_history": null,
+  "pain_hypotheses": [
+    {
+      "hypothesis": "Walmart's Loss Prevention team relies on fixed in-store camera footage for after-the-fact investigation \u2014 as documented in the Gainesville incident \u2014 but a shooting at the Pullman Chicago location raised public legal questions about whether camera coverage and response infrastructure were adequate to prevent or respond to violent incidents in parking lots, a blind-spot common in legacy camera deployments.",
+      "evidence_basis": [
+        "Gainesville LPO incident: Walmart surveillance footage identified suspect by face and tattoos entering at 7:26 p.m. \u2014 confirms active LP camera use for post-incident review, not real-time prevention (newsfinale.com)",
+        "Pullman Chicago parking lot shooting January 4, 2023 \u2014 2 injured, 1 critical \u2014 legal filing specifically questioned what security measures Walmart had in place, in a District 05 context where shooting incidents rose 31% YoY (mickelsendalton.com)"
+      ],
+      "linked_persona_pain": "high_camera_count_low_usability",
+      "confidence": "medium",
+      "source_quality": "secondary",
+      "source_caveat": null,
+      "sources": [
+        {
+          "url": "https://newsfinale.com/crime/gainesville-shopper-arrested-after-pepper-spray-incident-during-walmart-theft-attempt",
+          "title": "Gainesville Shopper Arrested After Pepper Spray Incident During Walmart Theft Attempt",
+          "retrieved_at": "2026-05-12T01:04:30.285898+00:00"
+        },
+        {
+          "url": "https://www.mickelsendalton.com/blog/is-walmart-responsible-shooting-incident-pullman-walmart-parking-lot-in-chicago-illinois-january-4-2023-2-injured-and-1-in-critical-condition",
+          "title": "Is Walmart Responsible? Shooting Incident \u2014 Pullman Walmart Parking Lot in Chicago, Illinois \u2014 January 4, 2023",
+          "retrieved_at": "2026-05-12T01:04:30.285898+00:00"
+        }
+      ]
+    },
+    {
+      "hypothesis": "Walmart's new 350-acre, 12-building Bentonville Home Office campus (opened January 2025, ground-up construction) represents a clean-sheet physical security deployment opportunity \u2014 none of the 8 facility expansion articles from corporate.walmart.com, Forbes, Construction Dive, or Walter P Moore reference a security vendor or system, suggesting the security infrastructure specification may not have been publicly locked to an incumbent.",
+      "evidence_basis": [
+        "Walmart completed its 12-building Home Office campus in Bentonville, Arkansas on January 12, 2025 \u2014 350 acres, ground-up construction begun 2019, designed to house thousands of corporate associates (corporate.walmart.com, Forbes)",
+        "Zero references to any physical security vendor, VMS, or access control system across 8 facility expansion articles covering the campus opening \u2014 Construction Dive, Forbes, Walter P Moore, corporate.walmart.com, NWAHomepage all silent on security infrastructure (news.json facility_expansion angle)"
+      ],
+      "linked_persona_pain": "no_centralized_security_operations",
+      "confidence": "inference",
+      "source_quality": "secondary",
+      "source_caveat": "Absence of vendor mention in facility articles does not confirm vendor absence \u2014 security infrastructure is rarely newsworthy in campus opening coverage. Requires direct qualification.",
+      "sources": [
+        {
+          "url": "https://corporate.walmart.com/news/2025/01/17/the-future-of-better-begins-here-welcome-to-walmarts-new-home-office",
+          "title": "The Future of Better Begins Here: Welcome to Walmart's New Home Office",
+          "retrieved_at": "2026-05-12T01:04:30.285898+00:00"
+        },
+        {
+          "url": "https://www.forbes.com/sites/mattshaw/2025/01/29/inside-walmarts-massive-nature-filled-new-headquarters/",
+          "title": "Inside Walmart's Massive, Nature-Filled New Headquarters - Forbes",
+          "retrieved_at": "2026-05-12T01:04:30.285898+00:00"
+        }
+      ]
+    },
+    {
+      "hypothesis": "Walmart's history of IT supply chain security failures \u2014 a 2015\u20132016 incident where Compucom help-desk contractors with privileged access were monitoring internal email, and a 2005\u20132006 breach where a generic VPN account from a departed Canadian employee went unsuspended and was used to exfiltrate POS source code \u2014 suggests an institutional pattern where third-party access and offboarding controls have historically lagged the scale of operations, a pattern that extends naturally to physical access credential management across thousands of locations.",
+      "evidence_basis": [
+        "2015\u20132016: FBI investigated Compucom employees assigned to Walmart's help desk who used access to monitor Walmart email accounts; Walmart terminated Compucom contract and 'put in place new tools to improve our monitoring process of IT contractors' (cshub.com)",
+        "2005\u20132006: Walmart breach traced to a generic VPN administrator account assigned to a departed Canadian employee that IT failed to deactivate; hackers exfiltrated POS source code undetected for months (wired.com, secpoint.com)"
+      ],
+      "linked_persona_pain": "badge_access_not_unified_with_video",
+      "confidence": "inference",
+      "source_quality": "secondary",
+      "source_caveat": "Both incidents are historical (2006 and 2015\u20132016). They evidence a documented institutional pattern but cannot be directly extrapolated to current physical access control posture without discovery.",
+      "sources": [
+        {
+          "url": "https://www.cshub.com/attacks/articles/incident-of-the-week-investigation-of-walmart-email-breach",
+          "title": "Incident Of The Week: Investigation Of Walmart Email Breach",
+          "retrieved_at": "2026-05-12T01:04:30.285898+00:00"
+        },
+        {
+          "url": "https://www.wired.com/2009/10/walmart-hack/",
+          "title": "Big-Box Breach: The Inside Story of Wal-Mart's Hacker Attack | WIRED",
+          "retrieved_at": "2026-05-12T01:04:30.285898+00:00"
+        }
+      ]
+    }
+  ],
+  "hiring_signals": {
+    "hiring_intensity": {
+      "total_active_reqs": 50,
+      "category_distribution": {
+        "engineering": 0,
+        "security_safety": 0,
+        "sales_marketing": 2,
+        "operations_logistics": 1,
+        "facilities_maintenance": 1,
+        "IT_infrastructure": 0,
+        "executive_leadership": 0,
+        "hr_finance_legal": 0,
+        "other": 46
+      },
+      "intensity_signal": "thin",
+      "intensity_caveat": "50 postings captured via SerpAPI Google Jobs represents a negligible fraction of Walmart's actual open requisitions \u2014 Walmart is the world's largest private employer with roughly 1.6 million US associates and likely thousands of open positions at any given time. The 50 captured postings are entirely retail front-line and warehouse operations roles (stockers, cashiers, cart attendants, pharmacy clerks, order fillers, sanitation workers, meat cutters). This sample reflects the algorithmic bias of Google Jobs surfacing high-volume hourly roles, not the full scope of Walmart's hiring. Physical security, loss prevention leadership, IT infrastructure, and corporate roles are almost certainly posted through Walmart's own careers portal (careers.walmart.com) and are not represented here. Patterns derived from this 50-posting sample are not reliable.",
+      "confidence": "medium",
+      "source_quality": "weak",
+      "source_caveat": "All 50 captured postings are sourced from third-party aggregators (ZipRecruiter, Glassdoor, BeBee, walmart.placementshuddle.com, walmart.careerplot.us.com, dejobs.org, careeronestop.org). None are sourced directly from careers.walmart.com. Several aggregators use modified company name formatting indicating scraped/reposted content of uncertain freshness.",
+      "source": {
+        "url": "https://www.ziprecruiter.com/c/Walmart/Job/",
+        "title": "Walmart \u2014 Google Jobs via SerpAPI (50 postings captured, all third-party aggregators)",
+        "retrieved_at": "2026-05-12T01:04:09.954378+00:00"
+      }
+    },
+    "security_team_signals": [],
+    "security_team_absence": "Walmart is hiring at scale (50 active reqs captured, actual total likely in the thousands), yet zero security-specific roles appear in this dataset. No loss prevention, assets protection, physical security manager, CSO, CISO, security systems engineer, or guard operations roles were captured. This is almost certainly a data artifact: Walmart's Assets Protection division (which manages one of the largest retail loss prevention operations in the US) posts primarily through careers.walmart.com and internal channels. The absence of security roles in this SerpAPI-captured dataset is not evidence that Walmart is not hiring in security \u2014 it is evidence that this data source does not surface those roles.",
+    "trigger_evidence": "insufficient_data \u2014 All 16 pre-computed trigger matches in jobs.json were reviewed and validated against persona/verkada-se.yml detect_signals. Every match is a false positive.",
+    "geographic_expansion_signal": [
+      {
+        "location": "Las Vegas, NV",
+        "role_count": 5,
+        "interpretation": "Existing store operations hub \u2014 5 postings across Walmart Supercenter #5070 (5200 S Fort Apache Rd) and Walmart Supercenter #2592 (1807 W Craig Rd, North Las Vegas). All roles are hourly retail operations (order filling, checkout, stocking, cart attendant, front end team member). This reflects steady-state hourly turnover hiring at existing Las Vegas metro supercenters, not geographic expansion or new-market entry.",
+        "confidence": "high",
+        "source_quality": "weak",
+        "source_caveat": "Postings sourced from ZipRecruiter, Glassdoor, and walmart.careerplot.us.com aggregators \u2014 not directly from careers.walmart.com. Store addresses are confirmed in description_snippets, establishing these as existing locations.",
+        "source": {
+          "url": "https://www.ziprecruiter.com/c/Walmart/Job/Online-Order-Filling-Team-Associate/-in-Las-Vegas,NV?jid=e0302939a6546c3e",
+          "title": "Walmart Las Vegas/North Las Vegas postings cluster \u2014 Google Jobs via SerpAPI",
+          "retrieved_at": "2026-05-12T01:04:09.954378+00:00"
+        }
+      },
+      {
+        "location": "Midlothian, VA",
+        "role_count": 4,
+        "interpretation": "Existing store operations hub \u2014 4 postings at or near Midlothian, VA (Produce Service Representative, Stockroom Material Handler, Fleet Maintenance Assistant Manager in Brandermill/Midlothian, Online Order Filling). The Fleet Maintenance Assistant Manager role ($80K\u2013$120K/yr) references Walmart's private fleet Transportation Service Shop, indicating an existing distribution/fleet maintenance facility in the Richmond metro area, not a new market.",
+        "confidence": "high",
+        "source_quality": "weak",
+        "source_caveat": "Postings sourced from walmart.placementshuddle.com and ZipRecruiter aggregators \u2014 not directly from careers.walmart.com.",
+        "source": {
+          "url": "https://www.ziprecruiter.com/c/Walmart/Job/Fleet-Maintenance-Assistant-Manager-(-Area-Manager-Service-Shop-(Transportation)-)/-in-Brandermill,VA?jid=c26f05a47cba98a2",
+          "title": "Walmart Midlothian/Richmond VA postings cluster \u2014 Google Jobs via SerpAPI",
+          "retrieved_at": "2026-05-12T01:04:09.954378+00:00"
+        }
+      },
+      {
+        "location": "Derby/Haysville/Rose Hill/Valley Center/Maize, KS",
+        "role_count": 6,
+        "interpretation": "Existing Wichita metro operations cluster \u2014 6 postings spanning Derby KS, Haysville KS, Rose Hill KS, Valley Center KS, and Maize KS. All are hourly retail or Sam's Club operations roles. This is steady-state turnover hiring across existing Wichita-area supercenters and Sam's Club locations, not geographic expansion.",
+        "confidence": "high",
+        "source_quality": "weak",
+        "source_caveat": "All postings sourced from walmart.placementshuddle.com, a third-party aggregator.",
+        "source": {
+          "url": "https://walmart.placementshuddle.com/jobpage/evmlslf730dk-92b-eecaf0-e019367d67fa914a975-62d8",
+          "title": "Walmart Wichita metro KS postings cluster \u2014 Google Jobs via SerpAPI",
+          "retrieved_at": "2026-05-12T01:04:09.954378+00:00"
+        }
+      }
+    ]
+  },
+  "cooperative_purchasing": {
+    "available_vehicles": [
+      {
+        "vehicle": "OMNIA Partners",
+        "relevant_solicitations": [
+          {
+            "title": "Weapons and Threat Detection Equipment, Services, and Other Solutions",
+            "id": "R250206",
+            "date": "April 2025 \u2013 March 2028 (two 1-year renewal options through March 2030)",
+            "url": "https://www.omniapartners.com/suppliers/verkada/request-information?hsCtaAttrib=188278113051",
+            "relevance": "Verkada's primary OMNIA contract. Covers video surveillance, access control, weapons detection, and related solutions. Public-sector and government buyers can purchase without a full RFP."
+          }
+        ],
+        "verkada_contract_status": "Verkada holds OMNIA contract R250206 \u2014 'Weapons and Threat Detection Equipment, Services, and Other Solutions' (April 2025 \u2013 March 2028, two 1-year renewal options through March 2030)",
+        "verkada_products": null,
+        "competitor_landscape": [
+          "Genetec (R250204 \u2014 Weapons and Threat Detection Equipment, Services, and Other Solutions)",
+          "Everon (R220701 \u2014 Facility Technology Integration & Security System Services)",
+          "Convergint (R220702 \u2014 Facility Technology Integration & Security System Services)",
+          "Schneider Electric (R220703 \u2014 Facility Technology Integration & Security System Services)",
+          "Bluum USA (R250202 \u2014 Weapons and Threat Detection Equipment, Services, and Other Solutions)",
+          "Flock Safety (R250203 \u2014 Weapons and Threat Detection Equipment)",
+          "Athena (R250201 \u2014 Weapons and Threat Detection Equipment)"
+        ],
+        "confidence": "high",
+        "source_quality": "primary",
+        "source": {
+          "url": "https://www.omniapartners.com/solutions/contract-offerings",
+          "title": "OMNIA Partners Contract Offerings \u2014 Public Sector",
+          "retrieved_at": "2026-05-12T01:03:56.166150+00:00"
+        }
+      },
+      {
+        "vehicle": "HGACBuy",
+        "relevant_solicitations": [
+          {
+            "title": "Video Surveillance, Access Control and Security Fencing Systems",
+            "id": "SE05-26",
+            "date": "February 2026",
+            "url": "https://www.hgacbuy.org/ProductsAndServices",
+            "relevance": "Verkada listed as manufacturer (ID 1177) on SE05-26. Available through dealers Pavion and APIC at 5% discount. Covers Verkada's full Access, Intrusion & Video catalog."
+          }
+        ],
+        "verkada_contract_status": "Verkada listed as manufacturer (ID 1177) on HGACBuy contract SE05-26 \u2014 'Video Surveillance, Access Control and Security Fencing Systems'. Available via Pavion and APIC at 5% discount.",
+        "verkada_products": [
+          "VERKADA Access, Intrusion & Video catalog per Pavion's SE05-26 Response February 2026 (product ID 44491, 5% discount)",
+          "Video Surveillance/Access Control Catalogs per APIC's SE05-26 Response February 2026 (product ID 44465, 5.00% discount)"
+        ],
+        "competitor_landscape": [
+          "Avigilon/Alta (ID 5732)",
+          "Axis (ID 35)",
+          "BOSCH/KEENFINITY (ID 5733)",
+          "Genetec (ID 141)",
+          "HANWHA (ID 5729)",
+          "Honeywell (ID 170)",
+          "Milestone (ID 244)",
+          "Motorola / Motorola Solutions (ID 5731, 248)"
+        ],
+        "confidence": "high",
+        "source_quality": "primary",
+        "source": {
+          "url": "https://www.hgacbuy.org/ProductsAndServices",
+          "title": "HGACBuy Products and Services \u2014 SE05-26 Video Surveillance, Access Control and Security Fencing Systems",
+          "retrieved_at": "2026-05-12T01:03:56.168538+00:00"
+        }
+      },
+      {
+        "vehicle": "Sourcewell",
+        "relevant_solicitations": [
+          {
+            "title": "Catalog Solutions for Public Safety and Emergency Management Equipment, Tools, and Supplies",
+            "id": "11335",
+            "date": "May 12, 2026",
+            "url": "https://www.sourcewell-mn.gov/solicitations/11335",
+            "relevance": "Open solicitation in public safety/emergency management category \u2014 adjacent to physical security. No direct video surveillance or access control solicitation found in current open/pending listings."
+          },
+          {
+            "title": "Law Enforcement Equipment",
+            "id": "11326",
+            "date": "June 16, 2026",
+            "url": "https://www.sourcewell-mn.gov/solicitations/11326",
+            "relevance": "Open law enforcement equipment solicitation \u2014 security-adjacent category on Sourcewell."
+          }
+        ],
+        "verkada_contract_status": "Verkada holds Sourcewell contract #041524-VRK (pre-existing cooperative contract for video surveillance and physical security). No direct solicitation match found in current open/pending listings queried.",
+        "verkada_products": null,
+        "competitor_landscape": null,
+        "confidence": "medium",
+        "source_quality": "primary",
+        "source": {
+          "url": "https://www.sourcewell-mn.gov/solicitations",
+          "title": "Sourcewell Solicitations",
+          "retrieved_at": "2026-05-12T01:03:54.045977+00:00"
+        }
+      },
+      {
+        "vehicle": "COSTARS",
+        "relevant_solicitations": [],
+        "verkada_contract_status": "insufficient_data \u2014 COSTARS portal (costars.state.pa.us / dgs.pa.gov/COSTARS) uses ASP.NET WebForms with ViewState-gated contract search. Only security policy page retrieved; no specific vendor contract numbers or Verkada listing confirmed.",
+        "verkada_products": null,
+        "competitor_landscape": null,
+        "confidence": "medium",
+        "source_quality": "secondary",
+        "source": {
+          "url": "https://www.costars.state.pa.us/",
+          "title": "PA COSTARS Portal",
+          "retrieved_at": "2026-05-12T01:03:56.167680+00:00"
+        }
+      }
+    ],
+    "procurement_signal": "Cooperative purchasing is unlikely to be Walmart's primary procurement path \u2014 Walmart is a private-sector retailer, not a public-sector entity, so OMNIA Partners, HGACBuy, Sourcewell, and COSTARS government cooperative contracts are not directly applicable to Walmart's store or corporate procurement. However, Walmart Business (Walmart's B2B division) holds its own OMNIA contract #15-02 ('Retail and Wholesale Merchandise Solutions and Services'), confirming Walmart participates in the cooperative purchasing ecosystem as a supplier, not a buyer through these vehicles. The HGACBuy SE05-26 competitive landscape is useful displacement intelligence: Avigilon/Alta, Axis, Genetec, HANWHA, Honeywell, Milestone, and Motorola Solutions are all on the same contract, indicating these are the vendors Walmart's physical security teams would encounter in any structured evaluation. If Walmart runs an RFP for physical security, expect these competitors to be shortlisted."
+  },
+  "displacement_intel": {
+    "vendor_hits": [],
+    "vendor_absence_finding": "ssl.json was not available for walmart \u2014 no subdomain data was collected. Zero displacement vendor fingerprints (Avigilon, Genetec, Milestone, Lenel, Hikvision, Dahua, March Networks, Brivo) can be confirmed or ruled out from current source data. Vendor identification requires direct discovery. GitHub org (github.com/walmart) has 0 public repos and provides no infrastructure signal. Physical security vendor identification for Walmart's ~4,700 U.S. stores will require direct qualification.",
+    "tech_stack_mentions": []
+  },
+  "champion_candidates": [],
+  "discovery_questions_by_persona": {
+    "IT_Director": [
+      {
+        "question": "Walmart operates 4,700+ U.S. stores. Are those running the same security platform, or did each store or region choose its own over the years?",
+        "source_trigger": "multi_site_sprawl",
+        "evidence": "6scan independent assessment references 4,700 U.S. stores in breach scenario modeling; vertical match confirms inconsistent_systems_across_stores as typical pain",
+        "confidence": "medium"
+      },
+      {
+        "question": "When there's an incident at a remote store, can the LP or security team pull footage without calling someone on-site or VPN-ing into a local NVR?",
+        "source_trigger": "multi_site_sprawl",
+        "evidence": "Vertical match typical_pain_present: LP_team_cant_review_footage_remotely; Gainesville incident confirmed surveillance footage used for post-incident ID, indicating local camera review workflow",
+        "confidence": "medium"
+      },
+      {
+        "question": "I see Walmart is investing in office consolidation \u2014 the new Bentonville campus, closing satellite offices, relocating staff. Has physical security been included in that consolidation conversation, or is it still the last on-prem holdout?",
+        "source_trigger": "vendor_consolidation_signal",
+        "evidence": "Walmart cut hundreds of jobs and consolidated offices nationwide to Bentonville and Hoboken; new 350-acre campus opened January 2025 (Yahoo Finance, corporate.walmart.com)",
+        "confidence": "medium"
+      },
+      {
+        "question": "When you add up NVR licensing, maintenance contracts, and IT time across however many security vendors Walmart manages today, has anyone calculated the total cost of ownership?",
+        "source_trigger": "vendor_consolidation_signal",
+        "evidence": "Office consolidation pattern + 4,700+ stores signals vendor rationalization opportunity; no incumbent vendor identified \u2014 TCO comparison is unknown internally",
+        "confidence": "inference"
+      }
+    ],
+    "Director_of_Facilities": [
+      {
+        "question": "When does the Bentonville Home Office campus security buildout finalize? Are security infrastructure decisions for that site already locked in, or still in design?",
+        "source_trigger": "capital_project_signal",
+        "evidence": "Walmart completed 12-building, 350-acre New Home Office campus in Bentonville, AR \u2014 opened January 2025; no security vendor mentioned across 8 facility articles (corporate.walmart.com, Forbes, Construction Dive)",
+        "confidence": "high"
+      },
+      {
+        "question": "The new Bentonville campus is a clean-sheet opportunity \u2014 is the security spec being written by facilities, IT, or an integrator?",
+        "source_trigger": "capital_project_signal",
+        "evidence": "Ground-up construction began 2019; 12 uniquely designed office buildings with outdoor patios, fitness facilities, childcare; no security vendor publicly identified (corporate.walmart.com)",
+        "confidence": "high"
+      },
+      {
+        "question": "Are you standardizing the Bentonville campus on the same security platform as the stores, or evaluating fresh for corporate?",
+        "source_trigger": "capital_project_signal",
+        "evidence": "New campus vs. 4,700+ existing stores creates platform standardization question; no evidence of common security platform across both (company-bg, tech-and-pain)",
+        "confidence": "inference"
+      },
+      {
+        "question": "Walmart operates 4,700+ stores. Are those running the same security platform, or did each site choose its own over the years?",
+        "source_trigger": "multi_site_sprawl",
+        "evidence": "4,700+ U.S. stores referenced in cybersecurity risk modeling; inconsistent_systems_across_stores flagged as typical pain for Retail vertical",
+        "confidence": "medium"
+      }
+    ],
+    "CSO": [
+      {
+        "question": "I saw the parking lot shooting coverage from the Pullman Chicago Walmart in January 2023. How has that shifted security investment posture for parking lot and exterior coverage?",
+        "source_trigger": "incident_recent_12mo",
+        "evidence": "Pullman Walmart parking lot shooting Jan 4, 2023 \u2014 2 injured, 1 critical; legal filing questioned adequacy of Walmart security measures; District 05 shooting incidents rose 31% YoY (mickelsendalton.com)",
+        "confidence": "medium"
+      },
+      {
+        "question": "After the Gainesville LP officer assault, did leadership set a timeline for LP safety remediation \u2014 better real-time alerting, body-worn cameras, panic buttons \u2014 or is it still in planning?",
+        "source_trigger": "incident_recent_12mo",
+        "evidence": "Gainesville LPO pepper-sprayed by shoplifter Nov 20; surveillance footage used post-incident for suspect ID; LPO required decontamination \u2014 workplace violence exposure documented (newsfinale.com)",
+        "confidence": "medium"
+      },
+      {
+        "question": "Walmart's 10-Q disclosed roughly $800 million in higher self-insured general liability claims expense over nine months. Has your risk management team quantified how upgraded physical security infrastructure \u2014 better incident documentation, faster evidence retrieval, real-time deterrence \u2014 could impact those claims costs?",
+        "source_trigger": "insurance_or_risk_pressure",
+        "evidence": "Walmart 10-Q (period ending 2025-10-31): ~$0.8B higher self-insured general liability claims expense, driven by rising costs to resolve claims across retail footprint (SEC filing, primary source)",
+        "confidence": "high"
+      },
+      {
+        "question": "Walmart's 10-K explicitly names active shooter situations in stores as an operational risk. What's the gap between what leadership wants to prevent and what the current security infrastructure can detect in real time?",
+        "source_trigger": "incident_recent_12mo",
+        "evidence": "FY2026 10-K lists active shooter situations in stores as named operational risk under 'Natural disasters, climate change, geopolitical events' (SEC filing)",
+        "confidence": "high"
+      }
+    ],
+    "Superintendent_K12": [],
+    "VP_of_Operations": [
+      {
+        "question": "Walmart operates 4,700+ U.S. stores. Are those running the same security platform, or did each store or region end up on different systems over the years?",
+        "source_trigger": "multi_site_sprawl",
+        "evidence": "4,700+ U.S. stores; inconsistent_systems_across_stores flagged as typical Retail vertical pain (company-bg)",
+        "confidence": "medium"
+      },
+      {
+        "question": "Standardizing 4,700+ locations on one platform is a massive project. What would need to be true for that to land on next year's budget?",
+        "source_trigger": "multi_site_sprawl",
+        "evidence": "Multi-site sprawl trigger fired with 4,700+ stores; $18.6B capex (9M FY2026) suggests budget capacity exists for infrastructure investments of this scale (SEC filing)",
+        "confidence": "medium"
+      },
+      {
+        "question": "If Walmart could manage video, access control, and environmental sensors from one login across all 4,700+ stores, what would that free up for your operations team?",
+        "source_trigger": "vendor_consolidation_signal",
+        "evidence": "Office consolidation nationwide (Yahoo Finance); no evidence of unified security platform across stores; Verkada single-platform positioning directly addresses this",
+        "confidence": "medium"
+      },
+      {
+        "question": "The office consolidation \u2014 closing satellite offices, moving everyone to Bentonville and Hoboken \u2014 typically forces security infrastructure decisions at both the vacated and receiving sites. Where is Walmart in that process?",
+        "source_trigger": "vendor_consolidation_signal",
+        "evidence": "Walmart cut hundreds of corporate jobs, consolidated to Bentonville and Hoboken, Hoboken shedding ~100 roles by May 1 (Yahoo Finance, People Matters Global)",
+        "confidence": "medium"
+      }
+    ],
+    "Loss_Prevention_Director": [
+      {
+        "question": "I saw the Gainesville incident where an LPO was pepper-sprayed during a shoplifting response \u2014 and the surveillance footage was key to identifying the suspect afterward. How long does it typically take your LP team to pull and review footage like that across different stores?",
+        "source_trigger": "incident_recent_12mo",
+        "evidence": "Gainesville LPO incident: Walmart surveillance footage captured suspect entering at 7:26 p.m., identified by face and tattoos; LPO pepper-sprayed, required decontamination (newsfinale.com)",
+        "confidence": "medium"
+      },
+      {
+        "question": "When there's an ORC incident or LP investigation at a store, can your team pull footage remotely, or does someone need to be physically on-site to access the NVR?",
+        "source_trigger": "multi_site_sprawl",
+        "evidence": "Vertical match typical_pain_present: LP_team_cant_review_footage_remotely; 4,700+ stores means physical site visits for footage review are not scalable",
+        "confidence": "medium"
+      },
+      {
+        "question": "Across 4,700+ stores, are your cameras and video systems consistent, or did different stores or regions end up with different vendors and different interfaces over the years?",
+        "source_trigger": "multi_site_sprawl",
+        "evidence": "Vertical match typical_pain_present: inconsistent_systems_across_stores; 4,700+ U.S. stores (6scan.com breach assessment)",
+        "confidence": "medium"
+      },
+      {
+        "question": "The Pullman Chicago parking lot shooting raised legal questions about what security measures Walmart had in place. After incidents like that, what was the primary gap your team identified \u2014 detection speed, camera coverage in exterior areas, or footage retrieval for evidence?",
+        "source_trigger": "incident_recent_12mo",
+        "evidence": "Pullman Walmart parking lot shooting Jan 4, 2023 \u2014 2 injured, 1 critical; legal filing questioned adequacy of Walmart security measures; District 05 shooting incidents rose 31% YoY (mickelsendalton.com)",
+        "confidence": "medium"
+      }
+    ]
+  },
+  "meddic_qualification": {
+    "metrics": {
+      "value": "Walmart operates 4,700+ U.S. stores, each requiring camera, access control, and alarm infrastructure. Consolidating onto a single cloud-managed platform eliminates per-site NVR/DVR servers across thousands of locations. Additionally, Walmart disclosed $0.8B in higher self-insured general liability claims expense in 9 months (FY2026 10-Q) \u2014 improved incident documentation and deterrence from upgraded physical security directly addresses that margin drag. The new 12-building, 350-acre Bentonville Home Office campus represents a standalone deployment opportunity.",
+      "evidence": [
+        "6scan independent assessment references 4,700 U.S. stores in breach scenario modeling (6scan.com)",
+        "Walmart 10-Q (period ending 2025-10-31): ~$0.8B higher self-insured general liability claims expense, 22-26 bps margin drag (SEC filing)",
+        "New 350-acre Home Office campus in Bentonville, AR \u2014 12 buildings, opened January 2025 (corporate.walmart.com)"
+      ],
+      "confidence": "medium",
+      "gap": "Actual camera count per store, current NVR/DVR infrastructure vendor, and total physical security spend are unknown. Discovery must quantify current IT labor and maintenance costs for security infrastructure across the store fleet.",
+      "source_quality": "primary"
+    },
+    "economic_buyer": {
+      "value": "Likely VP/SVP of Assets Protection or CSO-equivalent role. Walmart's Assets Protection division manages one of the largest retail LP operations in the U.S. The economic buyer for a deployment of this scale could also be a VP of Corporate Security or VP of IT Infrastructure, depending on whether budget sits in LP, corporate security, or IT.",
+      "evidence": [
+        "leadership.json returned insufficient_data \u2014 no named individuals were captured",
+        "Walmart is a public corporation (NYSE: WMT) in Retail vertical \u2014 persona maps CSO as economic_buyer for this profile",
+        "Hiring signals confirm Walmart's Assets Protection division exists (security_team_absence note references it by name)"
+      ],
+      "confidence": "inference",
+      "gap": "No named economic buyer identified. Discovery must determine: (1) Does physical security budget sit under Assets Protection, Corporate Security, IT, or Facilities? (2) Who signs off on enterprise-wide security infrastructure decisions vs. store-level decisions? (3) Is there a centralized procurement function for physical security or is it regional?",
+      "source_quality": "weak"
+    },
+    "decision_criteria": {
+      "value": "Based on Walmart's Retail vertical match, decision criteria will center on: (1) shrink reduction and ORC countermeasures, (2) LP team ability to investigate remotely across 4,700+ stores without site visits, (3) scalability to thousands of locations without per-site server infrastructure, (4) self-insured liability claims reduction through better incident documentation and deterrence, (5) workforce safety for LP officers (documented pepper spray assault on LPO).",
+      "evidence": [
+        "Vertical match key_drivers_present: ORC, shrink, safe_transaction_zones (company-bg)",
+        "Typical pain present: high_camera_count_low_usability, LP_team_cant_review_footage_remotely, inconsistent_systems_across_stores (company-bg)",
+        "$0.8B self-insured liability claims increase disclosed in 10-Q (SEC filing)",
+        "Gainesville LPO pepper-sprayed during shoplifting response \u2014 workplace violence exposure for LP staff (newsfinale.com)"
+      ],
+      "confidence": "medium",
+      "gap": "Unknown whether Walmart evaluates on NDAA compliance (not a federal entity, but could be a procurement preference). Unknown whether there is a formal security infrastructure scoring rubric or if decisions are made by committee. Must confirm whether total cost of ownership or upfront capex is the primary budget lens.",
+      "source_quality": "secondary"
+    },
+    "decision_process": {
+      "value": "As a Fortune 1 public corporation, Walmart's procurement process for enterprise-wide physical security infrastructure will involve: (1) corporate procurement/sourcing team, (2) likely multi-stakeholder evaluation committee (Assets Protection, IT, Facilities, Finance), (3) pilot/POC at select stores before enterprise rollout, (4) board-level awareness for spend of this magnitude. Walmart Business is already an OMNIA Partners supplier (contract 15-02), indicating familiarity with cooperative purchasing vehicles. However, as a private-sector buyer, Walmart is more likely to run its own RFP than use a cooperative contract.",
+      "evidence": [
+        "Entity type: public_corporation, NYSE: WMT, large accelerated filer (company-bg)",
+        "Walmart Business holds OMNIA contract 15-02 for 'Retail and Wholesale Merchandise Solutions' \u2014 Walmart is familiar with OMNIA as a supplier (omnia.json)",
+        "New Home Office campus construction took 5+ years (2019-2025) \u2014 indicates long capital project cycles (corporate.walmart.com)"
+      ],
+      "confidence": "inference",
+      "gap": "Actual procurement process for physical security is unknown. Must discover: (1) Is there a centralized security procurement function or do regions/divisions buy independently? (2) What is the typical evaluation timeline? (3) Are there existing MSAs with security integrators like Convergint or Everon that would channel the deal?",
+      "source_quality": "secondary"
+    },
+    "identify_pain": {
+      "value": "Walmart's LP team uses in-store cameras for after-the-fact investigation (confirmed by Gainesville incident footage), but a parking lot shooting in Chicago raised public legal questions about whether camera coverage and response infrastructure were adequate to prevent violent incidents \u2014 a gap common in legacy deployments with high camera counts but low usability. Across 4,700+ stores, the LP team cannot efficiently review footage remotely, and systems are likely inconsistent store-to-store. Meanwhile, $0.8B in rising self-insured liability claims creates C-suite financial pressure to improve incident documentation and deterrence.",
+      "evidence": [
+        "Gainesville LPO incident: surveillance footage captured suspect at 7:26 p.m., used for post-incident ID by face and tattoos \u2014 confirms reactive, not proactive, camera use (newsfinale.com)",
+        "Pullman Chicago parking lot shooting Jan 4, 2023: legal filing questioned 'what security measures Walmart had in place' in a district with 31% YoY shooting increase (mickelsendalton.com)",
+        "Pain hypothesis: 'LP team relies on fixed in-store camera footage for after-the-fact investigation' with linked_persona_pain: high_camera_count_low_usability (tech-and-pain)",
+        "10-Q: $0.8B higher self-insured general liability claims expense, 9 months ended Oct 31, 2025 (SEC filing)"
+      ],
+      "confidence": "medium",
+      "gap": "No direct confirmation of current camera vendor, NVR age, or whether Walmart has already invested in cloud-managed or AI-enabled cameras. The $0.8B claims increase is aggregate \u2014 unknown what portion is attributable to in-store physical security incidents vs. slip-and-fall or other categories.",
+      "source_quality": "secondary"
+    },
+    "champion": {
+      "value": "No named champion identified. Leadership discovery returned insufficient_data. The ideal champion profile is a Director or VP of Assets Protection, Physical Security, or Security Technology \u2014 someone who owns day-to-day security operations, feels the pain of managing inconsistent systems across 4,700+ stores, and has budget influence but is not the final signoff. A secondary champion profile would be a Director of IT Infrastructure who is frustrated with maintaining NVR servers at store locations.",
+      "evidence": [
+        "leadership.json status: insufficient_data \u2014 zero named individuals captured",
+        "Hiring signals: zero security-specific roles in 50 captured postings (data artifact, not evidence of no hiring)",
+        "Persona role_priority maps IT_Director at 1.0 and Director_of_Facilities at 0.85 for champion fit"
+      ],
+      "confidence": "inference",
+      "gap": "Critical gap. Must identify named individuals in Assets Protection leadership, Corporate Security, and IT Infrastructure. LinkedIn research for 'Walmart VP Assets Protection,' 'Walmart Director Physical Security,' and 'Walmart Director Security Technology' is the immediate next step. This is the single most important discovery task before the first call.",
+      "source_quality": "weak"
+    },
+    "competition": {
+      "value": "No incumbent physical security vendor was identified in any data source. Zero displacement vendor fingerprints (Avigilon, Genetec, Milestone, Lenel, Hikvision, Dahua, March Networks, Brivo) were confirmed. SSL/subdomain data was not collected. However, HGACBuy contract SE05-26 lists Avigilon/Alta, Axis, Bosch, Genetec, Hanwha, Honeywell, Milestone, and Motorola as competitor manufacturers in the same video surveillance category where Verkada is listed \u2014 any of these could be the incumbent at Walmart stores.",
+      "evidence": [
+        "displacement_vendor_hits: empty array (tech-and-pain)",
+        "displacement_vendor_absence: 'ssl.json was not available for walmart \u2014 no subdomain data was collected' (tech-and-pain)",
+        "HGACBuy SE05-26 competitor manufacturers: Avigilon/Alta, Axis, Bosch/Keenfinity, Genetec, Hanwha, Honeywell, Milestone, Motorola (hgac.json)",
+        "No security vendor mentioned across 8 facility expansion articles covering Bentonville campus (tech-and-pain)"
+      ],
+      "confidence": "inference",
+      "gap": "Incumbent vendor identification is completely unresolved. At 4,700+ stores, Walmart may use multiple vendors regionally or have a national MSA with one integrator. Discovery must ask directly: Who provides your cameras today? Who manages your VMS? Is access control unified with video? Is there an existing integrator relationship (Convergint, Everon, Stanley/Securitas)?",
+      "source_quality": "weak"
+    }
+  },
+  "verkada_gtm_strategy": {
+    "land_play": {
+      "recommendation": "Lead with Cameras for LP use cases at a high-shrink store cluster or regional market, then expand to the new Bentonville Home Office campus as a parallel corporate-campus play. The LP pain is documented and quantifiable ($0.8B in rising liability claims). Cameras with edge analytics (people detection, vehicle detection, license plate recognition) directly address ORC and shrink \u2014 Walmart's top vertical drivers.",
+      "target_sites": "Option A: High-shrink store cluster in a single metro (e.g., Chicago, where parking lot shooting was documented). Option B: New 350-acre Bentonville Home Office campus \u2014 12 buildings, clean-sheet opportunity, no incumbent vendor publicly identified.",
+      "estimated_scope": "Store cluster: 5-10 stores, 50-100 cameras per store = 250-1,000 cameras. Bentonville campus: 12 buildings across 350 acres = likely 200-500 cameras + access control for all buildings."
+    },
+    "poc_strategy": {
+      "recommendation": "Propose a 30-day POC at 2-3 stores in a single metro market with the highest shrink or safety incident rates. Deploy Verkada cameras alongside existing infrastructure to demonstrate: (1) remote footage review by LP team without VPN or site visit, (2) AI-powered person/vehicle search reducing investigation time, (3) real-time alerts for door propping or after-hours motion in parking lots. Separately, pitch a campus POC for 1-2 buildings at the Bentonville Home Office.",
+      "verkada_relevant_triggers": [
+        "incident_recent_12mo",
+        "capital_project_signal",
+        "multi_site_sprawl",
+        "vendor_consolidation_signal"
+      ],
+      "demo_modules": [
+        "Cameras \u2014 forensic video search (person of interest, vehicle, license plate)",
+        "Cameras \u2014 real-time alerts for after-hours motion, door propping",
+        "Command \u2014 multi-site dashboard showing all POC stores in one view",
+        "Access Control \u2014 for Bentonville campus buildings, integrated with video"
+      ]
+    },
+    "channel_partner": {
+      "recommendation": "Engage a national security integrator with existing Walmart relationships. Convergint and Everon both hold OMNIA 'Facility Technology Integration & Security System Services' contracts (R220702, R220701) and are likely candidates for Walmart's existing integrator relationships. Pavion and APIC are Verkada's listed dealers on HGACBuy contract SE05-26. For the Southeast region (Andy's focus), leverage Verkada's local channel presence in Arkansas given Walmart's Bentonville HQ.",
+      "evidence": [
+        "Convergint holds OMNIA contract R220702 for Facility Technology Integration & Security System Services (omnia.json)",
+        "Everon holds OMNIA contract R220701 for Facility Technology Integration & Security System Services (omnia.json)",
+        "Verkada listed on HGACBuy SE05-26 through dealers Pavion and APIC at 5% discount (hgac.json)",
+        "Walmart HQ is in Bentonville, AR \u2014 within Andy's Southeast geographic focus (seller-profile.yml)"
+      ]
+    },
+    "bundle_recommendation": {
+      "primary_products": [
+        "Cameras"
+      ],
+      "secondary_products": [
+        "Access Control",
+        "Alarms",
+        "Sensors"
+      ],
+      "rationale": "Cameras are the entry point \u2014 Walmart's LP pain is camera-centric (footage review, investigation speed, remote access). Access Control is the natural expansion for the Bentonville corporate campus and store back-of-house areas. Alarms add intrusion detection for after-hours store protection. Environmental Sensors address cold chain monitoring in pharmacy and grocery sections, creating a differentiated value-add beyond traditional security."
+    },
+    "procurement_path": {
+      "recommended": "Direct enterprise procurement via Walmart's corporate sourcing team. Walmart is a private-sector buyer and will likely run its own evaluation process rather than use cooperative purchasing vehicles.",
+      "alternatives": [
+        "HGACBuy contract SE05-26 \u2014 Verkada listed through Pavion and APIC at 5% discount, though this is primarily a public-sector vehicle",
+        "OMNIA contract R250206 \u2014 Verkada holds 'Weapons and Threat Detection Equipment' contract, but this is a government-sector vehicle",
+        "Direct Verkada enterprise agreement with volume pricing for 4,700+ store deployment"
+      ],
+      "evidence": [
+        "Walmart is a public corporation (entity_type: public_corporation) \u2014 not a government entity, so cooperative purchasing vehicles are informational, not primary path (company-bg)",
+        "Verkada listed on HGACBuy SE05-26 with 5% discount through Pavion and APIC (hgac.json)",
+        "Verkada holds OMNIA R250206 contract (omnia.json)",
+        "Walmart Business is itself an OMNIA supplier (contract 15-02) \u2014 organization is familiar with cooperative procurement structures (omnia.json)"
+      ]
+    },
+    "expansion_motion": {
+      "phase_1": "POC at 2-3 stores in one metro + 1-2 buildings at Bentonville Home Office campus. Prove remote investigation speed, AI search, and multi-site Command dashboard value. 30-60 day timeline.",
+      "phase_2": "Expand to full metro market (20-50 stores) + full Bentonville campus (12 buildings). Add Access Control at campus. Prove scalability and standardization across sites. 6-12 month timeline.",
+      "phase_3": "National rollout across 4,700+ stores, phased by region or division. Add Alarms and Sensors for after-hours protection and environmental monitoring. 2-4 year timeline for full deployment.",
+      "land_to_expand_ratio": "POC of ~500 cameras could expand to 200,000+ cameras across the full store fleet \u2014 a 400:1 expansion ratio."
+    },
+    "competitive_displacement": {
+      "primary_target": "Unknown \u2014 no incumbent vendor identified. Most likely candidates based on Walmart's scale and the HGACBuy competitive landscape are Avigilon (Motorola), Axis, Genetec, Honeywell, or Milestone.",
+      "displacement_playbook": "Without knowing the incumbent, lead with Verkada's zero-appliance advantage: no NVR servers to maintain at each of 4,700+ stores. If the incumbent is Avigilon/Motorola, emphasize elimination of ACC server infrastructure and per-camera licensing \u2014 Verkada Command is included. If Genetec, highlight that Federation across 4,700 sites requires a server at each site, while Verkada Command federates natively. If Milestone, stress that Milestone sells software while the customer still buys servers, storage, and IT labor at every location.",
+      "proof_points": [
+        "Verkada zero-appliance architecture: no NVR/DVR, no on-prem servers \u2014 edge storage on cameras + cloud management",
+        "Verkada Command: single login for 4,700+ sites vs. per-site VMS servers",
+        "Automatic firmware updates pushed OTA \u2014 no truck rolls for patching across thousands of stores",
+        "AI analytics at the edge (people, vehicles, license plates) without GPU servers"
+      ]
+    }
+  },
+  "disqualifier_flags": [],
+  "open_questions": [
+    {
+      "question": "Who is Walmart's incumbent physical security vendor for its 4,700+ U.S. stores? Zero vendor-branded subdomains, no vendor names in 8 facility opening articles, and no security vendor mentioned in any of 50 captured job postings.",
+      "would_resolve": "Direct discovery question to VP of Assets Protection or Director of Physical Security: 'What VMS and camera platform does Walmart run today across stores?' Alternatively: check IPVM forum discussions, integrator partner announcements, or Arkansas state procurement records for Bentonville campus contracts.",
+      "priority": "high"
+    },
+    {
+      "question": "Is Walmart's physical security infrastructure centrally managed from a corporate SOC, or is it per-store/per-region with local NVR/DVR at each location? The answer determines whether this is a multi-site sprawl displacement or a centralized enterprise deal.",
+      "would_resolve": "Discovery question to IT leadership or VP of Assets Protection: 'If there's an incident at a store in Gainesville, FL tonight, can your team in Bentonville pull that footage without calling the store manager or VPN-ing into a local server?'",
+      "priority": "high"
+    },
+    {
+      "question": "Was physical security infrastructure for the 350-acre Bentonville Home Office (12 buildings, opened January 2025) awarded to an incumbent vendor, or is there still an open procurement? None of 8 facility articles mention a security vendor.",
+      "would_resolve": "Arkansas state procurement records search for Walmart Home Office security contracts. Direct outreach to Bentonville campus facilities team. Check Motorola/Avigilon/Genetec press releases for any Walmart campus reference.",
+      "priority": "high"
+    },
+    {
+      "question": "Who owns physical security at Walmart \u2014 is it the Assets Protection division, IT, or Facilities? Budget authority and champion identification depends on this org chart question.",
+      "would_resolve": "LinkedIn search for 'VP Assets Protection Walmart', 'Director Physical Security Walmart', 'CISO Walmart'. SEC proxy (DEF 14A) may list executive security officers. Walmart's corporate.walmart.com leadership page.",
+      "priority": "high"
+    },
+    {
+      "question": "Has the $0.8B in self-insured general liability claims (9 months ended October 2025) driven any internal conversation about physical security investment as a liability reduction lever?",
+      "would_resolve": "Discovery question to CSO or VP Risk Management: 'Has your risk team quantified how upgraded surveillance coverage and incident documentation could affect your self-insurance claims costs?' Source: Walmart 10-Q Q3 FY2026.",
+      "priority": "medium"
+    },
+    {
+      "question": "What is Walmart's hiring pattern for Assets Protection leadership roles? The 50-job SerpAPI sample captured zero security or LP roles \u2014 Walmart's LP hiring is invisible"
+    }
+  ],
+  "recommended_products": {
+    "primary_bundle": [
+      {
+        "product_id": "cf82-fisheye",
+        "name": "CF82 Fisheye Camera",
+        "category": "cameras",
+        "line": "F-Series",
+        "tagline": "Full-room coverage, one camera",
+        "description": "360-degree fisheye with dewarping and AI analytics",
+        "key_features": [
+          "12MP sensor, 360-degree field of view",
+          "Digital dewarping in Command",
+          "Onboard people counting",
+          "Indoor rated"
+        ],
+        "reasoning": "Walmart's Loss Prevention team relies on fixed in-store camera footage for after-the-fact investigation \u2014 as documented ",
+        "confidence": "high",
+        "matched_triggers": [
+          "high_camera_count_low_usability",
+          "no_centralized_security_operations"
+        ],
+        "estimated_scope": "Deployment across Large accelerated filer (NYSE: WMT); $18.6B capex (9M FY2026); 4,700+ U.S. stores referenced in cybersecurity risk modeling; Delaware incorporation",
+        "image_url": "",
+        "local_image": "static/product-images/fisheye-camera.png",
+        "datasheet_url": "https://www.verkada.com/security-cameras/fisheye/",
+        "compliance": {
+          "ndaa": true,
+          "fips": false,
+          "fedramp_in_process": false
+        },
+        "typical_deployment": [
+          "Retail floor coverage",
+          "Open-plan offices",
+          "Lobbies and atriums"
+        ]
+      },
+      {
+        "product_id": "br22-panic-button",
+        "name": "BR22 Wireless Panic Button",
+        "category": "alarms",
+        "line": "BR-Series",
+        "tagline": "One-press emergency notification",
+        "description": "Wireless panic button for emergency notification",
+        "key_features": [
+          "One-press emergency alert",
+          "Wireless \u2014 place anywhere",
+          "Integrates with Command alerts",
+          "Triggers video recording and lockdown workflows"
+        ],
+        "reasoning": "Walmart's new 350-acre, 12-building Bentonville Home Office campus (opened January 2025, ground-up construction) represe",
+        "confidence": "high",
+        "matched_triggers": [
+          "no_centralized_security_operations"
+        ],
+        "estimated_scope": "Deployment across Large accelerated filer (NYSE: WMT); $18.6B capex (9M FY2026); 4,700+ U.S. stores referenced in cybersecurity risk modeling; Delaware incorporation",
+        "image_url": "",
+        "local_image": "static/product-images/alarm-keypad.png",
+        "datasheet_url": "https://www.verkada.com/alarms/",
+        "compliance": {
+          "ndaa": true,
+          "fips": false,
+          "fedramp_in_process": false
+        },
+        "typical_deployment": [
+          "Teacher desks and front offices",
+          "Hospital nursing stations",
+          "Retail checkout counters",
+          "Reception desks"
+        ]
+      },
+      {
+        "product_id": "verkada-command",
+        "name": "Verkada Command",
+        "category": "software",
+        "line": "Platform",
+        "tagline": "One platform for all physical security",
+        "description": "Central cloud management platform \u2014 included with all Verkada hardware",
+        "key_features": [
+          "Unified dashboard for cameras, access, alarms, sensors",
+          "Browser and mobile app access",
+          "Role-based access control",
+          "REST API for integrations"
+        ],
+        "reasoning": "Walmart's Loss Prevention team relies on fixed in-store camera footage for after-the-fact investigation \u2014 as documented ",
+        "confidence": "medium",
+        "matched_triggers": [
+          "high_camera_count_low_usability",
+          "no_centralized_security_operations"
+        ],
+        "estimated_scope": "Deployment across Large accelerated filer (NYSE: WMT); $18.6B capex (9M FY2026); 4,700+ U.S. stores referenced in cybersecurity risk modeling; Delaware incorporation",
+        "image_url": "",
+        "local_image": "static/product-images/command-platform.png",
+        "datasheet_url": "https://www.verkada.com/command/",
+        "compliance": {
+          "ndaa": true,
+          "fips": true,
+          "fedramp_in_process": true
+        },
+        "typical_deployment": [
+          "Included with every Verkada deployment"
+        ]
+      }
+    ],
+    "secondary_bundle": [
+      {
+        "product_id": "cm61-mini",
+        "name": "CM61 Mini Camera",
+        "category": "cameras",
+        "line": "M-Series",
+        "tagline": "Discreet indoor monitoring",
+        "description": "Compact indoor camera for discreet monitoring",
+        "key_features": [
+          "5MP resolution",
+          "Compact form factor",
+          "Onboard AI analytics",
+          "Built-in microphone"
+        ],
+        "reasoning": "Walmart's Loss Prevention team relies on fixed in-store camera footage for after-the-fact investigation \u2014 as documented ",
+        "confidence": "high",
+        "matched_triggers": [
+          "high_camera_count_low_usability",
+          "no_centralized_security_operations"
+        ],
+        "estimated_scope": "Deployment across Large accelerated filer (NYSE: WMT); $18.6B capex (9M FY2026); 4,700+ U.S. stores referenced in cybersecurity risk modeling; Delaware incorporation",
+        "image_url": "",
+        "local_image": "static/product-images/mini-camera.png",
+        "datasheet_url": "https://www.verkada.com/security-cameras/mini/",
+        "compliance": {
+          "ndaa": true,
+          "fips": false,
+          "fedramp_in_process": false
+        },
+        "typical_deployment": [
+          "Retail point-of-sale areas",
+          "Office spaces",
+          "Server rooms"
+        ]
+      },
+      {
+        "product_id": "bm21-motion-sensor",
+        "name": "BM21 Motion Sensor",
+        "category": "alarms",
+        "line": "BR-Series",
+        "tagline": "Wireless motion detection",
+        "description": "Wireless PIR motion sensor for intrusion detection zones",
+        "key_features": [
+          "Passive infrared (PIR) detection",
+          "Wireless \u2014 battery powered",
+          "Pairs with BR33 alarm panel",
+          "Adjustable sensitivity"
+        ],
+        "reasoning": "Walmart's new 350-acre, 12-building Bentonville Home Office campus (opened January 2025, ground-up construction) represe",
+        "confidence": "high",
+        "matched_triggers": [
+          "no_centralized_security_operations"
+        ],
+        "estimated_scope": "Deployment across Large accelerated filer (NYSE: WMT); $18.6B capex (9M FY2026); 4,700+ U.S. stores referenced in cybersecurity risk modeling; Delaware incorporation",
+        "image_url": "",
+        "local_image": "static/product-images/alarm-sensor.png",
+        "datasheet_url": "https://www.verkada.com/alarms/",
+        "compliance": {
+          "ndaa": true,
+          "fips": false,
+          "fedramp_in_process": false
+        },
+        "typical_deployment": [
+          "Interior hallways after-hours",
+          "Storage rooms",
+          "Server rooms"
+        ]
+      },
+      {
+        "product_id": "cd42-dome",
+        "name": "CD42 Dome Camera",
+        "category": "cameras",
+        "line": "D-Series",
+        "tagline": "Smart indoor surveillance, simplified",
+        "description": "Indoor dome with AI analytics for hallways, lobbies, and offices",
+        "key_features": [
+          "5MP resolution, 30 fps",
+          "Onboard people/vehicle detection",
+          "Up to 365 days cloud-backed storage",
+          "NDAA Section 889 compliant"
+        ],
+        "reasoning": "Walmart's Loss Prevention team relies on fixed in-store camera footage for after-the-fact investigation \u2014 as documented ",
+        "confidence": "high",
+        "matched_triggers": [
+          "high_camera_count_low_usability",
+          "no_centralized_security_operations"
+        ],
+        "estimated_scope": "Deployment across Large accelerated filer (NYSE: WMT); $18.6B capex (9M FY2026); 4,700+ U.S. stores referenced in cybersecurity risk modeling; Delaware incorporation",
+        "image_url": "",
+        "local_image": "static/product-images/dome-camera.png",
+        "datasheet_url": "https://www.verkada.com/security-cameras/dome/cd42/",
+        "compliance": {
+          "ndaa": true,
+          "fips": false,
+          "fedramp_in_process": false
+        },
+        "typical_deployment": [
+          "Hallways and corridors",
+          "Lobbies and reception areas",
+          "Classrooms and common areas"
+        ]
+      }
+    ],
+    "vertical_fit_notes": "Retail deployments typically include: alarms (BR-Series), cameras (D-Series)"
+  }
+}

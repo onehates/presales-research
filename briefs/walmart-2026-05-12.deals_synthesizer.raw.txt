@@ -1,0 +1,289 @@
+{
+  "meddic_qualification": {
+    "metrics": {
+      "value": "Walmart operates 4,700+ U.S. stores, each requiring camera, access control, and alarm infrastructure. Consolidating onto a single cloud-managed platform eliminates per-site NVR/DVR servers across thousands of locations. Additionally, Walmart disclosed $0.8B in higher self-insured general liability claims expense in 9 months (FY2026 10-Q) — improved incident documentation and deterrence from upgraded physical security directly addresses that margin drag. The new 12-building, 350-acre Bentonville Home Office campus represents a standalone deployment opportunity.",
+      "evidence": [
+        "6scan independent assessment references 4,700 U.S. stores in breach scenario modeling (6scan.com)",
+        "Walmart 10-Q (period ending 2025-10-31): ~$0.8B higher self-insured general liability claims expense, 22-26 bps margin drag (SEC filing)",
+        "New 350-acre Home Office campus in Bentonville, AR — 12 buildings, opened January 2025 (corporate.walmart.com)"
+      ],
+      "confidence": "medium",
+      "gap": "Actual camera count per store, current NVR/DVR infrastructure vendor, and total physical security spend are unknown. Discovery must quantify current IT labor and maintenance costs for security infrastructure across the store fleet.",
+      "source_quality": "primary"
+    },
+    "economic_buyer": {
+      "value": "Likely VP/SVP of Assets Protection or CSO-equivalent role. Walmart's Assets Protection division manages one of the largest retail LP operations in the U.S. The economic buyer for a deployment of this scale could also be a VP of Corporate Security or VP of IT Infrastructure, depending on whether budget sits in LP, corporate security, or IT.",
+      "evidence": [
+        "leadership.json returned insufficient_data — no named individuals were captured",
+        "Walmart is a public corporation (NYSE: WMT) in Retail vertical — persona maps CSO as economic_buyer for this profile",
+        "Hiring signals confirm Walmart's Assets Protection division exists (security_team_absence note references it by name)"
+      ],
+      "confidence": "inference",
+      "gap": "No named economic buyer identified. Discovery must determine: (1) Does physical security budget sit under Assets Protection, Corporate Security, IT, or Facilities? (2) Who signs off on enterprise-wide security infrastructure decisions vs. store-level decisions? (3) Is there a centralized procurement function for physical security or is it regional?",
+      "source_quality": "weak"
+    },
+    "decision_criteria": {
+      "value": "Based on Walmart's Retail vertical match, decision criteria will center on: (1) shrink reduction and ORC countermeasures, (2) LP team ability to investigate remotely across 4,700+ stores without site visits, (3) scalability to thousands of locations without per-site server infrastructure, (4) self-insured liability claims reduction through better incident documentation and deterrence, (5) workforce safety for LP officers (documented pepper spray assault on LPO).",
+      "evidence": [
+        "Vertical match key_drivers_present: ORC, shrink, safe_transaction_zones (company-bg)",
+        "Typical pain present: high_camera_count_low_usability, LP_team_cant_review_footage_remotely, inconsistent_systems_across_stores (company-bg)",
+        "$0.8B self-insured liability claims increase disclosed in 10-Q (SEC filing)",
+        "Gainesville LPO pepper-sprayed during shoplifting response — workplace violence exposure for LP staff (newsfinale.com)"
+      ],
+      "confidence": "medium",
+      "gap": "Unknown whether Walmart evaluates on NDAA compliance (not a federal entity, but could be a procurement preference). Unknown whether there is a formal security infrastructure scoring rubric or if decisions are made by committee. Must confirm whether total cost of ownership or upfront capex is the primary budget lens.",
+      "source_quality": "secondary"
+    },
+    "decision_process": {
+      "value": "As a Fortune 1 public corporation, Walmart's procurement process for enterprise-wide physical security infrastructure will involve: (1) corporate procurement/sourcing team, (2) likely multi-stakeholder evaluation committee (Assets Protection, IT, Facilities, Finance), (3) pilot/POC at select stores before enterprise rollout, (4) board-level awareness for spend of this magnitude. Walmart Business is already an OMNIA Partners supplier (contract 15-02), indicating familiarity with cooperative purchasing vehicles. However, as a private-sector buyer, Walmart is more likely to run its own RFP than use a cooperative contract.",
+      "evidence": [
+        "Entity type: public_corporation, NYSE: WMT, large accelerated filer (company-bg)",
+        "Walmart Business holds OMNIA contract 15-02 for 'Retail and Wholesale Merchandise Solutions' — Walmart is familiar with OMNIA as a supplier (omnia.json)",
+        "New Home Office campus construction took 5+ years (2019-2025) — indicates long capital project cycles (corporate.walmart.com)"
+      ],
+      "confidence": "inference",
+      "gap": "Actual procurement process for physical security is unknown. Must discover: (1) Is there a centralized security procurement function or do regions/divisions buy independently? (2) What is the typical evaluation timeline? (3) Are there existing MSAs with security integrators like Convergint or Everon that would channel the deal?",
+      "source_quality": "secondary"
+    },
+    "identify_pain": {
+      "value": "Walmart's LP team uses in-store cameras for after-the-fact investigation (confirmed by Gainesville incident footage), but a parking lot shooting in Chicago raised public legal questions about whether camera coverage and response infrastructure were adequate to prevent violent incidents — a gap common in legacy deployments with high camera counts but low usability. Across 4,700+ stores, the LP team cannot efficiently review footage remotely, and systems are likely inconsistent store-to-store. Meanwhile, $0.8B in rising self-insured liability claims creates C-suite financial pressure to improve incident documentation and deterrence.",
+      "evidence": [
+        "Gainesville LPO incident: surveillance footage captured suspect at 7:26 p.m., used for post-incident ID by face and tattoos — confirms reactive, not proactive, camera use (newsfinale.com)",
+        "Pullman Chicago parking lot shooting Jan 4, 2023: legal filing questioned 'what security measures Walmart had in place' in a district with 31% YoY shooting increase (mickelsendalton.com)",
+        "Pain hypothesis: 'LP team relies on fixed in-store camera footage for after-the-fact investigation' with linked_persona_pain: high_camera_count_low_usability (tech-and-pain)",
+        "10-Q: $0.8B higher self-insured general liability claims expense, 9 months ended Oct 31, 2025 (SEC filing)"
+      ],
+      "confidence": "medium",
+      "gap": "No direct confirmation of current camera vendor, NVR age, or whether Walmart has already invested in cloud-managed or AI-enabled cameras. The $0.8B claims increase is aggregate — unknown what portion is attributable to in-store physical security incidents vs. slip-and-fall or other categories.",
+      "source_quality": "secondary"
+    },
+    "champion": {
+      "value": "No named champion identified. Leadership discovery returned insufficient_data. The ideal champion profile is a Director or VP of Assets Protection, Physical Security, or Security Technology — someone who owns day-to-day security operations, feels the pain of managing inconsistent systems across 4,700+ stores, and has budget influence but is not the final signoff. A secondary champion profile would be a Director of IT Infrastructure who is frustrated with maintaining NVR servers at store locations.",
+      "evidence": [
+        "leadership.json status: insufficient_data — zero named individuals captured",
+        "Hiring signals: zero security-specific roles in 50 captured postings (data artifact, not evidence of no hiring)",
+        "Persona role_priority maps IT_Director at 1.0 and Director_of_Facilities at 0.85 for champion fit"
+      ],
+      "confidence": "inference",
+      "gap": "Critical gap. Must identify named individuals in Assets Protection leadership, Corporate Security, and IT Infrastructure. LinkedIn research for 'Walmart VP Assets Protection,' 'Walmart Director Physical Security,' and 'Walmart Director Security Technology' is the immediate next step. This is the single most important discovery task before the first call.",
+      "source_quality": "weak"
+    },
+    "competition": {
+      "value": "No incumbent physical security vendor was identified in any data source. Zero displacement vendor fingerprints (Avigilon, Genetec, Milestone, Lenel, Hikvision, Dahua, March Networks, Brivo) were confirmed. SSL/subdomain data was not collected. However, HGACBuy contract SE05-26 lists Avigilon/Alta, Axis, Bosch, Genetec, Hanwha, Honeywell, Milestone, and Motorola as competitor manufacturers in the same video surveillance category where Verkada is listed — any of these could be the incumbent at Walmart stores.",
+      "evidence": [
+        "displacement_vendor_hits: empty array (tech-and-pain)",
+        "displacement_vendor_absence: 'ssl.json was not available for walmart — no subdomain data was collected' (tech-and-pain)",
+        "HGACBuy SE05-26 competitor manufacturers: Avigilon/Alta, Axis, Bosch/Keenfinity, Genetec, Hanwha, Honeywell, Milestone, Motorola (hgac.json)",
+        "No security vendor mentioned across 8 facility expansion articles covering Bentonville campus (tech-and-pain)"
+      ],
+      "confidence": "inference",
+      "gap": "Incumbent vendor identification is completely unresolved. At 4,700+ stores, Walmart may use multiple vendors regionally or have a national MSA with one integrator. Discovery must ask directly: Who provides your cameras today? Who manages your VMS? Is access control unified with video? Is there an existing integrator relationship (Convergint, Everon, Stanley/Securitas)?",
+      "source_quality": "weak"
+    }
+  },
+  "verkada_gtm_strategy": {
+    "land_play": {
+      "recommendation": "Lead with Cameras for LP use cases at a high-shrink store cluster or regional market, then expand to the new Bentonville Home Office campus as a parallel corporate-campus play. The LP pain is documented and quantifiable ($0.8B in rising liability claims). Cameras with edge analytics (people detection, vehicle detection, license plate recognition) directly address ORC and shrink — Walmart's top vertical drivers.",
+      "target_sites": "Option A: High-shrink store cluster in a single metro (e.g., Chicago, where parking lot shooting was documented). Option B: New 350-acre Bentonville Home Office campus — 12 buildings, clean-sheet opportunity, no incumbent vendor publicly identified.",
+      "estimated_scope": "Store cluster: 5-10 stores, 50-100 cameras per store = 250-1,000 cameras. Bentonville campus: 12 buildings across 350 acres = likely 200-500 cameras + access control for all buildings."
+    },
+    "poc_strategy": {
+      "recommendation": "Propose a 30-day POC at 2-3 stores in a single metro market with the highest shrink or safety incident rates. Deploy Verkada cameras alongside existing infrastructure to demonstrate: (1) remote footage review by LP team without VPN or site visit, (2) AI-powered person/vehicle search reducing investigation time, (3) real-time alerts for door propping or after-hours motion in parking lots. Separately, pitch a campus POC for 1-2 buildings at the Bentonville Home Office.",
+      "verkada_relevant_triggers": [
+        "incident_recent_12mo",
+        "capital_project_signal",
+        "multi_site_sprawl",
+        "vendor_consolidation_signal"
+      ],
+      "demo_modules": [
+        "Cameras — forensic video search (person of interest, vehicle, license plate)",
+        "Cameras — real-time alerts for after-hours motion, door propping",
+        "Command — multi-site dashboard showing all POC stores in one view",
+        "Access Control — for Bentonville campus buildings, integrated with video"
+      ]
+    },
+    "channel_partner": {
+      "recommendation": "Engage a national security integrator with existing Walmart relationships. Convergint and Everon both hold OMNIA 'Facility Technology Integration & Security System Services' contracts (R220702, R220701) and are likely candidates for Walmart's existing integrator relationships. Pavion and APIC are Verkada's listed dealers on HGACBuy contract SE05-26. For the Southeast region (Andy's focus), leverage Verkada's local channel presence in Arkansas given Walmart's Bentonville HQ.",
+      "evidence": [
+        "Convergint holds OMNIA contract R220702 for Facility Technology Integration & Security System Services (omnia.json)",
+        "Everon holds OMNIA contract R220701 for Facility Technology Integration & Security System Services (omnia.json)",
+        "Verkada listed on HGACBuy SE05-26 through dealers Pavion and APIC at 5% discount (hgac.json)",
+        "Walmart HQ is in Bentonville, AR — within Andy's Southeast geographic focus (seller-profile.yml)"
+      ]
+    },
+    "bundle_recommendation": {
+      "primary_products": [
+        "Cameras"
+      ],
+      "secondary_products": [
+        "Access Control",
+        "Alarms",
+        "Sensors"
+      ],
+      "rationale": "Cameras are the entry point — Walmart's LP pain is camera-centric (footage review, investigation speed, remote access). Access Control is the natural expansion for the Bentonville corporate campus and store back-of-house areas. Alarms add intrusion detection for after-hours store protection. Environmental Sensors address cold chain monitoring in pharmacy and grocery sections, creating a differentiated value-add beyond traditional security."
+    },
+    "procurement_path": {
+      "recommended": "Direct enterprise procurement via Walmart's corporate sourcing team. Walmart is a private-sector buyer and will likely run its own evaluation process rather than use cooperative purchasing vehicles.",
+      "alternatives": [
+        "HGACBuy contract SE05-26 — Verkada listed through Pavion and APIC at 5% discount, though this is primarily a public-sector vehicle",
+        "OMNIA contract R250206 — Verkada holds 'Weapons and Threat Detection Equipment' contract, but this is a government-sector vehicle",
+        "Direct Verkada enterprise agreement with volume pricing for 4,700+ store deployment"
+      ],
+      "evidence": [
+        "Walmart is a public corporation (entity_type: public_corporation) — not a government entity, so cooperative purchasing vehicles are informational, not primary path (company-bg)",
+        "Verkada listed on HGACBuy SE05-26 with 5% discount through Pavion and APIC (hgac.json)",
+        "Verkada holds OMNIA R250206 contract (omnia.json)",
+        "Walmart Business is itself an OMNIA supplier (contract 15-02) — organization is familiar with cooperative procurement structures (omnia.json)"
+      ]
+    },
+    "expansion_motion": {
+      "phase_1": "POC at 2-3 stores in one metro + 1-2 buildings at Bentonville Home Office campus. Prove remote investigation speed, AI search, and multi-site Command dashboard value. 30-60 day timeline.",
+      "phase_2": "Expand to full metro market (20-50 stores) + full Bentonville campus (12 buildings). Add Access Control at campus. Prove scalability and standardization across sites. 6-12 month timeline.",
+      "phase_3": "National rollout across 4,700+ stores, phased by region or division. Add Alarms and Sensors for after-hours protection and environmental monitoring. 2-4 year timeline for full deployment.",
+      "land_to_expand_ratio": "POC of ~500 cameras could expand to 200,000+ cameras across the full store fleet — a 400:1 expansion ratio."
+    },
+    "competitive_displacement": {
+      "primary_target": "Unknown — no incumbent vendor identified. Most likely candidates based on Walmart's scale and the HGACBuy competitive landscape are Avigilon (Motorola), Axis, Genetec, Honeywell, or Milestone.",
+      "displacement_playbook": "Without knowing the incumbent, lead with Verkada's zero-appliance advantage: no NVR servers to maintain at each of 4,700+ stores. If the incumbent is Avigilon/Motorola, emphasize elimination of ACC server infrastructure and per-camera licensing — Verkada Command is included. If Genetec, highlight that Federation across 4,700 sites requires a server at each site, while Verkada Command federates natively. If Milestone, stress that Milestone sells software while the customer still buys servers, storage, and IT labor at every location.",
+      "proof_points": [
+        "Verkada zero-appliance architecture: no NVR/DVR, no on-prem servers — edge storage on cameras + cloud management",
+        "Verkada Command: single login for 4,700+ sites vs. per-site VMS servers",
+        "Automatic firmware updates pushed OTA — no truck rolls for patching across thousands of stores",
+        "AI analytics at the edge (people, vehicles, license plates) without GPU servers"
+      ]
+    }
+  },
+  "discovery_questions_by_persona": {
+    "IT_Director": [
+      {
+        "question": "Walmart operates 4,700+ U.S. stores. Are those running the same security platform, or did each store or region choose its own over the years?",
+        "source_trigger": "multi_site_sprawl",
+        "evidence": "6scan independent assessment references 4,700 U.S. stores in breach scenario modeling; vertical match confirms inconsistent_systems_across_stores as typical pain",
+        "confidence": "medium"
+      },
+      {
+        "question": "When there's an incident at a remote store, can the LP or security team pull footage without calling someone on-site or VPN-ing into a local NVR?",
+        "source_trigger": "multi_site_sprawl",
+        "evidence": "Vertical match typical_pain_present: LP_team_cant_review_footage_remotely; Gainesville incident confirmed surveillance footage used for post-incident ID, indicating local camera review workflow",
+        "confidence": "medium"
+      },
+      {
+        "question": "I see Walmart is investing in office consolidation — the new Bentonville campus, closing satellite offices, relocating staff. Has physical security been included in that consolidation conversation, or is it still the last on-prem holdout?",
+        "source_trigger": "vendor_consolidation_signal",
+        "evidence": "Walmart cut hundreds of jobs and consolidated offices nationwide to Bentonville and Hoboken; new 350-acre campus opened January 2025 (Yahoo Finance, corporate.walmart.com)",
+        "confidence": "medium"
+      },
+      {
+        "question": "When you add up NVR licensing, maintenance contracts, and IT time across however many security vendors Walmart manages today, has anyone calculated the total cost of ownership?",
+        "source_trigger": "vendor_consolidation_signal",
+        "evidence": "Office consolidation pattern + 4,700+ stores signals vendor rationalization opportunity; no incumbent vendor identified — TCO comparison is unknown internally",
+        "confidence": "inference"
+      }
+    ],
+    "Director_of_Facilities": [
+      {
+        "question": "When does the Bentonville Home Office campus security buildout finalize? Are security infrastructure decisions for that site already locked in, or still in design?",
+        "source_trigger": "capital_project_signal",
+        "evidence": "Walmart completed 12-building, 350-acre New Home Office campus in Bentonville, AR — opened January 2025; no security vendor mentioned across 8 facility articles (corporate.walmart.com, Forbes, Construction Dive)",
+        "confidence": "high"
+      },
+      {
+        "question": "The new Bentonville campus is a clean-sheet opportunity — is the security spec being written by facilities, IT, or an integrator?",
+        "source_trigger": "capital_project_signal",
+        "evidence": "Ground-up construction began 2019; 12 uniquely designed office buildings with outdoor patios, fitness facilities, childcare; no security vendor publicly identified (corporate.walmart.com)",
+        "confidence": "high"
+      },
+      {
+        "question": "Are you standardizing the Bentonville campus on the same security platform as the stores, or evaluating fresh for corporate?",
+        "source_trigger": "capital_project_signal",
+        "evidence": "New campus vs. 4,700+ existing stores creates platform standardization question; no evidence of common security platform across both (company-bg, tech-and-pain)",
+        "confidence": "inference"
+      },
+      {
+        "question": "Walmart operates 4,700+ stores. Are those running the same security platform, or did each site choose its own over the years?",
+        "source_trigger": "multi_site_sprawl",
+        "evidence": "4,700+ U.S. stores referenced in cybersecurity risk modeling; inconsistent_systems_across_stores flagged as typical pain for Retail vertical",
+        "confidence": "medium"
+      }
+    ],
+    "CSO": [
+      {
+        "question": "I saw the parking lot shooting coverage from the Pullman Chicago Walmart in January 2023. How has that shifted security investment posture for parking lot and exterior coverage?",
+        "source_trigger": "incident_recent_12mo",
+        "evidence": "Pullman Walmart parking lot shooting Jan 4, 2023 — 2 injured, 1 critical; legal filing questioned adequacy of Walmart security measures; District 05 shooting incidents rose 31% YoY (mickelsendalton.com)",
+        "confidence": "medium"
+      },
+      {
+        "question": "After the Gainesville LP officer assault, did leadership set a timeline for LP safety remediation — better real-time alerting, body-worn cameras, panic buttons — or is it still in planning?",
+        "source_trigger": "incident_recent_12mo",
+        "evidence": "Gainesville LPO pepper-sprayed by shoplifter Nov 20; surveillance footage used post-incident for suspect ID; LPO required decontamination — workplace violence exposure documented (newsfinale.com)",
+        "confidence": "medium"
+      },
+      {
+        "question": "Walmart's 10-Q disclosed roughly $800 million in higher self-insured general liability claims expense over nine months. Has your risk management team quantified how upgraded physical security infrastructure — better incident documentation, faster evidence retrieval, real-time deterrence — could impact those claims costs?",
+        "source_trigger": "insurance_or_risk_pressure",
+        "evidence": "Walmart 10-Q (period ending 2025-10-31): ~$0.8B higher self-insured general liability claims expense, driven by rising costs to resolve claims across retail footprint (SEC filing, primary source)",
+        "confidence": "high"
+      },
+      {
+        "question": "Walmart's 10-K explicitly names active shooter situations in stores as an operational risk. What's the gap between what leadership wants to prevent and what the current security infrastructure can detect in real time?",
+        "source_trigger": "incident_recent_12mo",
+        "evidence": "FY2026 10-K lists active shooter situations in stores as named operational risk under 'Natural disasters, climate change, geopolitical events' (SEC filing)",
+        "confidence": "high"
+      }
+    ],
+    "Superintendent_K12": [],
+    "VP_of_Operations": [
+      {
+        "question": "Walmart operates 4,700+ U.S. stores. Are those running the same security platform, or did each store or region end up on different systems over the years?",
+        "source_trigger": "multi_site_sprawl",
+        "evidence": "4,700+ U.S. stores; inconsistent_systems_across_stores flagged as typical Retail vertical pain (company-bg)",
+        "confidence": "medium"
+      },
+      {
+        "question": "Standardizing 4,700+ locations on one platform is a massive project. What would need to be true for that to land on next year's budget?",
+        "source_trigger": "multi_site_sprawl",
+        "evidence": "Multi-site sprawl trigger fired with 4,700+ stores; $18.6B capex (9M FY2026) suggests budget capacity exists for infrastructure investments of this scale (SEC filing)",
+        "confidence": "medium"
+      },
+      {
+        "question": "If Walmart could manage video, access control, and environmental sensors from one login across all 4,700+ stores, what would that free up for your operations team?",
+        "source_trigger": "vendor_consolidation_signal",
+        "evidence": "Office consolidation nationwide (Yahoo Finance); no evidence of unified security platform across stores; Verkada single-platform positioning directly addresses this",
+        "confidence": "medium"
+      },
+      {
+        "question": "The office consolidation — closing satellite offices, moving everyone to Bentonville and Hoboken — typically forces security infrastructure decisions at both the vacated and receiving sites. Where is Walmart in that process?",
+        "source_trigger": "vendor_consolidation_signal",
+        "evidence": "Walmart cut hundreds of corporate jobs, consolidated to Bentonville and Hoboken, Hoboken shedding ~100 roles by May 1 (Yahoo Finance, People Matters Global)",
+        "confidence": "medium"
+      }
+    ],
+    "Loss_Prevention_Director": [
+      {
+        "question": "I saw the Gainesville incident where an LPO was pepper-sprayed during a shoplifting response — and the surveillance footage was key to identifying the suspect afterward. How long does it typically take your LP team to pull and review footage like that across different stores?",
+        "source_trigger": "incident_recent_12mo",
+        "evidence": "Gainesville LPO incident: Walmart surveillance footage captured suspect entering at 7:26 p.m., identified by face and tattoos; LPO pepper-sprayed, required decontamination (newsfinale.com)",
+        "confidence": "medium"
+      },
+      {
+        "question": "When there's an ORC incident or LP investigation at a store, can your team pull footage remotely, or does someone need to be physically on-site to access the NVR?",
+        "source_trigger": "multi_site_sprawl",
+        "evidence": "Vertical match typical_pain_present: LP_team_cant_review_footage_remotely; 4,700+ stores means physical site visits for footage review are not scalable",
+        "confidence": "medium"
+      },
+      {
+        "question": "Across 4,700+ stores, are your cameras and video systems consistent, or did different stores or regions end up with different vendors and different interfaces over the years?",
+        "source_trigger": "multi_site_sprawl",
+        "evidence": "Vertical match typical_pain_present: inconsistent_systems_across_stores; 4,700+ U.S. stores (6scan.com breach assessment)",
+        "confidence": "medium"
+      },
+      {
+        "question": "The Pullman Chicago parking lot shooting raised legal questions about what security measures Walmart had in place. After incidents like that, what was the primary gap your team identified — detection speed, camera coverage in exterior areas, or footage retrieval for evidence?",
+        "source_trigger": "incident_recent_12mo",
+        "evidence": "Pullman Walmart parking lot shooting Jan 4, 2023 — 2 injured, 1 critical; legal filing questioned adequacy of Walmart security measures; District 05 shooting incidents rose 31% YoY (mickelsendalton.com)",
+        "confidence": "medium"
+      }
+    ]
+  }
+}

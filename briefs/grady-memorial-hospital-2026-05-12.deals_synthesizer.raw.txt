@@ -1,0 +1,362 @@
+{
+  "meddic_qualification": {
+    "metrics": {
+      "value": "Grady Health System operates a large urban safety-net hospital (1,000+ beds, Level 1 trauma center) and is building a $1B phased South Fulton campus with three distinct facilities (freestanding ED June 2026, medical office building 2028, 200-bed hospital 2031). Verkada can quantify value around: (1) eliminating NVR/server infrastructure across both the existing Atlanta campus and the new South Fulton campus, (2) unifying access control and video across what will be at least two major campuses plus satellite clinics, (3) reducing incident response time in a high-violence-exposure environment — Grady was named in a 2018 AHA case study on workplace violence and experienced multiple violent incidents in April 2026, and (4) producing HIPAA-compliant audit trails for physical access controls following a documented patient data breach (~900 individuals) and ransomware attack.",
+      "evidence": [
+        "company-bg: $1B South Fulton campus announced March 2026 with three phases across five years",
+        "company-bg: AHA case study (2018) named Grady as featured example of workplace violence management",
+        "tech-and-pain: Two violent incidents in April 2026 — staff homicide and mass shooting with four victims on/near campus",
+        "tech-and-pain: Patient data breach ~900 individuals (Becker's Hospital Review) plus ransomware attack affecting payroll (Decaturish)",
+        "company-bg: Size indicator — one of the largest urban safety-net providers in the US per AHA"
+      ],
+      "confidence": "medium",
+      "gap": "No data on current camera count, NVR infrastructure age, or security operations staffing levels at the existing Atlanta campus.",
+      "gap_questions": [
+        {
+          "text": "How many cameras does Grady currently manage across the main Atlanta campus, and what's the age of the NVR/DVR infrastructure behind them?",
+          "rationale": "Quantifies the existing footprint to size the replacement opportunity and calculate TCO savings from eliminating on-prem servers.",
+          "persona": "champion",
+          "priority": "high"
+        },
+        {
+          "text": "When the South Fulton freestanding ED opens in June 2026, what's the projected camera and door count for that facility?",
+          "rationale": "Sizes the immediate greenfield opportunity and determines whether the ED security spec is still open.",
+          "persona": "champion",
+          "priority": "high"
+        },
+        {
+          "text": "After the April incidents, did leadership put a dollar figure on what improved detection or faster response time would have been worth?",
+          "rationale": "Ties the pain to a quantifiable business metric that justifies investment to the board.",
+          "persona": "economic_buyer",
+          "priority": "medium"
+        }
+      ],
+      "source_quality": "secondary"
+    },
+    "economic_buyer": {
+      "value": "The outgoing CEO (Haupert) is retiring and transitioning to an advisory role through 2027. The incoming CEO — not yet named publicly — will be the primary decision-maker for infrastructure investments across both the existing campus and the South Fulton buildout. For a public hospital system governed by the Grady Memorial Hospital Corporation Board of Directors and overseen by the Fulton County Board of Commissioners, board approval is likely required for security infrastructure contracts of this scale. The CSO or VP of Operations (titles not identified in available data) would be the functional economic buyer for security spend.",
+      "evidence": [
+        "company-bg: CEO Haupert retiring, announced March 2026, advisory role through 2027 (AJC, Rough Draft Atlanta)",
+        "company-bg: Fulton County Board of Commissioners and Grady Memorial Hospital Corporation Board both approved $1B South Fulton campus",
+        "leadership.json: Only named individual is Haupert (CEO, retiring); no CSO, VP Operations, or Director of Security identified"
+      ],
+      "confidence": "inference",
+      "gap": "The incoming CEO has not been named. No CSO, VP of Operations, or Director of Security has been identified in available data. Budget authority for physical security infrastructure is unknown — it could sit under facilities, IT, or a dedicated security function.",
+      "gap_questions": [
+        {
+          "text": "Has the incoming CEO been selected yet, and have they started reviewing vendor relationships or infrastructure plans for the South Fulton campus?",
+          "rationale": "Identifies whether there's a new decision-maker in seat who will own security infrastructure decisions.",
+          "persona": "influencer",
+          "priority": "high"
+        },
+        {
+          "text": "Who owns the physical security budget at Grady today — is it under IT, facilities, or a dedicated security department?",
+          "rationale": "Determines where budget authority sits and who signs off on security infrastructure purchases.",
+          "persona": "champion",
+          "priority": "high"
+        },
+        {
+          "text": "For the South Fulton campus, does the Board of Directors need to approve the security infrastructure contract separately, or is it included in the $1B capital approval?",
+          "rationale": "Clarifies the procurement approval process and whether an additional board vote is required.",
+          "persona": "economic_buyer",
+          "priority": "medium"
+        }
+      ],
+      "source_quality": "weak"
+    },
+    "decision_criteria": {
+      "value": "Based on Grady's Healthcare vertical profile and documented pain, decision criteria will likely center on: (1) workplace violence detection and response — Grady has a multi-year documented challenge here per AHA and recent 2026 incidents, (2) HIPAA physical safeguard compliance — the data breach and ransomware attack create audit pressure on physical access controls for server rooms, medication storage, and data centers, (3) multi-campus unified management — the South Fulton campus creates a two-campus problem requiring a single pane of glass, (4) ED security — as a Level 1 trauma center in urban Atlanta receiving gunshot victims regularly, ED perimeter and lockdown capability is critical, (5) greenfield infrastructure cost — the South Fulton campus is a clean-sheet decision where total cost of ownership vs. traditional NVR-based approaches will be evaluated.",
+      "evidence": [
+        "company-bg: key_drivers_present — workplace_violence, HIPAA, ED_security",
+        "company-bg: typical_pain_present — access_control_not_integrated_with_video, no_real_time_alerting_for_elopement, badge_management_across_campuses",
+        "tech-and-pain: Pain hypothesis on workplace violence gap between documented program and real-time detection capability",
+        "tech-and-pain: Pain hypothesis on cyber-physical convergence following ransomware and data breach",
+        "tech-and-pain: Pain hypothesis on greenfield fragmentation risk across three South Fulton phases"
+      ],
+      "confidence": "medium",
+      "gap": "No direct evidence of specific evaluation criteria Grady has documented for security infrastructure. Unknown whether they prioritize cloud-managed vs. on-prem, or whether there are IT architecture mandates (e.g., air-gapped networks for clinical systems).",
+      "gap_questions": [
+        {
+          "text": "After the ransomware attack and data breach, did your compliance or IT team update the requirements for physical access controls — particularly for server rooms and areas with patient data?",
+          "rationale": "Confirms whether HIPAA physical safeguard requirements are actively driving procurement criteria.",
+          "persona": "champion",
+          "priority": "high"
+        },
+        {
+          "text": "For the South Fulton campus security spec, is there a preference for cloud-managed infrastructure, or does Grady's IT team require on-prem servers for security systems?",
+          "rationale": "Identifies whether there's an on-prem-only mandate (a disqualifier) or openness to cloud-managed security.",
+          "persona": "influencer",
+          "priority": "high"
+        }
+      ],
+      "source_quality": "secondary"
+    },
+    "decision_process": {
+      "value": "Grady Health System is a public hospital system — the Grady Memorial Hospital Corporation Board of Directors governs operations, and the Fulton County Board of Commissioners provides oversight. The $1B South Fulton campus required both boards' approval, suggesting major infrastructure contracts go through a formal approval process. As a public entity in Georgia, Grady can leverage cooperative purchasing vehicles (Sourcewell contract 041524-VRK, OMNIA contract R250206, HGACBuy contract SE05-26) to streamline procurement without a full RFP. The CEO transition adds complexity — decisions may be deferred until the incoming CEO is in seat, or the outgoing CEO may fast-track South Fulton Phase 1 decisions before departure.",
+      "evidence": [
+        "company-bg: Fulton County Board of Commissioners and Grady Memorial Hospital Corporation Board both approved $1B campus plan",
+        "company-bg: CEO Haupert retiring with advisory role through 2027 focused on South Fulton strategy",
+        "omnia.json: Verkada holds OMNIA contract R250206 — available for public-sector purchase without full RFP",
+        "hgac.json: Verkada on HGACBuy contract SE05-26 via Pavion and APIC dealers at 5% discount",
+        "sourcewell.json: Sourcewell cooperative purchasing vehicle available for Georgia public entities"
+      ],
+      "confidence": "medium",
+      "gap": "Unknown whether Grady has used cooperative purchasing vehicles before, or whether their procurement department requires a full competitive RFP regardless. The CEO transition timeline is unclear — when the incoming CEO starts, they may reset vendor evaluations.",
+      "gap_questions": [
+        {
+          "text": "Has Grady's procurement team used cooperative purchasing vehicles like Sourcewell or OMNIA Partners for previous technology purchases?",
+          "rationale": "Determines whether cooperative purchasing is a realistic path or if Grady's procurement rules require full RFP regardless.",
+          "persona": "influencer",
+          "priority": "medium"
+        },
+        {
+          "text": "Is the security infrastructure decision for the South Fulton freestanding ED being finalized before or after the CEO transition?",
+          "rationale": "Determines urgency — if Phase 1 security spec must be locked before the ED opens in June 2026, there's a hard deadline.",
+          "persona": "champion",
+          "priority": "high"
+        }
+      ],
+      "source_quality": "secondary"
+    },
+    "identify_pain": {
+      "value": "Grady's highest-confidence pain is the gap between its documented workplace violence management program and its actual real-time detection and response capability. Two violent incidents in April 2026 — a staff homicide (technologist Shaunterrio Hudson, fatally shot) and a mass shooting on or near campus with four victims — occurred despite Grady being featured in a 2018 AHA case study specifically about managing workplace violence. This suggests the existing security infrastructure cannot detect, alert, or respond fast enough. Compounding this: a patient data breach (~900 individuals) and a ransomware attack create HIPAA physical safeguard audit pressure. The $1B South Fulton campus creates an immediate greenfield decision window — the freestanding ED opens June 2026 and the security spec for that facility must be finalized imminently.",
+      "evidence": [
+        "tech-and-pain: Two April 2026 violent incidents — staff homicide (Atlanta News First) and mass shooting with four victims (YouTube CMO update)",
+        "company-bg: AHA 2018 case study names Grady as featured example of workplace violence management challenges",
+        "tech-and-pain: Patient data breach ~900 individuals (Becker's Hospital Review)",
+        "tech-and-pain: Ransomware attack affecting payroll (Decaturish)",
+        "tech-and-pain: South Fulton freestanding ED opening June 2026 — three distinct procurement windows over five years"
+      ],
+      "confidence": "high",
+      "gap": "No direct evidence of what specific security infrastructure failures contributed to the April 2026 incidents. Unknown whether Grady conducted a formal post-incident review or hired consultants to assess gaps.",
+      "gap_questions": [
+        {
+          "text": "After the April incidents, what did the post-incident review identify as the primary gap — was it detection speed, camera coverage, response coordination, or something else?",
+          "rationale": "Pinpoints the specific capability gap Verkada can address, moving from general pain to a targeted solution conversation.",
+          "persona": "champion",
+          "priority": "high"
+        },
+        {
+          "text": "When the mass shooting happened near campus, how long did it take your security team to identify the threat and initiate lockdown?",
+          "rationale": "Quantifies the response time gap — Verkada's real-time alerting and lockdown integration directly addresses this.",
+          "persona": "champion",
+          "priority": "high"
+        }
+      ],
+      "source_quality": "secondary"
+    },
+    "champion": {
+      "value": "No named champion candidate identified. The only named individual in leadership data is CEO Haupert (retiring). Grady's Director of Security or Director of Public Safety — title and name unknown — is the most likely champion based on the Healthcare vertical persona mapping (Director_of_Security_Healthcare: meddic_role=champion). This person owns daily security operations at a 1,000-bed Level 1 trauma center with documented workplace violence challenges and would be the strongest internal advocate for a platform that improves incident detection and response. The Violence Intervention Specialist posting (hiring-signals) confirms Grady has an active violence prevention program, suggesting a security leadership function exists but was not captured in available data.",
+      "evidence": [
+        "leadership.json: Only named individual is Haupert (CEO, retiring) — no security leadership identified",
+        "champion_signals.json: status=insufficient_data, no individuals scored",
+        "hiring-signals: Violence Intervention Specialist posting confirms active violence prevention program at Grady",
+        "company-bg: AHA case study confirms formal workplace safety initiatives — implies a security operations function exists",
+        "persona/verkada-se.yml: Director_of_Security_Healthcare is mapped as champion role for Healthcare vertical"
+      ],
+      "confidence": "inference",
+      "gap": "No named Director of Security, CSO, or Director of Public Safety identified. This is the single biggest gap in the brief — without a champion, there is no internal advocate to drive the deal. LinkedIn research and first-call discovery must prioritize identifying this person.",
+      "gap_questions": [
+        {
+          "text": "Who leads physical security operations at Grady today — is there a Director of Security, Director of Public Safety, or similar role?",
+          "rationale": "Identifying the champion is the #1 priority. This person owns the daily pain and has the strongest motivation to advocate for Verkada internally.",
+          "persona": "influencer",
+          "priority": "high"
+        },
+        {
+          "text": "Does the security operations team report into IT, facilities, or its own department?",
+          "rationale": "Determines the champion's reporting line and budget authority — critical for mapping the decision process.",
+          "persona": "influencer",
+          "priority": "high"
+        },
+        {
+          "text": "Is Grady's security staffed internally or through a contract security firm like Allied Universal or Securitas?",
+          "rationale": "If contract security, the champion may be a facilities or operations leader rather than a dedicated security director.",
+          "persona": "influencer",
+          "priority": "medium"
+        }
+      ],
+      "source_quality": "weak"
+    },
+    "competition": {
+      "value": "No incumbent security vendor was identified in any subagent output. No displacement vendor hits were found in tech-and-pain. HGACBuy data shows competitors on the same contract vehicle (SE05-26) including Avigilon/Alta (Motorola), Axis, Genetec, Hanwha, Honeywell, Milestone, and Bosch — but none are confirmed as Grady's incumbent. OMNIA Partners data shows Genetec on the same 'Weapons and Threat Detection' contract category (R250204), and Everon, Convergint, and Schneider Electric on facility security integration contracts. Without knowing Grady's current vendor, the displacement angle cannot be sharpened.",
+      "evidence": [
+        "tech-and-pain: displacement_vendor_hits is empty array — no incumbent identified",
+        "hgac.json: Competitor manufacturers on SE05-26 include Avigilon/Alta, Axis, Genetec, Hanwha, Honeywell, Milestone, Motorola, Bosch",
+        "omnia.json: Genetec holds OMNIA contract R250204 in same category; Everon (R220701), Convergint (R220702), Schneider Electric (R220703) hold facility security integration contracts",
+        "hiring-signals: No security vendor or VMS platform mentioned in any job posting"
+      ],
+      "confidence": "inference",
+      "gap": "The incumbent security vendor at Grady is completely unknown. For a 1,000-bed hospital, there is certainly existing camera and access control infrastructure — it just wasn't captured in any data source. First-call discovery must identify the current vendor to shape the competitive displacement strategy.",
+      "gap_questions": [
+        {
+          "text": "What camera and access control systems does Grady use today at the main Atlanta campus — and how old is that infrastructure?",
+          "rationale": "Identifies the incumbent vendor and system age, which determines whether this is a rip-and-replace, augment, or greenfield conversation.",
+          "persona": "champion",
+          "priority": "high"
+        },
+        {
+          "text": "Is the existing video management system server-based or cloud-managed? And who maintains those servers — internal IT or an integrator?",
+          "rationale": "Determines whether the IT burden argument resonates and whether there's an integrator relationship to navigate.",
+          "persona": "champion",
+          "priority": "high"
+        }
+      ],
+      "source_quality": "weak"
+    }
+  },
+  "verkada_gtm_strategy": {
+    "land_play": {
+      "recommendation": "Lead with the South Fulton freestanding ED opening June 2026 as a greenfield land opportunity. This is a clean-sheet security infrastructure decision with an imminent deadline — the ED security spec must be finalized in the coming weeks. Position Verkada Cameras + Access Control as the integrated platform for the ED, then expand to the medical office building (2028) and 200-bed hospital (2031). If the ED spec is already locked, pivot to the existing Atlanta campus — lead with Cameras in the ED and high-violence areas (waiting rooms, parking structures, perimeters) where workplace violence detection is the acute pain.",
+      "target_sites": "South Fulton freestanding ED (Phase 1, opening June 2026) as primary land site; Grady Memorial Hospital main campus ED and perimeter as secondary",
+      "estimated_scope": "Phase 1 ED: estimated 30-60 cameras + 10-20 access-controlled doors for a freestanding emergency department. Main campus: 200-500+ cameras across a 1,000-bed Level 1 trauma center (full scope unknown — requires discovery)."
+    },
+    "poc_strategy": {
+      "recommendation": "Design the POC around workplace violence detection at the existing Atlanta campus ED entrance and waiting area. Install 3-5 cameras with person-of-interest alerting and crowd analytics in the ED waiting room, triage area, and main entrance. Demonstrate real-time alerting when known aggressors return, crowd density thresholds for staffing decisions, and forensic search speed for post-incident investigation. This directly addresses Grady's highest-confidence pain — the gap between their workplace violence program and real-time detection capability. For the South Fulton campus, offer a design consultation showing how Verkada Command unifies both campuses under one dashboard from day one.",
+      "verkada_relevant_triggers": [
+        "incident_recent_12mo",
+        "capital_project_signal",
+        "executive_leadership_change",
+        "regulatory_compliance_expansion"
+      ],
+      "demo_modules": [
+        "Cameras — person-of-interest alerting, crowd analytics, forensic search",
+        "Access Control — emergency lockdown, badge management across campuses",
+        "Alarms — intrusion detection for perimeter security",
+        "Command — multi-campus unified dashboard, real-time alerting, audit trail for HIPAA compliance"
+      ]
+    },
+    "channel_partner": {
+      "recommendation": "Engage Pavion or APIC as the channel partner. Both are listed as Verkada dealers on HGACBuy contract SE05-26 at 5% discount. Pavion is a national fire and security integrator with strong healthcare vertical expertise — they handle large hospital deployments and can manage the structured cabling, door hardware, and low-voltage infrastructure Grady will need for both the existing campus and South Fulton buildout. Convergint is also active on OMNIA Partners (contract R220702) and is a major healthcare security integrator in the Southeast — worth exploring if Grady has an existing Convergint relationship.",
+      "evidence": [
+        "hgac.json: Verkada available through Pavion and APIC on HGACBuy contract SE05-26 at 5% discount",
+        "omnia.json: Convergint holds OMNIA contract R220702 for Facility Technology Integration & Security System Services",
+        "company-bg: Grady headquartered in Atlanta, GA — Pavion and Convergint both have Atlanta-area operations"
+      ]
+    },
+    "bundle_recommendation": {
+      "primary_products": [
+        "Cameras",
+        "Access Control"
+      ],
+      "secondary_products": [
+        "Alarms",
+        "Intercoms",
+        "Guest"
+      ],
+      "rationale": "Cameras are the lead product for workplace violence detection, ED security, and forensic investigation — Grady's top pain points. Access Control is bundled immediately because Grady's documented pain includes 'access_control_not_integrated_with_video' and 'badge_management_across_campuses' — the South Fulton campus creates a multi-campus badge management requirement from day one. Alarms add perimeter intrusion detection for the new South Fulton campus during construction phases. Intercoms support ED entrance screening and visitor communication. Guest supports visitor management for a hospital receiving high volumes of ED visitors and patient families."
+    },
+    "procurement_path": {
+      "recommended": "Direct purchase via Verkada AE or commercial healthcare reseller (Pavion or APIC). Grady Health System is a healthcare entity, not a K-12 or state/local government agency — cooperative purchasing is not the primary procurement path. However, Grady is a public hospital system governed by the Grady Memorial Hospital Corporation Board and overseen by Fulton County Board of Commissioners, which gives it a hybrid public-sector procurement model. If Grady's procurement team accepts cooperative vehicles, OMNIA Partners contract R250206 or HGACBuy contract SE05-26 can streamline the process.",
+      "alternatives": [
+        "OMNIA Partners contract R250206 — Verkada listed under 'Weapons and Threat Detection Equipment, Services, and Other Solutions' (Government industry)",
+        "HGACBuy contract SE05-26 — Verkada available through Pavion and APIC dealers at 5% discount",
+        "Sourcewell contract 041524-VRK — available if Grady qualifies as a public-sector entity under Sourcewell's membership criteria"
+      ],
+      "evidence": [
+        "omnia.json: Verkada holds OMNIA contract R250206, public-sector buyers can purchase without full RFP",
+        "hgac.json: Verkada on HGACBuy SE05-26, available via Pavion and APIC at 5% discount",
+        "company-bg: Grady Memorial Hospital Corporation Board and Fulton County Board of Commissioners both govern — hybrid public entity",
+        "Verified contract numbers: Sourcewell 041524-VRK, OMNIA R250206, HGACBuy SE05-26"
+      ]
+    },
+    "expansion_motion": {
+      "phase_1": "South Fulton freestanding ED (June 2026) — cameras + access control for the new facility, plus 3-5 camera POC at existing Atlanta campus ED for workplace violence detection. Estimated 40-80 devices total.",
+      "phase_2": "Existing Atlanta campus rollout — replace legacy cameras and access control across the main hospital, parking structures, and perimeter. Unify both campuses on Verkada Command. Add Alarms for perimeter intrusion and Intercoms for ED entrance management. Timing: 2026-2027, aligned with new CEO's infrastructure review.",
+      "phase_3": "South Fulton medical office building (2028) and 200-bed acute care hospital (2031) — design Verkada into the security spec from the ground up. By this point, Grady has operational proof from Phase 1 and Phase 2. Add Guest for visitor management and Sensors for environmental monitoring (pharmacy temperature, surgical suite air quality). Full platform deployment across the entire Grady Health System.",
+      "land_to_expand_ratio": "Phase 1 land (40-80 devices) → Phase 2 expand (200-500+ devices at main campus) → Phase 3 full platform (additional 200-400+ devices across South Fulton campus). Estimated 3-5x expansion from land to full deployment over 5 years."
+    },
+    "competitive_displacement": {
+      "primary_target": null,
+      "displacement_playbook": "No incumbent vendor identified. First-call priority is identifying the current camera/VMS and access control vendor at the existing Atlanta campus. If Genetec — emphasize that Genetec Federation across the new South Fulton campus requires a server at each site, while Verkada Command federates natively with no per-site server. If Avigilon/Motorola — compare ACC server rack costs and per-camera licensing vs. Verkada's zero-appliance model. If Honeywell or a legacy access control vendor — emphasize that changes require integrator truck rolls, while Verkada access policy changes are self-serve in Command. For the South Fulton greenfield, the strongest angle is that traditional VMS vendors require the hospital to buy, rack, and maintain dedicated servers at the new campus — Verkada eliminates that entirely.",
+      "proof_points": [
+        "Verkada holds OMNIA contract R250206 alongside Genetec (R250204) — Grady can compare both on the same cooperative purchasing vehicle",
+        "HGACBuy contract SE05-26 includes Avigilon/Alta, Axis, Genetec, Hanwha, Honeywell, Milestone as competitor manufacturers — Verkada is listed alongside all major incumbents",
+        "Verkada's zero-appliance architecture eliminates NVR servers at each campus — directly relevant for Grady's two-campus future"
+      ]
+    }
+  },
+  "discovery_questions_by_persona": {
+    "IT_Director": [
+      {
+        "question": "When does the South Fulton freestanding ED come online? Are security infrastructure decisions for that site already locked in, or still in design?",
+        "source_trigger": "capital_project_signal",
+        "trigger_definition": "Detects new construction, expansion, renovation, or facility buildout that creates a greenfield security infrastructure opportunity.",
+        "trigger_template": "When does {project_name} come online? Are security infrastructure decisions for that site already locked in, or still in design?",
+        "evidence_that_fired_trigger": [
+          {"source": "news (ConstructConnect)", "fact": "Grady Health System announced March 18, 2026 a $1B phased medical campus in South Fulton County — freestanding ED opening June 2026"},
+          {"source": "news (Grady Health press release)", "fact": "Phase 1 freestanding emergency department on Campbellton Fairburn Road, Union City — opening June 2026"}
+        ],
+        "leverage_reference": {
+          "customer": null,
+          "story": null,
+          "vertical_fit": null
+        },
+        "confidence": "high",
+        "priority": "high",
+        "customization_applied": "Inserted 'South Fulton freestanding ED' as project_name from company-bg capital project event."
+      },
+      {
+        "question": "New builds are a clean-sheet opportunity — is the security spec for the South Fulton campus being written by facilities, IT, or an integrator?",
+        "source_trigger": "capital_project_signal",
+        "trigger_definition": "Detects new construction, expansion, renovation, or facility buildout that creates a greenfield security infrastructure opportunity.",
+        "trigger_template": "New builds are a clean-sheet opportunity — is the security spec for {project_name} being written by facilities, IT, or an integrator?",
+        "evidence_that_fired_trigger": [
+          {"source": "news (ConstructConnect)", "fact": "$1B South Fulton medical campus with three phases — ED, medical office building, 200-bed hospital"},
+          {"source": "news (AJC)", "fact": "Both Fulton County Board of Commissioners and Grady Memorial Hospital Corporation Board approved the plan"}
+        ],
+        "leverage_reference": {
+          "customer": null,
+          "story": null,
+          "vertical_fit": null
+        },
+        "confidence": "high",
+        "priority": "high",
+        "customization_applied": "Inserted 'South Fulton campus' as project_name; question targets IT_Director to determine who owns the security design spec."
+      },
+      {
+        "question": "I noticed Grady experienced both a ransomware attack and a patient data breach affecting approximately 900 individuals. Does your current security infrastructure produce the audit trail and footage retention that HIPAA compliance needs?",
+        "source_trigger": "regulatory_compliance_expansion",
+        "trigger_definition": "Detects regulatory compliance pressure (HIPAA, SOX, PCI, Joint Commission, etc.) that drives physical security investment.",
+        "trigger_template": "I noticed {company} is navigating {regulation} requirements. Does your current security infrastructure produce the audit trail and footage retention that compliance needs?",
+        "evidence_that_fired_trigger": [
+          {"source": "news (Becker's Hospital Review)", "fact": "Grady Memorial Hospital disclosed a data breach affecting approximately 900 patients' personal information"},
+          {"source": "news (Decaturish)", "fact": "Ransomware attack on Grady Hospital affected the payroll system, causing delayed employee paychecks"},
+          {"source": "tech-and-pain", "fact": "HIPAA physical safeguard requirements for access control and audit trails remain a standing compliance obligation"}
+        ],
+        "leverage_reference": {
+          "customer": null,
+          "story": null,
+          "vertical_fit": null
+        },
+        "confidence": "medium",
+        "priority": "high",
+        "customization_applied": "Replaced generic '{company}' and '{regulation}' with specific Grady breach and ransomware facts; combined both cyber incidents to make the HIPAA compliance angle concrete."
+      },
+      {
+        "question": "Are you standardizing the new South Fulton site on the same security platform as the existing Atlanta campus, or evaluating fresh?",
+        "source_trigger": "capital_project_signal",
+        "trigger_definition": "Detects new construction, expansion, renovation, or facility buildout that creates a greenfield security infrastructure opportunity.",
+        "trigger_template": "Are you standardizing the new site on the same security platform as existing locations, or evaluating fresh?",
+        "evidence_that_fired_trigger": [
+          {"source": "news (ConstructConnect)", "fact": "$1B phased South Fulton campus creates a two-campus security management challenge"},
+          {"source": "tech-and-pain", "fact": "Without a deliberate decision now, each phase will likely procure security infrastructure independently, replicating fragmented multi-vendor problem"}
+        ],
+        "leverage_reference": {
+          "customer": null,
+          "story": null,
+          "vertical_fit": null
+        },
+        "confidence": "high",
+        "priority": "medium",
+        "customization_applied": "Tailored to Grady's specific two-campus context — existing Atlanta campus vs. new South Fulton site."
+      }
+    ],
+    "Director_of_Facilities": [
+      {
+        "question": "When does the South Fulton freestanding ED come online? Are security infrastructure decisions for that site already locked in, or still in design?",
+        "source_trigger": "capital_project_signal",
+        "trigger_definition": "Detects new construction, expansion, renovation, or facility buildout that creates a greenfield security infrastructure opportunity.",
+        "trigger_template": "When does {project_name} come online? Are security infrastructure decisions for that site already locked in, or still in design?",
+        "evidence_that_fired_trigger": [
+          {"source": "news (ConstructConnect)",

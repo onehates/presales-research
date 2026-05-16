@@ -36,15 +36,16 @@ def recommend_products(brief: dict) -> dict:
     if not vertical:
         vertical = brief.get("vertical_match", {}).get("matched_vertical", "")
 
-    # Get pain hypothesis IDs
+    # Get pain hypothesis IDs (may be a list of dicts, or "insufficient_data" string)
     pain_ids = set()
     pains = brief.get("pain_hypotheses", [])
-    if isinstance(pains, list):
-        for p in pains:
-            if isinstance(p, dict):
-                linked = p.get("linked_persona_pain", "")
-                if linked:
-                    pain_ids.add(linked)
+    if not isinstance(pains, list):
+        pains = []
+    for p in pains:
+        if isinstance(p, dict):
+            linked = p.get("linked_persona_pain", "")
+            if linked:
+                pain_ids.add(linked)
 
     # Check for federal funding (boosts NDAA/FIPS products)
     has_federal_funding = bool(brief.get("federal_funding_profile"))
@@ -77,6 +78,10 @@ def recommend_products(brief: dict) -> dict:
 
         # Category diversity bonus (prefer a mix of categories)
         total_score = pain_score + compliance_bonus
+
+        # If no pain data available, give a baseline vertical-match score
+        if not pain_ids and vertical:
+            total_score = max(total_score, 0.1)
 
         # Skip products with zero relevance
         if total_score <= 0 and not overlap:

@@ -35,10 +35,21 @@
 
     <!-- Header bar -->
     <div class="flex items-end justify-between border-b-2 border-blue-600 pb-4 mb-6">
-      <div>
-        <p class="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1">Pre-Sales Discovery Brief</p>
-        <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">{{ data.snapshot.name }}</h1>
-        <p class="text-sm text-gray-500 mt-1">{{ data.snapshot.vertical }} · {{ data.snapshot.size_indicator[:80] if data.snapshot.size_indicator else '' }}</p>
+      <div class="flex items-center gap-4">
+        <div style="width:64px; height:64px; flex-shrink:0; border-radius:10px; overflow:hidden; display:flex; align-items:center; justify-content:center; background:#f8fafc; border:1px solid #e2e8f0;">
+          {% if company_domain %}
+          <img src="https://logo.clearbit.com/{{ company_domain }}"
+               onerror="this.onerror=function(){this.style.display='none'; this.parentNode.innerHTML='<span style=font-size:20px;font-weight:700;color:#94a3b8>{{ data.snapshot.name[:2] | upper }}</span>';}; this.src='https://www.google.com/s2/favicons?sz=128&domain={{ company_domain }}';"
+               alt="" style="width:100%; height:100%; object-fit:contain;">
+          {% else %}
+          <span style="font-size:20px; font-weight:700; color:#94a3b8;">{{ data.snapshot.name[:2] | upper }}</span>
+          {% endif %}
+        </div>
+        <div>
+          <p class="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1">Pre-Sales Discovery Brief</p>
+          <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">{{ data.snapshot.name }}</h1>
+          <p class="text-sm text-gray-500 mt-1">{{ data.snapshot.vertical }} · {{ data.snapshot.size_indicator[:80] if data.snapshot.size_indicator else '' }}</p>
+        </div>
       </div>
       <div class="text-right">
         <p class="text-xs text-gray-400">{{ date }}</p>

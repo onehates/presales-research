@@ -83,7 +83,9 @@
         <li><a href="#quickstart" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">Quick Start</a></li>
         <li><a href="#homepage" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">The Homepage</a></li>
         <li><a href="#brief" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">Inside a Brief</a></li>
-        <li><a href="#chat" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">Using the Chat</a></li>
+        <li><a href="#toolbar" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">Brief Toolbar &amp; UI</a></li>
+        <li><a href="#artifacts" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">Standalone Artifacts</a></li>
+        <li><a href="#chat" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">Chat &amp; Notes Panels</a></li>
         <li><a href="#shortcuts" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">Keyboard Shortcuts</a></li>
         <li><a href="#meddic" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">MEDDIC Workflow</a></li>
         <li><a href="#badge-legend" class="block px-3 py-1.5 text-gray-600 dark:text-slate-400 rounded transition-colors">Badge Legend</a></li>
@@ -142,14 +144,14 @@
             <div class="step-num bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">4</div>
             <div>
               <p class="font-semibold text-gray-900 dark:text-white">Use the chat panel</p>
-              <p class="text-gray-600 dark:text-slate-300 text-sm">Click the chat icon (bottom-right) to ask follow-up questions about the account. The chat has full context of the brief data and persona file. Ask things like "What's the displacement play against Genetec here?" or "Draft a cold email to the IT Director."</p>
+              <p class="text-gray-600 dark:text-slate-300 text-sm">Click the blue chat bubble (bottom-right) to ask follow-up questions about the account. The panel is draggable and resizable &mdash; drag the header to reposition, drag the edges to resize. Both position and size persist across page loads. The chat has full context of the brief data and persona file.</p>
             </div>
           </div>
           <div class="flex gap-4 items-start">
             <div class="step-num bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">5</div>
             <div>
-              <p class="font-semibold text-gray-900 dark:text-white">Export or run follow-up commands</p>
-              <p class="text-gray-600 dark:text-slate-300 text-sm">Use <strong>Download PDF</strong> to save for offline reading. From the brief toolbar, run specialized commands like <code>/displace</code> for a battle card or <code>/demo-plan</code> for a tailored demo script. These read from cached data &mdash; no re-fetching.</p>
+              <p class="font-semibold text-gray-900 dark:text-white">Export artifacts</p>
+              <p class="text-gray-600 dark:text-slate-300 text-sm">The toolbar at the top of every brief gives one-click access to: <strong>PDF</strong> (server-rendered via Playwright), <strong>Battlecard</strong> (landscape one-pager), <strong>Sales Report</strong> (full narrative), <strong>Discovery Prep</strong> (printable question sheet with note-taking lines), <strong>Notes</strong> (persistent note-taking panel), and <strong>Find Similar</strong> (accounts in your library with matching vertical, scale, or geography).</p>
             </div>
           </div>
         </div>
@@ -221,6 +223,14 @@
             <p class="text-gray-600 dark:text-slate-400 text-xs">Questions organized by buyer persona (IT Director, Facilities, CSO, VP Ops, LP Director, Superintendent). Every question traces to a specific trigger that fired, with evidence and confidence. Includes inline leverage references (customer proof points).</p>
           </div>
           <div class="border-l-4 border-blue-400 pl-4 py-2">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm">Recommended Products</p>
+            <p class="text-gray-600 dark:text-slate-400 text-xs">Verkada products matched to the account's pain hypotheses, with product images, category badges, reasoning, and matched triggers. Split into Primary Bundle (must-have) and Secondary Bundle (expansion). Click <strong>Edit</strong> in the section header to customize the product selection &mdash; changes propagate to PDF and all artifacts.</p>
+          </div>
+          <div class="border-l-4 border-blue-400 pl-4 py-2">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm">Practitioner Sentiment</p>
+            <p class="text-gray-600 dark:text-slate-400 text-xs">Analysis of Reddit posts from relevant subreddits, showing top pain themes, vendor mentions (positive/negative), and sentiment trends. Gives you a proxy for what practitioners in similar roles are complaining about.</p>
+          </div>
+          <div class="border-l-4 border-blue-400 pl-4 py-2">
             <p class="font-semibold text-gray-900 dark:text-white text-sm">Procurement Flowchart</p>
             <p class="text-gray-600 dark:text-slate-400 text-xs">SVG visual showing the recommended procurement path. Hover over each node for details. SLED accounts show cooperative purchasing vehicles; commercial accounts show direct/reseller paths.</p>
           </div>
@@ -232,13 +242,150 @@
         <p class="text-gray-500 dark:text-slate-500 text-xs mt-4">All sections are collapsible &mdash; click any section header to collapse/expand. State is saved across page loads.</p>
       </section>
 
-      <!-- 5. Using the Chat -->
-      <section id="chat" class="mb-12">
-        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Using the Chat</h3>
+      <!-- 4b. Brief Toolbar & UI -->
+      <section id="toolbar" class="mb-12">
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Brief Toolbar &amp; UI Controls</h3>
         <p class="text-gray-700 dark:text-slate-300 leading-relaxed mb-4">
-          Every brief has an embedded chat panel (bottom-right corner). The chat has full context of the brief's structured data and the persona file, so it can answer Verkada-specific questions about the account.
+          Every brief has a toolbar across the top and floating controls on the right edge. Here's what each element does.
         </p>
-        <div class="space-y-3">
+
+        <h4 class="text-sm font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wide mb-2">Top Toolbar Buttons</h4>
+        <div class="space-y-2 mb-6">
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3 flex gap-3 items-start">
+            <span class="inline-block bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded text-xs font-bold flex-shrink-0 mt-0.5">PDF</span>
+            <span class="text-sm text-gray-600 dark:text-slate-300">Downloads a server-rendered PDF via Playwright. The PDF waits for all product images to load and respects your current product selection (deselected products are hidden). No browser print dialog needed.</span>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3 flex gap-3 items-start">
+            <span class="inline-block bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300 px-2 py-0.5 rounded text-xs font-bold flex-shrink-0 mt-0.5">Battlecard</span>
+            <span class="text-sm text-gray-600 dark:text-slate-300">Opens a landscape one-page battlecard with TL;DR, pain hypotheses, champion candidates, displacement intel, GTM strategy, discovery questions, and recommended products. Designed for printing or screen-sharing during internal deal reviews.</span>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3 flex gap-3 items-start">
+            <span class="inline-block bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded text-xs font-bold flex-shrink-0 mt-0.5">Sales Report</span>
+            <span class="text-sm text-gray-600 dark:text-slate-300">A full narrative report with executive summary, market context, competitive landscape, pain analysis, GTM recommendation, and product fit. Designed for sharing with AEs, leadership, or channel partners.</span>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3 flex gap-3 items-start">
+            <span class="inline-block bg-cyan-100 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-300 px-2 py-0.5 rounded text-xs font-bold flex-shrink-0 mt-0.5">Discovery</span>
+            <span class="text-sm text-gray-600 dark:text-slate-300">A printable discovery prep sheet with MEDDIC snapshot (what you know vs. what to confirm), discovery questions organized by persona, and lined note-taking areas for handwritten notes during the call.</span>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3 flex gap-3 items-start">
+            <span class="inline-block bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded text-xs font-bold flex-shrink-0 mt-0.5">Notes</span>
+            <span class="text-sm text-gray-600 dark:text-slate-300">Opens a draggable, resizable notes panel that floats over the brief. Notes auto-save to localStorage per brief. Drag the header to reposition; drag edges to resize. Use the <strong>Aa</strong> button to cycle font size (13/15/17/19px). Position, size, and font persist across sessions.</span>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3 flex gap-3 items-start">
+            <span class="inline-block bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded text-xs font-bold flex-shrink-0 mt-0.5">Find Similar</span>
+            <span class="text-sm text-gray-600 dark:text-slate-300">Opens a modal showing other accounts in your brief library that match by vertical, geography, or scale. Matching is deterministic (no AI tokens). Useful for finding reference accounts or reusing discovery approaches from similar deals.</span>
+          </div>
+        </div>
+
+        <h4 class="text-sm font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wide mb-2">Floating Controls (Bottom-Right)</h4>
+        <p class="text-gray-700 dark:text-slate-300 text-sm mb-3">A vertical button stack that floats above the chat bubble.</p>
+        <div class="space-y-2 mb-6">
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3 flex gap-3 items-center">
+            <span class="text-sm font-semibold text-gray-800 dark:text-slate-200 w-28 flex-shrink-0">Sections</span>
+            <span class="text-sm text-gray-600 dark:text-slate-300">Opens a mini table-of-contents popup. Click any section name to scroll there. If the target section is collapsed, it auto-expands.</span>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3 flex gap-3 items-center">
+            <span class="text-sm font-semibold text-gray-800 dark:text-slate-200 w-28 flex-shrink-0">Collapse All</span>
+            <span class="text-sm text-gray-600 dark:text-slate-300">Collapses every section to headers only. Useful for scanning the full brief structure at a glance.</span>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3 flex gap-3 items-center">
+            <span class="text-sm font-semibold text-gray-800 dark:text-slate-200 w-28 flex-shrink-0">Expand All</span>
+            <span class="text-sm text-gray-600 dark:text-slate-300">Expands all collapsed sections. Good for printing or full read-throughs.</span>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3 flex gap-3 items-center">
+            <span class="text-sm font-semibold text-gray-800 dark:text-slate-200 w-28 flex-shrink-0">Density</span>
+            <span class="text-sm text-gray-600 dark:text-slate-300">Cycles through display density modes (Default &rarr; Compact &rarr; Spacious). Adjusts padding and spacing across all sections. Preference persists across page loads.</span>
+          </div>
+        </div>
+
+        <h4 class="text-sm font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wide mb-2">Other UI Elements</h4>
+        <div class="space-y-2">
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm mb-1">Side Navigation</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">On desktop (1024px+), a persistent left sidebar shows all brief sections with scroll-spy highlighting. The current section is highlighted in blue as you scroll. Click any section name to jump there.</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm mb-1">Reading Progress Bar</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">A thin blue bar at the very top of the page tracks your scroll progress through the brief.</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm mb-1">Dark Mode</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">Toggle via the sun/moon icon in the top navigation bar, or press <kbd>D</kbd>. The preference persists across all pages (briefs, dashboard, docs, artifacts). Defaults to your system preference.</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm mb-1">Product Editor</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">In the Recommended Products section header, click <strong>Edit</strong> to open a modal where you can select/deselect individual products. Deselected products are hidden from the brief, PDF, Battlecard, Sales Report, and Discovery artifacts. Selection is saved server-side and persists across renders.</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm mb-1">Section "Ask" Buttons</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">Most sections have a small "Ask" button in the header. Clicking it opens the chat panel pre-populated with a question about that section's topic &mdash; a quick way to dig deeper.</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm mb-1">Command Palette</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">Press <kbd>Ctrl</kbd> + <kbd>K</kbd> to open a quick-access command palette with actions like toggle dark mode, collapse/expand all, jump to sections, export PDF, and open artifacts.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4c. Standalone Artifacts -->
+      <section id="artifacts" class="mb-12">
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Standalone Artifacts</h3>
+        <p class="text-gray-700 dark:text-slate-300 leading-relaxed mb-4">
+          Each brief generates three standalone HTML artifacts that can be viewed, printed, or shared independently. All artifacts include company logo branding (resolved from brief data, cached website info, or a fallback lookup), and all respect your product selection from the Product Editor.
+        </p>
+
+        <div class="space-y-4">
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="inline-block bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300 px-2 py-0.5 rounded text-xs font-bold">Battlecard</span>
+              <span class="text-xs text-gray-400 dark:text-slate-500">Landscape layout</span>
+            </div>
+            <p class="text-gray-600 dark:text-slate-400 text-sm mb-2">A dense, 3-column one-pager designed for internal deal reviews or screen-sharing with your AE.</p>
+            <div class="text-xs text-gray-500 dark:text-slate-500 space-y-0.5">
+              <p><strong>Column 1:</strong> TL;DR, top pain hypotheses, champion candidates</p>
+              <p><strong>Column 2:</strong> Displacement intel, procurement path, GTM strategy, key discovery questions</p>
+              <p><strong>Column 3:</strong> Recommended products with images, vertical fit notes, bundle recommendation</p>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="inline-block bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded text-xs font-bold">Sales Report</span>
+              <span class="text-xs text-gray-400 dark:text-slate-500">Portrait layout</span>
+            </div>
+            <p class="text-gray-600 dark:text-slate-400 text-sm mb-2">A full narrative report suitable for sharing with leadership, channel partners, or as a deal brief attachment. Includes complete source citations.</p>
+            <div class="text-xs text-gray-500 dark:text-slate-500 space-y-0.5">
+              <p><strong>Sections:</strong> Executive summary, company overview, market context, security posture assessment, pain analysis, competitive landscape, GTM recommendation, product fit, procurement path</p>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="inline-block bg-cyan-100 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-300 px-2 py-0.5 rounded text-xs font-bold">Discovery Prep</span>
+              <span class="text-xs text-gray-400 dark:text-slate-500">Portrait layout, print-optimized</span>
+            </div>
+            <p class="text-gray-600 dark:text-slate-400 text-sm mb-2">A call prep sheet designed to be printed and brought to discovery meetings. Optimized for taking handwritten notes.</p>
+            <div class="text-xs text-gray-500 dark:text-slate-500 space-y-0.5">
+              <p><strong>Section 1:</strong> MEDDIC snapshot &mdash; what you know (with confidence badges) and what you need to confirm (amber "What to confirm" callouts)</p>
+              <p><strong>Section 2:</strong> Discovery questions organized by persona, with source triggers, confidence levels, and lined note-taking areas after each question</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4 text-sm text-blue-800 dark:text-blue-200 mt-4">
+          <strong>Navigation:</strong> Every artifact has a "Back to Brief" link in the top-left corner and a "Print" button in the top-right. The Battlecard, Sales Report, and Discovery Prep pages each include the account's company logo (resolved automatically from brief data).
+        </div>
+      </section>
+
+      <!-- 5. Chat & Notes Panels -->
+      <section id="chat" class="mb-12">
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Chat &amp; Notes Panels</h3>
+
+        <h4 class="text-sm font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wide mb-2">AI Chat Panel</h4>
+        <p class="text-gray-700 dark:text-slate-300 leading-relaxed mb-4">
+          Click the blue chat bubble (bottom-right) to open the AI assistant. The chat has full context of the brief's structured data and persona file, so it gives Verkada-specific answers about the account.
+        </p>
+        <div class="space-y-3 mb-6">
           <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
             <p class="font-semibold text-gray-900 dark:text-white text-sm mb-2">Good questions to ask</p>
             <ul class="text-gray-600 dark:text-slate-400 text-sm space-y-1 list-disc pl-5">
@@ -250,8 +397,34 @@
               <li>"Write a follow-up email based on these call notes: [paste notes]"</li>
             </ul>
           </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm mb-2">Panel controls</p>
+            <ul class="text-gray-600 dark:text-slate-400 text-sm space-y-1 list-disc pl-5">
+              <li><strong>Drag:</strong> Grab the header bar to move the panel anywhere on screen</li>
+              <li><strong>Resize:</strong> Drag the panel edges or corners to change size (min 320&times;280, max 90vw&times;85vh)</li>
+              <li><strong>Font size:</strong> Click the <strong>Aa</strong> button in the header to cycle through 13/15/17/19px</li>
+              <li><strong>Quick ask:</strong> Click any section's "Ask" button to open the chat pre-filled with a topic-specific question</li>
+            </ul>
+            <p class="text-gray-400 dark:text-slate-500 text-xs mt-2">Position, size, and font preference all persist in localStorage per brief.</p>
+          </div>
           <div class="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg p-4 text-sm text-amber-800 dark:text-amber-200">
             <strong>Note:</strong> The chat reads from cached brief data only. It does not fetch new information. If you need updated data, re-run <code>/research</code> first.
+          </div>
+        </div>
+
+        <h4 class="text-sm font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wide mb-2">Notes Panel</h4>
+        <p class="text-gray-700 dark:text-slate-300 leading-relaxed mb-4">
+          Click <strong>Notes</strong> in the toolbar to open a floating notepad. Notes are saved per brief in localStorage and persist across sessions.
+        </p>
+        <div class="space-y-2">
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3">
+            <p class="text-gray-600 dark:text-slate-400 text-sm"><strong>Drag &amp; resize</strong> &mdash; same controls as the chat panel. Drag the header to move; drag edges to resize.</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3">
+            <p class="text-gray-600 dark:text-slate-400 text-sm"><strong>Font size</strong> &mdash; click <strong>Aa</strong> in the header to cycle through sizes. Independent from the chat panel's font setting.</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3">
+            <p class="text-gray-600 dark:text-slate-400 text-sm"><strong>Full notes page</strong> &mdash; click "Open full page" in the panel header to access a dedicated notes page with structured note cards, drag-to-reorder, and server-side persistence.</p>
           </div>
         </div>
       </section>
@@ -271,8 +444,8 @@
             <tbody class="divide-y divide-gray-100 dark:divide-slate-800">
               <tr class="client-row">
                 <td class="px-4 py-2.5"><kbd>Ctrl</kbd> + <kbd>K</kbd></td>
-                <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">Open command palette</td>
-                <td class="px-4 py-2.5 text-gray-500 dark:text-slate-400 text-xs">Homepage</td>
+                <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">Open command palette (search sections, jump to section, toggle dark mode, download PDF, etc.)</td>
+                <td class="px-4 py-2.5 text-gray-500 dark:text-slate-400 text-xs">Brief &amp; Homepage</td>
               </tr>
               <tr class="client-row">
                 <td class="px-4 py-2.5"><kbd>/</kbd></td>
@@ -281,18 +454,23 @@
               </tr>
               <tr class="client-row">
                 <td class="px-4 py-2.5"><kbd>Ctrl</kbd> + <kbd>P</kbd></td>
-                <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">Download PDF (opens print dialog)</td>
+                <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">Download PDF (server-rendered via Playwright)</td>
                 <td class="px-4 py-2.5 text-gray-500 dark:text-slate-400 text-xs">Brief page</td>
               </tr>
               <tr class="client-row">
                 <td class="px-4 py-2.5"><kbd>Escape</kbd></td>
-                <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">Close chat panel / command palette / tooltips</td>
+                <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">Close chat panel / notes panel / command palette / modals</td>
                 <td class="px-4 py-2.5 text-gray-500 dark:text-slate-400 text-xs">Anywhere</td>
               </tr>
               <tr class="client-row">
                 <td class="px-4 py-2.5"><kbd>D</kbd></td>
                 <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">Toggle dark mode</td>
                 <td class="px-4 py-2.5 text-gray-500 dark:text-slate-400 text-xs">Anywhere</td>
+              </tr>
+              <tr class="client-row">
+                <td class="px-4 py-2.5"><kbd>?</kbd></td>
+                <td class="px-4 py-2.5 text-gray-600 dark:text-slate-300">Toggle keyboard shortcuts help overlay</td>
+                <td class="px-4 py-2.5 text-gray-500 dark:text-slate-400 text-xs">Brief page</td>
               </tr>
             </tbody>
           </table>
@@ -318,7 +496,7 @@
           </div>
           <div class="flex gap-3 items-start">
             <div class="step-num bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs">3</div>
-            <p class="text-gray-600 dark:text-slate-300 text-sm"><strong>After the call:</strong> Check off validated MEDDIC fields using the interactive checkboxes. The state persists across page loads so you can track progress across multiple calls.</p>
+            <p class="text-gray-600 dark:text-slate-300 text-sm"><strong>After the call:</strong> Check off validated MEDDIC fields using the interactive checkboxes &mdash; validated rows turn green. Use the notes textarea below each field to record what you learned. Notes and checkbox state persist across page loads via localStorage. Use the "Save to Server" button to persist MEDDIC state server-side.</p>
           </div>
         </div>
 
@@ -514,8 +692,8 @@
             <p class="text-gray-600 dark:text-slate-400 text-sm">This is normal for small, private companies with limited public presence. The platform refuses to invent data. Check which source clients returned empty &mdash; if key clients (news, SEC, LinkedIn) failed, it may be a transient API issue. Try re-running <code>/research</code>.</p>
           </div>
           <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
-            <p class="font-semibold text-gray-900 dark:text-white text-sm mb-1">PDF looks wrong</p>
-            <p class="text-gray-600 dark:text-slate-400 text-sm">The PDF uses your browser's native print dialog. For best results: choose "Save as PDF" as the destination, set margins to "Default", and enable "Background graphics" to preserve badge colors. Chrome/Edge produce the best output.</p>
+            <p class="font-semibold text-gray-900 dark:text-white text-sm mb-1">PDF looks wrong or missing product images</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">The PDF button uses server-side rendering via Playwright (headless Chromium). It waits for all product images to fully load before generating. If images are still missing, the source image URLs may be unreachable. Product deselections from the Product Editor are automatically applied. If the PDF route fails, check that Playwright is installed (<code>playwright install chromium</code>).</p>
           </div>
           <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
             <p class="font-semibold text-gray-900 dark:text-white text-sm mb-1">Chat says it doesn't have context</p>
@@ -528,6 +706,18 @@
           <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
             <p class="font-semibold text-gray-900 dark:text-white text-sm mb-1">Glossary tooltips not appearing on a term</p>
             <p class="text-gray-600 dark:text-slate-400 text-sm">The glossary uses case-insensitive matching with fallbacks for snake_case and humanized variants. If a term isn't matching, it may not be in <code>data/glossary.yml</code>. Tooltips only annotate the first occurrence per element to avoid visual clutter.</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm mb-1">Artifact pages show no company logo</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">Logo resolution uses a 3-strategy fallback: (1) domain from brief JSON snapshot fields, (2) cached <code>sources/{company}/website.json</code>, (3) known-domain lookup. If all fail, the logo falls back to a text initials badge. For new accounts, ensure the research pipeline completed successfully so website data is cached.</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm mb-1">Product Editor or Find Similar button doesn't respond</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">Hard-refresh the page (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>) to clear cached HTML. Both features use JavaScript loaded from the rendered HTML file. If the brief was rendered with an older template, re-render it by re-visiting the brief URL through the server.</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+            <p class="font-semibold text-gray-900 dark:text-white text-sm mb-1">Notes or chat panel position resets</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">Panel positions are stored in localStorage keyed by panel type (not per brief). Clearing browser data or switching browsers will reset positions. The panels auto-position to the bottom-right corner of the viewport on first use.</p>
           </div>
         </div>
       </section>
@@ -639,6 +829,22 @@
           <div>
             <p class="font-semibold text-gray-900 dark:text-white text-sm">Can I use this offline?</p>
             <p class="text-gray-600 dark:text-slate-400 text-sm">Viewing previously generated briefs works offline (they're self-contained HTML files). Running new research requires internet access for source collection and API calls.</p>
+          </div>
+          <div>
+            <p class="font-semibold text-gray-900 dark:text-white text-sm">What are the standalone artifacts (Battlecard, Sales Report, Discovery)?</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">Each brief automatically generates three companion pages optimized for different use cases. The <strong>Battlecard</strong> is a landscape one-pager for deal reviews. The <strong>Sales Report</strong> is a full narrative for sharing with AEs or leadership. <strong>Discovery Prep</strong> is a print-optimized call sheet with MEDDIC context and lined note areas. All three include company logo branding and respect your product selection.</p>
+          </div>
+          <div>
+            <p class="font-semibold text-gray-900 dark:text-white text-sm">How does Find Similar work?</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">Find Similar matches the current account against all other briefs in your library using deterministic criteria: vertical, geography (state), entity type, SIC code, and size tier. No AI tokens are used. The more briefs you generate, the richer the similarity graph becomes.</p>
+          </div>
+          <div>
+            <p class="font-semibold text-gray-900 dark:text-white text-sm">Can I customize which products appear in the brief?</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">Yes. Click <strong>Edit</strong> in the Recommended Products section header to open the Product Editor. Uncheck products you want to hide. Changes are saved server-side and automatically applied to the brief, PDF, Battlecard, Sales Report, and Discovery artifact.</p>
+          </div>
+          <div>
+            <p class="font-semibold text-gray-900 dark:text-white text-sm">Where are my notes stored?</p>
+            <p class="text-gray-600 dark:text-slate-400 text-sm">The floating notes panel saves to your browser's localStorage, keyed per brief (slug + date). The full notes page (<code>/notes/{slug}/{date}</code>) saves structured note cards to the server at <code>briefs/{slug}-{date}.notes.json</code>. Both are independent &mdash; the floating panel is for quick scratch notes, the full page is for structured call prep.</p>
           </div>
         </div>
       </section>

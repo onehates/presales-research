@@ -1,0 +1,413 @@
+{
+  "meddic_qualification": {
+    "metrics": {
+      "value": "Consolidate physical security across 2,359 retail stores plus 790+ distribution/branch locations onto a single cloud-managed platform. Eliminate per-site NVR/DVR infrastructure and reduce LP investigation time by enabling remote footage review. Protect against ORC-driven shrink across high-traffic retail footprint. Standardize security for ~150 new distribution facilities and 80 new stores in the current five-year expansion plan.",
+      "evidence": [
+        "10-K confirms 2,359 stores, 790+ distribution/branch locations, 472,400 employees (SEC filing FY ending 2026-02-01)",
+        "10-K confirms ~80-store five-year expansion plan and $1.2B supply chain investment targeting ~150 new distribution facilities",
+        "Vertical match confirms ORC, shrink, and safe_transaction_zones as key drivers",
+        "Asset Protection Specialist postings explicitly reference CCTV review and physical security monitoring as core duties",
+        "Security guard shooting incidents at San Carlos, CA and South Los Angeles reflect ORC and store-level violence exposure"
+      ],
+      "confidence": "high",
+      "gap": "No data on current camera count per store, NVR vendor, or annual physical security spend. Unknown whether shrink is trending up or down year-over-year.",
+      "gap_questions": [
+        {
+          "text": "Across 2,359 stores, how many cameras is your LP team responsible for today, and how many of those feed into NVRs that require on-site access to review footage?",
+          "rationale": "Quantifying camera count and NVR dependency establishes the scale of the modernization opportunity and the cost of the status quo.",
+          "persona": "champion",
+          "priority": "high"
+        },
+        {
+          "text": "What's the current annual spend on physical security infrastructure across stores and distribution centers, including hardware maintenance, NVR replacements, and integrator service calls?",
+          "rationale": "Establishing a TCO baseline lets us frame Verkada as a cost-reduction play, not just a feature upgrade.",
+          "persona": "economic_buyer",
+          "priority": "high"
+        },
+        {
+          "text": "Has ORC-driven shrink been trending up or down over the past two fiscal years, and is that trend influencing LP technology investment decisions?",
+          "rationale": "Connecting shrink trends to technology investment validates urgency and budget allocation.",
+          "persona": "champion",
+          "priority": "medium"
+        }
+      ],
+      "source_quality": "primary"
+    },
+    "economic_buyer": {
+      "value": "Likely VP/SVP of Asset Protection or VP of Corporate Security. No named individual identified in available data. Angie Brown (EVP & CIO) owns technology infrastructure including store systems and may co-own or influence physical security platform decisions, especially if physical security is converging under IT.",
+      "evidence": [
+        "Angie Brown confirmed as EVP and CIO responsible for 'technology strategy, infrastructure, cybersecurity, and software development across 2,350 retail stores, 790+ branches, supply chain facilities' (Home Depot press release, 2025-05-29)",
+        "Manager, Security Operations posting reports to 'Sr. Manager or Director Corporate Security,' confirming a Corporate Security hierarchy exists but no named VP/SVP surfaced",
+        "Leadership.json returned insufficient_data for named individuals beyond company-bg sources"
+      ],
+      "confidence": "inference",
+      "gap": "The VP/SVP of Asset Protection or VP of Corporate Security was not identified by name. It is unclear whether physical security budget sits under IT (Angie Brown), a separate Corporate Security function, or a combined Asset Protection/LP organization.",
+      "gap_questions": [
+        {
+          "text": "Does physical security infrastructure (cameras, access control, NVRs) fall under IT's budget, or does Asset Protection or Corporate Security own that spend independently?",
+          "rationale": "Identifying budget ownership determines who the economic buyer is and which executive to engage.",
+          "persona": "champion",
+          "priority": "high"
+        },
+        {
+          "text": "Who at the VP or SVP level is responsible for approving physical security platform changes across the store fleet?",
+          "rationale": "Naming the economic buyer is critical for deal progression. Without this, we cannot map the approval chain.",
+          "persona": "champion",
+          "priority": "high"
+        },
+        {
+          "text": "With Angie Brown recently stepping into the CIO role, has there been any re-evaluation of which technology categories fall under her organization versus Corporate Security?",
+          "rationale": "A new CIO often triggers organizational boundary changes. If physical security is moving under IT, Brown becomes the economic buyer.",
+          "persona": "influencer",
+          "priority": "medium"
+        }
+      ],
+      "source_quality": "secondary"
+    },
+    "decision_criteria": {
+      "value": "Expected evaluation criteria: (1) multi-site scalability across 3,000+ locations, (2) remote footage access for LP investigators without on-site NVR dependency, (3) ORC investigation speed and forensic search, (4) zero-appliance architecture to avoid NVR maintenance at every store, (5) integration with existing LP workflows (exception-based reporting, POS-area awareness), (6) enterprise-grade reliability at Home Depot's scale.",
+      "evidence": [
+        "Vertical match confirms ORC, shrink, safe_transaction_zones as key drivers",
+        "Typical pain includes 'high_camera_count_low_usability,' 'LP_team_cant_review_footage_remotely,' 'inconsistent_systems_across_stores'",
+        "Asset Protection Specialist postings reference CCTV review and physical security monitoring as daily tasks",
+        "10-K confirms massive footprint: 2,359 stores + 790+ distribution/branch locations"
+      ],
+      "confidence": "medium",
+      "gap": "No visibility into whether Home Depot has a formal evaluation framework (e.g., RFP scorecard), whether they weight cloud-native architecture as a positive or a concern, or whether POS integration is a hard requirement.",
+      "gap_questions": [
+        {
+          "text": "When your LP team evaluates security camera platforms, what are the top three criteria they score on? Is remote footage access near the top, or is it more about camera resolution and coverage?",
+          "rationale": "Understanding decision criteria hierarchy lets us lead with the capabilities that matter most.",
+          "persona": "champion",
+          "priority": "high"
+        },
+        {
+          "text": "Is cloud-managed security infrastructure something your IT and security teams view as a positive, or does storing video in the cloud raise concerns internally?",
+          "rationale": "Cloud acceptance vs. resistance is the single biggest deal-shaping factor for Verkada at enterprise scale.",
+          "persona": "influencer",
+          "priority": "high"
+        },
+        {
+          "text": "Does your current LP workflow require POS transaction data correlated with video, or is that a nice-to-have?",
+          "rationale": "POS integration is a common decision criterion in retail. If it's a hard requirement, it shapes the demo and POC scope.",
+          "persona": "champion",
+          "priority": "medium"
+        }
+      ],
+      "source_quality": "secondary"
+    },
+    "decision_process": {
+      "value": "Home Depot is a Fortune 50 public corporation. Physical security platform decisions at this scale will involve procurement, IT (CIO Angie Brown's org), Corporate Security leadership, and likely CFO-level approval for enterprise-wide contracts. Procurement path is direct purchase or commercial reseller, not cooperative purchasing. Given the 3,000+ location footprint, expect a phased evaluation: pilot region, then regional rollout, then enterprise standardization.",
+      "evidence": [
+        "Entity type: public_corporation (SEC 10-K)",
+        "Angie Brown confirmed as EVP & CIO with infrastructure mandate across all stores, branches, and supply chain (press release 2025-05-29)",
+        "Manager, Security Operations posting confirms structured Corporate Security department with defined reporting chain",
+        "Fortune 50 scale (472,400 employees, $157B+ revenue) implies formal procurement process"
+      ],
+      "confidence": "inference",
+      "gap": "No visibility into Home Depot's procurement process for physical security. Unknown whether they use a preferred vendor list, require formal RFP, or allow pilot-to-contract paths. Unknown approval thresholds or committee structure.",
+      "gap_questions": [
+        {
+          "text": "For a technology platform that would touch every store location, what does the evaluation and approval process look like? Is it a formal RFP, or can a successful regional pilot lead to an enterprise contract?",
+          "rationale": "Understanding the procurement path determines deal timeline and resource allocation.",
+          "persona": "champion",
+          "priority": "high"
+        },
+        {
+          "text": "How many stakeholders need to sign off on a physical security platform change? Are IT, Corporate Security, and Asset Protection all at the table, or does one group own the decision?",
+          "rationale": "Mapping the approval chain prevents surprises late in the deal cycle.",
+          "persona": "champion",
+          "priority": "high"
+        },
+        {
+          "text": "Has Home Depot ever run a regional pilot for a physical security technology before scaling it enterprise-wide? What did that process look like?",
+          "rationale": "If there is precedent for a pilot-to-contract path, it dramatically shortens the sales cycle compared to a full enterprise RFP.",
+          "persona": "influencer",
+          "priority": "medium"
+        }
+      ],
+      "source_quality": "secondary"
+    },
+    "identify_pain": {
+      "value": "LP teams at 2,359 stores are reviewing CCTV footage and monitoring physical security as a daily responsibility, but likely depend on per-store NVR/DVR infrastructure that requires on-site access. At this scale, inconsistent systems across stores create investigation friction, and LP investigators cannot review footage remotely without VPN or physical presence. ORC incidents, including two security guard shooting incidents at store locations, highlight the operational risk of the current security posture.",
+      "evidence": [
+        "Asset Protection Specialist postings explicitly state: 'reviewing CCTV and exception reports, monitoring the store's physical security'",
+        "Vertical typical_pain includes 'LP_team_cant_review_footage_remotely' and 'inconsistent_systems_across_stores'",
+        "Security guard shooting incidents at San Carlos, CA and South Los Angeles reflect ORC and store-level violence exposure",
+        "2,359 stores with high camera counts but low usability is a matched pain pattern"
+      ],
+      "confidence": "high",
+      "gap": "No confirmation of the specific NVR/DVR vendor deployed across stores. Unknown whether Home Depot has already invested in remote video access (e.g., Avigilon Cloud, Genetec Stratocast) or is fully dependent on local NVR playback.",
+      "gap_questions": [
+        {
+          "text": "When an ORC incident happens at a store in San Carlos, how does your regional LP team access that footage? Do they have to call the store, or can they pull it up remotely?",
+          "rationale": "This question directly probes the remote access gap. If the answer is 'call the store' or 'VPN into the NVR,' the pain is confirmed.",
+          "persona": "champion",
+          "priority": "high"
+        },
+        {
+          "text": "After the security guard incidents in California and Los Angeles, what came out of the post-incident review as the primary gap: detection, response time, or footage retrieval for investigation?",
+          "rationale": "Tying a known incident to a specific infrastructure gap creates urgency and emotional resonance.",
+          "persona": "champion",
+          "priority": "high"
+        },
+        {
+          "text": "Are all 2,359 stores running the same camera and NVR platform, or have acquisitions and store-level decisions created a patchwork of systems?",
+          "rationale": "Inconsistency across stores is a Verkada sweet spot. If confirmed, it validates the standardization value proposition.",
+          "persona": "influencer",
+          "priority": "medium"
+        }
+      ],
+      "source_quality": "primary"
+    },
+    "champion": {
+      "value": "No named champion candidate identified with sufficient confidence. The strongest structural fit is the Director or VP of Corporate Security (referenced in the Manager, Security Operations posting as the reporting chain) or the VP/SVP of Asset Protection. Angie Brown (EVP & CIO) is a potential champion if physical security platforms fall under IT, but her primary mandate is broader technology strategy. Christopher Lanzilotta (CISO, per third-party source) could be relevant if cyber-physical convergence is a priority, but his current status at Home Depot is unconfirmed.",
+      "evidence": [
+        "Manager, Security Operations posting reports to 'Sr. Manager or Director Corporate Security,' confirming a Corporate Security leadership chain exists",
+        "Angie Brown confirmed as EVP & CIO with infrastructure mandate (press release 2025-05-29), but physical security platform ownership is unconfirmed",
+        "Christopher Lanzilotta listed as CISO on Fortify Experts (weak source, medium confidence), no corroborating Home Depot press release",
+        "Leadership.json returned insufficient_data for named individuals"
+      ],
+      "confidence": "inference",
+      "gap": "No named champion identified. The Director or VP of Corporate Security is the most likely champion role but no individual was surfaced. LinkedIn research or AE account knowledge is needed to identify this person by name.",
+      "gap_questions": [
+        {
+          "text": "Who leads Corporate Security at the VP or Director level? The Security Operations Manager role in Houston reports up to that function, and that's likely the person who owns camera and access control platform decisions.",
+          "rationale": "Identifying the champion by name is the single most important gap to close. Without a named champion, there is no deal.",
+          "persona": "champion",
+          "priority": "high"
+        },
+        {
+          "text": "Is Asset Protection (LP) and Corporate Security the same organization at Home Depot, or are they separate functions with separate leadership?",
+          "rationale": "Understanding the org structure determines whether there is one champion or two stakeholders to align.",
+          "persona": "influencer",
+          "priority": "high"
+        },
+        {
+          "text": "Has Angie Brown's CIO organization started to pull physical security infrastructure under IT, or does that remain with Corporate Security?",
+          "rationale": "If Brown's org is absorbing physical security, she or a direct report becomes the champion. This changes the engagement strategy entirely.",
+          "persona": "influencer",
+          "priority": "medium"
+        }
+      ],
+      "source_quality": "weak"
+    },
+    "competition": {
+      "value": "No specific incumbent vendor identified from available research. Asset Protection Specialist postings reference 'CCTV' and 'Electronic Article Surveillance' generically but do not name a platform or vendor. At Home Depot's scale (2,359 stores), the incumbent is almost certainly an enterprise VMS/NVR platform (likely Avigilon, Genetec, Milestone, or March Networks given the retail vertical) with per-store NVR infrastructure.",
+      "evidence": [
+        "Asset Protection Specialist postings mention 'CCTV' and 'exception reports' without naming a vendor",
+        "No vendor names detected in tech_stack_mentions (empty array)",
+        "Retail vertical displacement targets in persona file include Avigilon, Genetec, Milestone, and March Networks",
+        "Certificate transparency and GitHub data did not surface physical security vendor indicators"
+      ],
+      "confidence": "inference",
+      "gap": "The incumbent physical security vendor is unknown. This is a critical gap: competitive displacement strategy cannot be designed without knowing who we are displacing. Early discovery must confirm the VMS/NVR platform in use.",
+      "gap_questions": [
+        {
+          "text": "What camera and VMS platform are your stores running today? Is it the same across all 2,359 locations, or did different regions standardize on different vendors?",
+          "rationale": "Identifying the incumbent is prerequisite to building a competitive displacement strategy and TCO comparison.",
+          "persona": "champion",
+          "priority": "high"
+        },
+        {
+          "text": "When was the last time Home Depot did a full evaluation of physical security platforms? Was it a recent decision, or has the current system been in place for 5+ years?",
+          "rationale": "A legacy platform installed 5+ years ago is approaching refresh. A recent decision means displacement timeline is longer.",
+          "persona": "influencer",
+          "priority": "high"
+        },
+        {
+          "text": "Are you using a different vendor for distribution center and warehouse security than for retail stores, or is it standardized?",
+          "rationale": "The SRS Distribution acquisition added hundreds of locations that may run a completely different security stack, creating a standardization opportunity.",
+          "persona": "champion",
+          "priority": "medium"
+        }
+      ],
+      "source_quality": "weak"
+    }
+  },
+  "verkada_gtm_strategy": {
+    "land_play": {
+      "recommendation": "Lead with Cameras into a cluster of new-build or recently acquired distribution/branch locations. The SRS Distribution acquisition (including the GMS acquisition adding hundreds of specialty distribution locations) and the four new professional distribution centers (Detroit, Los Angeles, San Antonio, Toronto) represent clean-sheet sites where security infrastructure decisions may not yet be locked in. Avoid leading with a retrofit of existing 2,359-store fleet initially. New builds and acquisitions are lower-friction entry points at an account this large.",
+      "target_sites": "Four new professional distribution centers (Detroit, LA, San Antonio, Toronto); recently acquired GMS distribution locations; Cobb County HQ expansion (2455/2410 Paces Ferry Road, Smyrna, GA). HQ expansion is geographically close to Andy's Atlanta focus.",
+      "estimated_scope": "POC: 1-2 new distribution centers or the HQ expansion site. Initial land could be 50-200 cameras per site depending on facility size. Expansion: standardize across all new SRS/GMS distribution locations before approaching the retail store fleet."
+    },
+    "poc_strategy": {
+      "recommendation": "Design the POC around a new professional distribution center or the Cobb County HQ expansion. For a distribution center, demonstrate perimeter security (license plate recognition for fleet vehicles), interior warehouse coverage, and cloud-managed remote access for Corporate Security. For HQ, demonstrate visitor management (Guest), access control for the new daycare facility expansion, and executive protection camera coverage. In both cases, the zero-appliance architecture is the key differentiator: no NVR to rack, no server room to build.",
+      "verkada_relevant_triggers": [
+        "capital_project_signal",
+        "multi_site_sprawl",
+        "incident_recent_12mo",
+        "hiring_security_intensity"
+      ],
+      "demo_modules": [
+        "Cameras (edge analytics, remote footage access, forensic search)",
+        "Access Control (badge management for new facilities)",
+        "Guest (visitor management for HQ expansion)",
+        "Command platform (single-pane-of-glass across distribution sites)"
+      ]
+    },
+    "channel_partner": {
+      "recommendation": "Home Depot will likely require a commercial reseller or direct engagement for an account of this size. Given the Georgia HQ, identify a Southeast-based enterprise integrator with Verkada certification who can handle the HQ expansion POC. For distribution center deployments across Detroit, LA, San Antonio, and Toronto, a national integrator with multi-market presence is needed. Andy's Atlanta geographic focus aligns well with the Cobb County HQ expansion as the initial engagement site.",
+      "evidence": [
+        "Headquarters in Smyrna, GA (Cobb County), within Andy's Atlanta territory focus",
+        "Distribution center expansion spans Detroit, LA, San Antonio, Toronto, requiring national integrator capability",
+        "Commercial account: cooperative purchasing is not the primary procurement path"
+      ]
+    },
+    "bundle_recommendation": {
+      "primary_products": [
+        "Cameras",
+        "Access Control"
+      ],
+      "secondary_products": [
+        "Guest",
+        "Sensors",
+        "Intercoms"
+      ],
+      "rationale": "Cameras are the entry point for any retail/distribution account: LP investigation, ORC prevention, and remote footage access are the acute pain. Access Control is the natural second product for new distribution facilities (badge management, zone control for warehouse areas). Guest is relevant for the HQ expansion (daycare facility, corporate visitor management). Sensors (environmental monitoring) apply to distribution warehouses. Intercoms could serve distribution center entry points and loading docks."
+    },
+    "procurement_path": {
+      "recommended": "Direct purchase via Verkada AE or commercial reseller. Home Depot is a Fortune 50 commercial corporation. Standard enterprise procurement process with direct contract negotiation.",
+      "alternatives": [
+        "If Home Depot's procurement team accepts cooperative purchasing for speed, Sourcewell contract 041524-VRK and OMNIA Partners contract R250206 are available as alternatives to bypass a full RFP cycle"
+      ],
+      "evidence": [
+        "Entity type is public_corporation (SEC 10-K)",
+        "Commercial vertical (Retail), not SLED. Direct purchase is the standard path per persona procurement rules",
+        "Verkada holds Sourcewell contract 041524-VRK and OMNIA Partners contract R250206 as fallback options"
+      ]
+    },
+    "expansion_motion": {
+      "phase_1": "POC at 1-2 new-build sites: Cobb County HQ expansion or one of the four new professional distribution centers. 50-200 cameras, access control for entry points. Goal: prove zero-appliance deployment speed and remote access for Corporate Security.",
+      "phase_2": "Standardize across all new SRS Distribution and GMS acquisition locations (hundreds of sites). Position Verkada as the default security platform for all new builds and acquisitions. This avoids the political complexity of ripping out incumbent systems at existing stores.",
+      "phase_3": "Retrofit existing retail store fleet. Start with a regional cluster (e.g., Southeast stores near HQ) and expand nationally. At 2,359 stores, this is a multi-year, multi-million-dollar enterprise rollout. Frame as NVR end-of-life replacement: as existing NVRs age out, replace with Verkada cameras with on-board storage.",
+      "land_to_expand_ratio": "Phase 1 (POC): ~200 cameras. Phase 2 (new builds/acquisitions): potentially 5,000-10,000+ cameras across hundreds of distribution sites. Phase 3 (full fleet): could be 50,000+ cameras across 2,359 stores. Land-to-expand ratio of 1:250+ is realistic."
+    },
+    "competitive_displacement": {
+      "primary_target": "Unknown. Incumbent VMS/NVR vendor not identified. Most likely Avigilon, Genetec, Milestone, or March Networks based on retail vertical patterns.",
+      "displacement_playbook": "Without confirming the incumbent, lead with architecture-level differentiation: zero-appliance (no NVR per store), cloud-managed remote access (no VPN required), and automatic firmware updates (no truck rolls to 2,359 stores for patching). If the incumbent is Avigilon, emphasize ACC software complexity and server hardware refresh cycles vs. zero-appliance Verkada. If Genetec, emphasize Federation complexity at scale vs. Verkada Command's native multi-site management. If March Networks, emphasize stagnating AI analytics vs. Verkada's edge AI (people, vehicle, license plate detection). First discovery call must identify the incumbent.",
+      "proof_points": [
+        "Retail vertical reference: Hot Topic, Salt & Straw, multi-unit retail deployments with cloud LP access",
+        "Zero-appliance architecture eliminates NVR maintenance across 2,359+ sites",
+        "Edge analytics (people detection, vehicle detection, license plate recognition) without GPU servers"
+      ]
+    }
+  },
+  "discovery_questions_by_persona": {
+    "IT_Director": [
+      {
+        "question": "I see Home Depot is investing heavily in cloud, with production GCP deployments across pricing, personalization, checkout, and catalog workloads, plus enterprise-scale Kubernetes and Spinnaker CI/CD. Has physical security been included in that cloud-first conversation, or is it still the last on-prem holdout?",
+        "source_trigger": "cloud_transformation_initiative",
+        "trigger_definition": "Detects cloud migration, digital transformation, or cloud-first strategy signals that indicate the organization is moving infrastructure to the cloud.",
+        "trigger_template": "I see {company} is investing heavily in cloud — {specific_signal}. Has physical security been included in that cloud-first conversation, or is it still the last on-prem holdout?",
+        "evidence_that_fired_trigger": [
+          {"source": "crt.sh (certificate transparency)", "fact": "Extensive *.gcp.homedepot.com subdomain namespace with GCP project namespaces for pricing, personalization, search, checkout, loyalty, and catalog (prod/dev/stage environments)"},
+          {"source": "crt.sh (certificate transparency)", "fact": "spinnaker.homedepot.com with 40+ named demo/test subdomains and kubesvc.spinnaker.homedepot.com confirming live Kubernetes service endpoints"},
+          {"source": "GitHub (homedepot org)", "fact": "homedepot/terraform-google-kubernetes-engine for opinionated GKE cluster configuration; homedepot/k8s-global-objects for cross-namespace management"}
+        ],
+        "leverage_reference": {
+          "customer": null,
+          "story": null,
+          "vertical_fit": null
+        },
+        "confidence": "high",
+        "priority": "high",
+        "customization_applied": "Inserted specific GCP workloads (pricing, personalization, checkout, catalog) and Kubernetes/Spinnaker tooling from crt.sh and GitHub analysis to make the cloud-first investment concrete."
+      },
+      {
+        "question": "If IT is decommissioning on-prem servers for everything else, how do they feel about maintaining NVR servers just for cameras?",
+        "source_trigger": "cloud_transformation_initiative",
+        "trigger_definition": "Detects cloud migration, digital transformation, or cloud-first strategy signals that indicate the organization is moving infrastructure to the cloud.",
+        "trigger_template": "If IT is decommissioning on-prem servers for everything else, how do they feel about maintaining NVR servers just for cameras?",
+        "evidence_that_fired_trigger": [
+          {"source": "crt.sh (certificate transparency)", "fact": "Production GCP deployments across core retail workloads indicate a cloud-first infrastructure strategy"},
+          {"source": "GitHub (homedepot org)", "fact": "Custom Terraform and Kubernetes tooling confirms cloud-native infrastructure management is deeply embedded in IT operations"}
+        ],
+        "leverage_reference": {
+          "customer": null,
+          "story": null,
+          "vertical_fit": null
+        },
+        "confidence": "high",
+        "priority": "high",
+        "customization_applied": "No placeholder substitution needed. Template is directly applicable given the strong cloud-native infrastructure evidence."
+      },
+      {
+        "question": "Home Depot operates 2,359 stores plus 790+ distribution and branch locations. Are those running the same security platform, or did each site choose its own over the years?",
+        "source_trigger": "multi_site_sprawl",
+        "trigger_definition": "Detects organizations with large numbers of distributed sites that may be running inconsistent security systems.",
+        "trigger_template": "{company} operates {site_count} locations. Are those running the same security platform, or did each site choose its own over the years?",
+        "evidence_that_fired_trigger": [
+          {"source": "SEC 10-K (FY ending 2026-02-01)", "fact": "2,359 retail stores plus 790+ distribution/branch locations across the U.S., Canada, and Mexico"},
+          {"source": "company-bg vertical match", "fact": "Typical pain includes 'inconsistent_systems_across_stores'"}
+        ],
+        "leverage_reference": {
+          "customer": null,
+          "story": null,
+          "vertical_fit": null
+        },
+        "confidence": "high",
+        "priority": "medium",
+        "customization_applied": "Inserted '2,359 stores plus 790+ distribution and branch locations' from 10-K to quantify the multi-site footprint."
+      },
+      {
+        "question": "When there's an incident at a remote distribution site, can your security team pull footage without calling someone on-site or VPN-ing into a local NVR?",
+        "source_trigger": "multi_site_sprawl",
+        "trigger_definition": "Detects organizations with large numbers of distributed sites that may be running inconsistent security systems.",
+        "trigger_template": "When there's an incident at a remote site, can your security team pull footage without calling someone on-site or VPN-ing into a local NVR?",
+        "evidence_that_fired_trigger": [
+          {"source": "SEC 10-K (FY ending 2026-02-01)", "fact": "790+ distribution/branch locations in addition to 2,359 retail stores"},
+          {"source": "company-bg vertical match", "fact": "Typical pain includes 'LP_team_cant_review_footage_remotely'"}
+        ],
+        "leverage_reference": {
+          "customer": null,
+          "story": null,
+          "vertical_fit": null
+        },
+        "confidence": "high",
+        "priority": "medium",
+        "customization_applied": "Changed 'remote site' to 'remote distribution site' to reflect the acquisition-driven expansion of the SRS/GMS distribution footprint."
+      }
+    ],
+    "Director_of_Facilities": [
+      {
+        "question": "When does the Cobb County headquarters expansion come online? Are security infrastructure decisions for that site already locked in, or still in design?",
+        "source_trigger": "capital_project_signal",
+        "trigger_definition": "Detects new building construction, expansion, renovation, or capital projects that create greenfield security infrastructure opportunities.",
+        "trigger_template": "When does {project_name} come online? Are security infrastructure decisions for that site already locked in, or still in design?",
+        "evidence_that_fired_trigger": [
+          {"source": "MDJ Online (news)", "fact": "Cobb County approved Home Depot headquarters expansion at 2455 and 2410 Paces Ferry Road, Smyrna, GA, including expanded daycare facility and new parking lot"}
+        ],
+        "leverage_reference": {
+          "customer": null,
+          "story": null,
+          "vertical_fit": null
+        },
+        "confidence": "high",
+        "priority": "high",
+        "customization_applied": "Inserted 'Cobb County headquarters expansion' as the project name from the MDJ Online news article."
+      },
+      {
+        "question": "The four new professional distribution centers in Detroit, Los Angeles, San Antonio, and Toronto are clean-sheet builds. Is the security spec being written by facilities, IT, or an integrator?",
+        "source_trigger": "capital_project_signal",
+        "trigger_definition": "Detects new building construction, expansion, renovation, or capital projects that create greenfield security infrastructure opportunities.",
+        "trigger_template": "New builds are a clean-sheet opportunity — is the security spec for {project_name} being written by facilities, IT, or an integrator?",
+        "evidence_that_fired_trigger": [
+          {"source": "Home Depot corporate press release", "fact": "Four new professional distribution centers announced for Detroit, Los Angeles, San Antonio, and Toronto, purpose-built to serve professional contractor customers"}
+        ],
+        "leverage_reference": {
+          "customer": null,
+          "story": null,
+          "vertical_fit": null
+        },
+        "confidence": "high",
+        "priority": "high",
+        "customization_applied": "Inserted the four specific distribution center cities from the press release. Restructured sentence to lead with the specific project rather than the generic template opening."
+      },
+      {
+        "question": "With ~150 new distribution facilities planned as part of the $1.2 billion supply chain investment, are you standardizing the new sites on the same security platform as existing locations, or evaluating fresh?",
+        "source_trigger": "capital_project_signal",
+        "trigger_definition": "Detects new building construction, expansion, renovation, or capital projects that create greenfield security infrastructure opportunities.",
+        "trigger_template": "Are you standardizing the new site on the same security platform as existing locations, or evaluating fresh?",
+        "evidence_that_fired_trigger": [
+          {"source": "SEC 10-K (FY ending 2026-02-01)", "

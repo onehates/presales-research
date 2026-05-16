@@ -77,7 +77,20 @@
     </div>
   </div>
 
-  <!-- Notes list -->
+  <!-- Freeform notes (shared with brief popup) -->
+  <div class="max-w-4xl mx-auto w-full px-4 sm:px-6 pt-4">
+    <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl p-4">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300">Quick Notes</h2>
+        <span id="freeform-status" class="text-xs text-gray-400 dark:text-slate-500"></span>
+      </div>
+      <textarea id="freeform-textarea"
+                class="w-full bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-slate-300 placeholder-gray-400 dark:placeholder-slate-600 min-h-[120px] transition-colors"
+                placeholder="Type quick notes here... shared with the Notes popup in the brief."></textarea>
+    </div>
+  </div>
+
+  <!-- Structured notes list -->
   <main class="max-w-4xl mx-auto w-full px-4 sm:px-6 py-4 flex-1">
     <div id="notes-list" class="flex flex-col gap-3"></div>
     <div id="empty-state" class="hidden text-center py-16">
@@ -387,6 +400,26 @@
         renderNotes();
         saveNotes();
       });
+    });
+  }
+
+  // ── Freeform notes (shared with brief popup) ──
+  const FREEFORM_KEY = `notes-freeform:${SLUG}:${DATE}`;
+  const freeformTa = document.getElementById('freeform-textarea');
+  const freeformStatus = document.getElementById('freeform-status');
+  let freeformTimer = null;
+
+  if (freeformTa) {
+    freeformTa.value = localStorage.getItem(FREEFORM_KEY) || '';
+    if (freeformTa.value) freeformStatus.textContent = 'Loaded';
+    freeformTa.addEventListener('input', function() {
+      freeformStatus.textContent = 'Saving…';
+      if (freeformTimer) clearTimeout(freeformTimer);
+      freeformTimer = setTimeout(function() {
+        localStorage.setItem(FREEFORM_KEY, freeformTa.value);
+        freeformStatus.textContent = 'Saved ✓';
+        freeformTimer = null;
+      }, 500);
     });
   }
 

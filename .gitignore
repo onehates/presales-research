@@ -1,5 +1,4 @@
 sources/
-briefs/
 !demo-site/briefs/
 .venv/
 __pycache__/

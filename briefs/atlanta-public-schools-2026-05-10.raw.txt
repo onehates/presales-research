@@ -1,0 +1,688 @@
+{
+  "metadata": {
+    "company_slug": "atlanta-public-schools",
+    "company_name": "Atlanta Public Schools",
+    "vertical": "K-12",
+    "generated_at": "2026-05-10T08:25:00Z",
+    "agents_used": ["company-bg", "tech-and-pain", "hiring-signals"],
+    "models_used": {"subagents": "sonnet", "synthesizer": "opus"},
+    "runtime_seconds": null
+  },
+  "tldr": {
+    "bullets": [
+      "Atlanta Public Schools serves 50,325 students across 86 schools (100% Title I, 71.3% FRPL) with a $100–$135M budget deficit driving closure of 16 schools and conversion of 7 into community hubs — each facility transition is a security infrastructure decision point, and NDAA compliance is mandatory to protect federal funding.",
+      "Four students were shot at Benjamin E. Mays High School and four separate threats of violence were investigated district-wide in September 2024 post-Apalachee; APS responded with increased police patrols and SRO hiring rather than technology-based detection — the Senior Security Systems Specialist role posted 3 days ago oversees 'all Life Safety Systems throughout the District' including server/software administration, signaling active infrastructure investment.",
+      "Zero incumbent vendor names detected across OSINT (only 3 subdomains on atlantapublicschools.com); however, Verkada holds OMNIA contract R250206 and HGACBuy contract SE05-26 (via Pavion at 5% discount) — both cooperative vehicles bypass full RFP and Genetec, Avigilon/Alta, Axis, HANWHA, Milestone, and Motorola are visible competitors on the same HGACBuy contract."
+    ],
+    "confidence": "medium"
+  },
+  "entity_type": "k12_district",
+  "snapshot": {
+    "name": "Atlanta Public Schools",
+    "vertical": "K-12",
+    "ticker": null,
+    "sic_code": "8211",
+    "sic_description": "Elementary & Secondary Schools",
+    "headquarters_state": "GA",
+    "size_indicator": "50,325 students across 86 schools; 3,979 FTE teachers; 8,963 FTE staff",
+    "confidence": "high",
+    "source_quality": "primary",
+    "sources": [
+      {
+        "url": "https://educationdata.urban.org/api/v1/school-districts/ccd/directory/2022/?leaid=1300120",
+        "title": "NCES CCD — Atlanta Public Schools (LEAID 1300120)",
+        "retrieved_at": "2026-05-10T08:17:21.917905+00:00"
+      }
+    ]
+  },
+  "federal_funding_profile": {
+    "has_federal_funding": true,
+    "title_i_status": "86 of 86 schools (100%) Title I eligible",
+    "frpl_percentage": 71.3,
+    "frpl_detail": "35,896 of 50,325 students (71.3%)",
+    "ndaa_exposure": "Federal funding recipient with 100% Title I penetration across all 86 schools — must comply with NDAA Section 889. Any existing security hardware from Hikvision, Dahua, or other FCC Covered List manufacturers must be identified and replaced to maintain federal funding eligibility.",
+    "funding_programs": [
+      "Title I",
+      "Free/Reduced Price Lunch (FRPL)"
+    ],
+    "confidence": "high",
+    "source_quality": "primary",
+    "source": {
+      "url": "https://educationdata.urban.org/api/v1/school-districts/ccd/directory/2022/?leaid=1300120",
+      "title": "NCES CCD — Atlanta Public Schools funding indicators (LEAID 1300120)",
+      "retrieved_at": "2026-05-10T08:17:21.917905+00:00"
+    }
+  },
+  "leadership": [
+    {
+      "name": "Bryan Johnson",
+      "title": "Superintendent",
+      "joined": "unknown",
+      "confidence": "medium",
+      "source_quality": "secondary",
+      "source_caveat": null,
+      "source": {
+        "url": "https://www.fox5atlanta.com/video/fmc-3gvpvucp71dfb3s3",
+        "title": "APS to expand 'Community Hubs' in transitioning buildings — FOX 5 Atlanta",
+        "retrieved_at": "2026-05-10T08:17:59.503120+00:00"
+      }
+    },
+    {
+      "name": "Jessica Johnson",
+      "title": "Board Chair",
+      "joined": "unknown",
+      "confidence": "medium",
+      "source_quality": "secondary",
+      "source_caveat": null,
+      "source": {
+        "url": "https://www.fox5atlanta.com/video/fmc-3gvpvucp71dfb3s3",
+        "title": "APS to expand 'Community Hubs' in transitioning buildings — FOX 5 Atlanta",
+        "retrieved_at": "2026-05-10T08:17:59.503120+00:00"
+      }
+    }
+  ],
+  "recent_material_events": [
+    {
+      "date": "2024-09-11",
+      "description": "Atlanta Public Schools placed all 86 schools on heightened security alert following online threats of violence circulating on social media in the week after the Apalachee High School mass shooting (Barrow County, GA). APS Police coordinated with FBI, GBI, and Atlanta Police Department; district reported an uptick in four separate credible threats since the Apalachee shooting.",
+      "category": "safety_incident",
+      "verkada_relevant": true,
+      "confidence": "high",
+      "source_quality": "secondary",
+      "source_caveat": null,
+      "source": {
+        "url": "https://www.atlantanewsfirst.com/2024/09/11/police-increase-security-atlanta-public-schools-thursday-over-online-threats/",
+        "title": "Police increase security at Atlanta Public Schools over online threats — Atlanta News First",
+        "retrieved_at": "2026-05-10T08:17:59.503120+00:00"
+      }
+    },
+    {
+      "date": null,
+      "description": "A shooting at Benjamin E. Mays High School (3450 Benjamin E. Mays Dr. SW, Atlanta) resulted in four students sustaining gunshot wounds, per Atlanta Police Department incident report.",
+      "category": "safety_incident",
+      "verkada_relevant": true,
+      "confidence": "high",
+      "source_quality": "secondary",
+      "source_caveat": null,
+      "source": {
+        "url": "https://www.atlantapd.org/Home/Components/News/News/5283/71",
+        "title": "Four People Shot: 3450 Benjamin E. Mays Dr. SW — Atlanta Police Department",
+        "retrieved_at": "2026-05-10T08:17:59.503120+00:00"
+      }
+    },
+    {
+      "date": null,
+      "description": "APS launched an in-house Office of Safety & Security in the 2016-2017 school year. The district operates its own APS Police Department using a TRIAD model integrating law enforcement officers as informal counselors across all schools.",
+      "category": "other",
+      "verkada_relevant": true,
+      "confidence": "high",
+      "source_quality": "secondary",
+      "source_caveat": null,
+      "source": {
+        "url": "https://www.atlantapublicschools.us/about/departments/operations/safety-security",
+        "title": "Office of Safety & Security — Atlanta Public Schools",
+        "retrieved_at": "2026-05-10T08:17:59.503120+00:00"
+      }
+    },
+    {
+      "date": null,
+      "description": "APS Capital Improvements program is actively managing school renovations, new construction, and critical infrastructure upgrades across the district, including a Phase III demolition contract valued at $443,518 for Williams and Metropolitan Parkway sites (week ending February 13, 2026). Capital construction program status summaries published October and December 2025 indicate ongoing multi-site construction activity.",
+      "category": "capital_project",
+      "verkada_relevant": true,
+      "confidence": "high",
+      "source_quality": "secondary",
+      "source_caveat": null,
+      "source": {
+        "url": "https://www.atlantapublicschools.us/about/departments/operations/facilities/capital-improvement",
+        "title": "Capital Improvement — Atlanta Public Schools",
+        "retrieved_at": "2026-05-10T08:17:59.503120+00:00"
+      }
+    },
+    {
+      "date": null,
+      "description": "APS unveiled its final APS Forward 2040 Comprehensive Long Range Facilities Plan to close or repurpose 16 schools starting after the 2026-2027 school year, driven by a $100–$135 million budget deficit and enrollment mismatch (70,000-seat capacity vs. ~50,000 enrolled students). Changes affect primarily elementary and middle schools on the west and south sides of Atlanta.",
+      "category": "restructuring",
+      "verkada_relevant": true,
+      "confidence": "high",
+      "source_quality": "secondary",
+      "source_caveat": null,
+      "source": {
+        "url": "https://www.fox5atlanta.com/news/atlanta-public-schools-unveils-final-plan-repurpose-16-schools-save-millions",
+        "title": "APS unveils final plan to repurpose 16 schools, save millions — FOX 5 Atlanta",
+        "retrieved_at": "2026-05-10T08:17:59.503120+00:00"
+      }
+    },
+    {
+      "date": "2026-04-16",
+      "description": "Superintendent Bryan Johnson and Board Chair Jessica Johnson announced plans to convert 7 closing school buildings into community hubs under the APS Forward 2040 initiative, with construction at pilot sites expected to begin within approximately 12 months.",
+      "category": "capital_project",
+      "verkada_relevant": true,
+      "confidence": "high",
+      "source_quality": "secondary",
+      "source_caveat": null,
+      "source": {
+        "url": "https://www.atlantanewsfirst.com/2026/04/16/atlanta-public-schools-add-7-new-community-hubs/",
+        "title": "Atlanta Public Schools to convert 7 closing schools into community hubs — Atlanta News First",
+        "retrieved_at": "2026-05-10T08:17:59.503120+00:00"
+      }
+    },
+    {
+      "date": "2025-11-01",
+      "description": "APS published its 2025 State of School Facilities Report (November 2025), which explicitly identifies safety and security as a tracked infrastructure dimension alongside technology, athletics, nutrition, and transportation across clusters including Carver Cluster.",
+      "category": "other",
+      "verkada_relevant": true,
+      "confidence": "medium",
+      "source_quality": "secondary",
+      "source_caveat": null,
+      "source": {
+        "url": "https://www.atlantapublicschools.us/about/departments/operations/facilities/planning-and-redistricting",
+        "title": "Planning and Redistricting — Atlanta Public Schools",
+        "retrieved_at": "2026-05-10T08:17:59.503120+00:00"
+      }
+    },
+    {
+      "date": null,
+      "description": "APS ramped up school resource officer (SRO) hiring following the September 2024 Apalachee High School shooting, per local broadcast reporting.",
+      "category": "other",
+      "verkada_relevant": true,
+      "confidence": "medium",
+      "source_quality": "weak",
+      "source_caveat": "Source is a YouTube video clip with minimal content; corroborated directionally by the Atlanta News First article on the same security event but the SRO hiring detail comes only from this broadcast clip.",
+      "source": {
+        "url": "https://www.youtube.com/watch?v=G_Qo1fGSO0g",
+        "title": "Metro Atlanta schools strengthening security after deadly Apalachee — YouTube",
+        "retrieved_at": "2026-05-10T08:17:59.503120+00:00"
+      }
+    }
+  ],
+  "vertical_match": {
+    "matched_vertical": "K-12",
+    "match_confidence": "high",
+    "match_reasoning": "NCES CCD identifies Atlanta Public Schools as a K-12 local education agency (LEAID 1300120) serving 50,325 students across 86 schools in Fulton County, GA — a textbook large urban K-12 district.",
+    "key_drivers_present": [
+      "school_safety",
+      "federal_funding_NDAA",
+      "Alyssa_s_Law_compliance",
+      "FERPA",
+      "parent_communication_during_incidents"
+    ],
+    "typical_pain_present": [
+      "fragmented_systems_across_school_sites",
+      "no_centralized_security_operations",
+      "aging_analog_cameras_with_no_remote_view"
+    ]
+  },
+  "technical_footprint": {
+    "cloud_native_indicators": [
+      {
+        "signal": "Minimal public web infrastructure — only 3 unique subdomains across 44 total certificates",
+        "evidence": "crt.sh records for atlantapublicschools.com show only 3 unique subdomains: atlantapublicschools.com, www.atlantapublicschools.com, www6.atlantapublicschools.com — indicating APS relies on external platforms rather than self-hosted cloud infrastructure",
+        "confidence": "high",
+        "source_quality": "primary",
+        "source_caveat": null,
+        "source": {
+          "url": "https://crt.sh/?q=%25.atlantapublicschools.com&output=json",
+          "title": "crt.sh certificate transparency — atlantapublicschools.com",
+          "retrieved_at": "2026-05-10T08:17:33.268524+00:00"
+        }
+      }
+    ],
+    "saas_stack_inferred": [
+      {
+        "vendor": "Canvas (Instructure)",
+        "evidence": "Multiple news articles confirm APS and metro Atlanta schools use Canvas as their primary learning management system; Canvas cyberattack (ShinyHunters ransomware group, May 2026) affected Georgia schools including metro Atlanta districts",
+        "confidence": "medium",
+        "source_quality": "secondary",
+        "source_caveat": null,
+        "source": {
+          "url": "https://www.atlantanewsfirst.com/2026/05/07/cybercriminal-group-reportedly-breaches-canvas-exposing-student-information/",
+          "title": "Cybercriminal group reportedly breaches Canvas, exposing student information",
+          "retrieved_at": "2026-05-10T08:17:59.503120+00:00"
+        }
+      },
+      {
+        "vendor": "PowerSchool",
+        "evidence": "r/k12sysadmin Security Watch post (2025-05-18, score 5) references PowerSchool breach exposing student and faculty data across thousands of school districts; PowerSchool is the dominant SIS in K-12 and referenced alongside Canvas by same practitioner community APS operates within",
+        "confidence": "inference",
+        "source_quality": "weak",
+        "source_caveat": "Reddit practitioner post references PowerSchool broadly across K-12; cannot confirm APS specifically uses PowerSchool without direct organizational evidence",
+        "source": {
+          "url": "https://www.reddit.com/r/k12sysadmin/comments/1kp9hwn/security_watch_51625/",
+          "title": "Security Watch 5/16/25 — r/k12sysadmin",
+          "retrieved_at": "2026-05-10T08:17:42.167669+00:00"
+        }
+      },
+      {
+        "vendor": "Google Workspace",
+        "evidence": "r/k12sysadmin post (score 38) references Denver Public Schools blocking ChatGPT for students and staff citing 'privacy, safety, and compliance concerns' within Google-managed environment; pattern consistent with large urban K-12 districts running Google Workspace",
+        "confidence": "inference",
+        "source_quality": "weak",
+        "source_caveat": "Reddit practitioner posts reference Google Workspace patterns in K-12 broadly; cannot confirm APS specifically uses Google Workspace from these posts alone",
+        "source": {
+          "url": "https://www.reddit.com/r/k12sysadmin/comments/1qrc5ks/denvers_decision_to_block_chatgpt/",
+          "title": "Denver's decision to block ChatGPT — r/k12sysadmin",
+          "retrieved_at": "2026-05-10T08:17:42.167669+00:00"
+        }
+      }
+    ],
+    "security_engineering_signals": [],
+    "physical_security_indicators": [
+      {
+        "signal": "Dedicated in-house Office of Safety and Security with own police department — evidence of formal physical security organizational structure",
+        "evidence": "APS launched in-house Office of Safety and Security in 2016-2017 school year with its own police department aligned to TRIAD model; APS Police work alongside Atlanta PD, Fulton County Sheriff, FBI, and GBI",
+        "confidence": "high",
+        "source_quality": "secondary",
+        "source_caveat": null,
+        "source": {
+          "url": "https://www.atlantapublicschools.us/about/departments/operations/safety-security",
+          "title": "Office of Safety & Security — Atlanta Public Schools",
+          "retrieved_at": "2026-05-10T08:17:59.503120+00:00"
+        }
+      },
+      {
+        "signal": "Active security vestibule construction across school renovations — capital program includes physical security infrastructure upgrades",
+        "evidence": "Carroll Daniel Construction documented addition of 2,100-square-foot security vestibule at Toomer Elementary School as part of APS renovation project; APS Capital Improvements program active with multiple school modernization projects",
+        "confidence": "high",
+        "source_quality": "secondary",
+        "source_caveat": null,
+        "source": {
+          "url": "https://www.carrolldaniel.com/case-study/atlanta-public-schools-projects/",
+          "title": "Atlanta Public Schools Projects — Carroll Daniel Construction",
+          "retrieved_at": "2026-05-10T08:17:59.503120+00:00"
+        }
+      },
+      {
+        "signal": "School resource officer expansion underway post-Apalachee shooting — district adding SRO capacity across all schools",
+        "evidence": "YouTube/news coverage confirms 'Atlanta Public Schools has ramped up its effort to add more school resource officers since the Apalachee High School shooting in September [2024]'",
+        "confidence": "medium",
+        "source_quality": "weak",
+        "source_caveat": "YouTube video snippet; content not fully verifiable from excerpt alone",
+        "source": {
+          "url": "https://www.youtube.com/watch?v=G_Qo1fGSO0g",
+          "title": "Metro Atlanta schools strengthening security after deadly Apalachee",
+          "retrieved_at": "2026-05-10T08:17:59.503120+00:00"
+        }
+      },
+      {
+        "signal": "Facilities Master Plan (APS Forward 2040) includes technology, safety and security as explicit capital planning categories",
+        "evidence": "APS Planning and Redistricting page lists 'infrastructure, technology, safety and security' as components of the Carver Cluster facilities signage; 2025 State of School Facilities Report published November 2025 covering all facilities",
+        "confidence": "medium",
+        "source_quality": "secondary",
+        "source_caveat": null,
+        "source": {
+          "url": "https://www.atlantapublicschools.us/about/departments/operations/facilities/planning-and-redistricting",
+          "title": "Planning and Redistricting — Atlanta Public Schools",
+          "retrieved_at": "2026-05-10T08:17:59.503120+00:00"
+        }
+      }
+    ],
+    "scale_indicators": {
+      "public_repos": 0,
+      "subdomain_count": 3,
+      "language_diversity": null
+    }
+  },
+  "practitioner_sentiment": {
+    "source_subreddits": [
+      "r/k12sysadmin",
+      "r/sysadmin"
+    ],
+    "total_posts_analyzed": 26,
+    "top_pain_themes": [
+      {
+        "theme": "Camera compliance and audio recording legal complexity in K-12",
+        "post_count": 1,
+        "representative_quote": "I messed up and told a school admin our cameras can record audio if we enabled it... I reached out to our superintendent and said I'm not enabling this until we get confirmation from the school board and lawyers. I know there are laws around recording audio with our security cameras. I am not too familiar with all the steps we have to take to be compliant.",
+        "linked_persona_pain": "no_centralized_security_operations",
+        "confidence": "inference",
+        "source_quality": "weak",
+        "source_caveat": "Reddit practitioner post from r/k12sysadmin; reflects individual K-12 sysadmin experience, not confirmed APS organizational policy or practice",
+        "source": {
+          "url": "https://www.reddit.com/r/k12sysadmin/comments/1r9yah0/cameras_with_audio_enabled/",
+          "title": "Cameras with Audio Enabled — r/k12sysadmin",
+          "retrieved_at": "2026-05-10T08:17:42.167669+00:00"
+        }
+      },
+      {
+        "theme": "MDM/endpoint management migration complexity and staff burden in K-12",
+        "post_count": 1,
+        "representative_quote": "Those MacBooks used to be managed by FileWave but we recently switched to Mosyle. Mosyle offers some great features for stronger security and convenience for the end-user... users can now use Google workspace to authenticate into their MacBooks.",
+        "linked_persona_pain": null,
+        "confidence": "inference",
+        "source_quality": "weak",
+        "source_caveat": "Reddit practitioner post from r/sysadmin; reflects individual K-12 IT experience, not APS-specific",
+        "source": {
+          "url": "https://www.reddit.com/r/sysadmin/comments/1m5jg93/weeks_worth_of_work_down_the_drain/",
+          "title": "Weeks worth of work down the drain — r/sysadmin",
+          "retrieved_at": "2026-05-10T08:17:42.167669+00:00"
+        }
+      },
+      {
+        "theme": "K-12 IT staff retention and burnout — experienced staff leaving for private sector",
+        "post_count": 1,
+        "representative_quote": "I'm on the verge of walking away from my 20 years serving public sector K12 schools over to a private sector vendor. It was a difficult choice, but one I had to do for my own mental sanity.",
+        "linked_persona_pain": null,
+        "confidence": "inference",
+        "source_quality": "weak",
+        "source_caveat": "Reddit practitioner post from r/k12sysadmin; reflects individual career sentiment, not APS-specific staffing situation",
+        "source": {
+          "url": "https://www.reddit.com/r/k12sysadmin/comments/1mmzcvi/walking_away/",
+          "title": "Walking away... — r/k12sysadmin",
+          "retrieved_at": "2026-05-10T08:17:42.167669+00:00"
+        }
+      },
+      {
+        "theme": "Physical security of network infrastructure in semi-public school spaces",
+        "post_count": 1,
+        "representative_quote": "The reason was to add physical security to several switches in semi-public spaces at work (school). A SoW wasn't clear enough, and a contractor just re-racked a bunch of wall mounted racks for me from open posts to… more open posts — it was supposed to be in locked cages.",
+        "linked_persona_pain": "no_centralized_security_operations",
+        "confidence": "inference",
+        "source_quality": "weak",
+        "source_caveat": "Reddit practitioner post from r/sysadmin; reflects individual K-12 sysadmin experience with physical security of network gear, not APS-specific",
+        "source": {
+          "url": "https://www.reddit.com/r/sysadmin/comments/1lwvlbv/wall_mount_lockable_rack_retrofits/",
+          "title": "Wall mount lockable rack retrofits — r/sysadmin",
+          "retrieved_at": "2026-05-10T08:17:42.167669+00:00"
+        }
+      }
+    ],
+    "vendor_mentions": [],
+    "trigger_evidence": [
+      {
+        "trigger_id": "campus_safety_compliance",
+        "evidence": "r/k12sysadmin post (score 29, 35 comments): K-12 sysadmin describes compliance uncertainty around enabling audio recording on school security cameras, requiring school board and legal sign-off — evidences that camera compliance in K-12 is an active operational pain point for IT staff managing physical security systems",
+        "confidence": "inference",
+        "source_quality": "weak",
+        "source_caveat": "Reddit practitioner post; reflects individual K-12 experience not specific to APS",
+        "source": {
+          "url": "https://www.reddit.com/r/k12sysadmin/comments/1r9yah0/cameras_with_audio_enabled/",
+          "title": "Cameras with Audio Enabled — r/k12sysadmin",
+          "retrieved_at": "2026-05-10T08:17:42.167669+00:00"
+        }
+      }
+    ]
+  },
+  "incident_history": {
+    "source": {
+      "url": "https://ocrportal.hhs.gov/ocr/breach/breach_report.jsf",
+      "title": "HHS OCR Breach Portal — Atlanta Public Schools query",
+      "retrieved_at": "2026-05-10T08:17:19.473426+00:00"
+    },
+    "total_breaches": 0,
+    "total_individuals_affected": 0,
+    "largest_breach": {
+      "date": null,
+      "individuals_affected": 0,
+      "breach_type": null,
+      "description": "No HIPAA breach records found for Atlanta Public Schools in HHS OCR portal. APS is a K-12 district, not a HIPAA-covered entity — absence of HHS records is expected and not a compliance gap."
+    },
+    "type_distribution": {
+      "Hacking/IT Incident": 0,
+      "Unauthorized Access/Disclosure": 0,
+      "Theft": 0,
+      "Loss": 0,
+      "Other": 0
+    },
+    "regulatory_exposure": "APS is not a HIPAA-covered entity; HHS OCR breach data is not applicable. Relevant regulatory exposure for APS is FERPA (student data), NDAA (federal hardware procurement compliance), and Georgia school safety statutes. The Canvas/ShinyHunters ransomware breach (May 2026) affected Georgia schools broadly and may have exposed APS student data (names, student IDs, email addresses) via the third-party LMS vendor, but this is a vendor breach not reportable to HHS OCR.",
+    "confidence": "high",
+    "source_quality": "primary"
+  },
+  "pain_hypotheses": [
+    {
+      "hypothesis": "APS is executing a multi-school capital renovation program (Toomer Elementary 70,000 sq ft modernization with security vestibule, Beecher Hills Elementary 50,000 sq ft modernization, 7 schools converting to community hubs, 16 schools closing/repurposing by 2027-28) — each new construction and renovation is a clean-sheet opportunity to specify security infrastructure, but without a district-wide standard platform, each project likely inherits the integrator's preferred incumbent system, creating fragmented security across sites.",
+      "evidence_basis": [
+        "Carroll Daniel Construction documents 10 APS K-12 projects including Toomer Elementary security vestibule addition and Beecher Hills modernization, with ongoing renovation pipeline (carrolldaniel.com)",
+        "APS Capital Improvements program active with demolition of Williams and Metropolitan Parkway schools (Phase III contract $443,518), community hub conversions for 7 schools, and 16 school closures/repurposings by 2027-28 school year (atlantapublicschools.us/about/departments/operations/facilities/capital-improvement)"
+      ],
+      "linked_persona_pain": "fragmented_systems_across_school_sites",
+      "confidence": "medium",
+      "source_quality": "secondary",
+      "source_caveat": null,
+      "sources": [
+        {
+          "url": "https://www.carrolldaniel.com/case-study/atlanta-public-schools-projects/",
+          "title": "Atlanta Public Schools Projects — Carroll Daniel Construction",
+          "retrieved_at": "2026-05-10T08:17:59.503120+00:00"
+        },
+        {
+          "url": "https://www.atlantapublicschools.us/about/departments/operations/facilities/capital-improvement",
+          "title": "Capital Improvement — Atlanta Public Schools",
+          "retrieved_at": "2026-05-10T08:17:59.503120+00:00"
+        }
+      ]
+    },
+    {
+      "hypothesis": "APS faced multiple concurrent security threats in September 2024 — four separate threats of violence investigated in days following the Apalachee High School shooting, police/FBI/GBI/APD coordination required, and a shooting at Benjamin E. Mays High School injuring four students — yet the district's response relied on increased police patrols rather than technology-based detection or real-time alerting infrastructure, suggesting the current camera and security system cannot support proactive threat detection at the district level.",
+      "evidence_basis": [
+        "Atlanta News First (2024-09-11): APS investigated 4 separate threats of violence after Apalachee shooting, coordinating with FBI, GBI, and Atlanta PD; district sent emergency email to all parents and staff about social media threats (atlantanewsfirst.com)",
+        "Atlanta PD news release confirms four students sustained gunshot wounds at Benjamin E. Mays High School (3450 Benjamin E. Mays Dr. SW), documented as a security incident at an APS school (atlantapd.org)"
+      ],
+      "linked_persona_pain": "no_centralized_security_operations",
+      "confidence": "medium",
+      "source_quality": "secondary",
+      "source_caveat": null,
+      "sources": [
+        {
+          "url": "https://www.atlantanewsfirst.com/2024/09/11/police-increase-security-atlanta-public-schools-thursday-over-online-threats/",
+          "title": "Police increase security at Atlanta Public Schools over online threats",
+          "retrieved_at": "2026-05-10T08:17:59.503120+00:00"
+        },
+        {
+          "url": "https://www.atlantapd.org/Home/Components/News/News/5283/71",
+          "title": "Four People Shot: 3450 Benjamin E. Mays Dr. SW",
+          "retrieved_at": "2026-05-10T08:17:59.503120+00:00"
+        }
+      ]
+    },
+    {
+      "hypothesis": "APS is undergoing a major structural consolidation — closing or repurposing 16 schools, facing a $100-135 million budget deficit, and reducing capacity by ~5,000 seats by 2027-28 — creating a forcing function to rationalize security infrastructure contracts alongside facilities: maintaining separate security maintenance agreements for schools being closed is wasted spend, while newly consolidated campuses will need unified security coverage across merged student populations.",
+      "evidence_basis": [
+        "Fox 5 Atlanta / WSB Radio: APS final plan closes or repurposes 16 schools after 2026-27 school year; district faces $100M+ budget deficit and projects $90M savings from restructuring (fox5atlanta.com, wsbradio.com)",
+        "RedefinED Atlanta / Buckhead.com: APS Forward 2040 Comprehensive Long Range Facilities Plan cited $135M budget deficit; 42 of 73 schools currently under-enrolled with aging facilities throughout district (redefinedatlanta.org)"
+      ],
+      "linked_persona_pain": "fragmented_systems_across_school_sites",
+      "confidence": "medium",
+      "source_quality": "secondary",
+      "source_caveat": null,
+      "sources": [
+        {
+          "url": "https://www.fox5atlanta.com/news/atlanta-public-schools-unveils-final-plan-repurpose-16-schools-save-millions",
+          "title": "APS unveils final plan to repurpose 16 schools, save millions",
+          "retrieved_at": "2026-05-10T08:17:59.503120+00:00"
+        },
+        {
+          "url": "https://redefinedatlanta.org/atlanta-public-schools-consolidation-plan-concerns-buckhead-parents",
+          "title": "Atlanta Public Schools Consolidation Plan Concerns Buckhead Parents — RedefinED Atlanta",
+          "retrieved_at": "2026-05-10T08:17:59.503120+00:00"
+        }
+      ]
+    }
+  ],
+  "hiring_signals": {
+    "hiring_intensity": {
+      "total_active_reqs": 47,
+      "total_active_reqs_confidence": "medium",
+      "category_distribution": {
+        "engineering": 0,
+        "security_safety": 2,
+        "operations_logistics": 3,
+        "facilities_maintenance": 0,
+        "sales_marketing": 0,
+        "IT_infrastructure": 0,
+        "executive_leadership": 3,
+        "hr_finance_legal": 0,
+        "other": 39
+      },
+      "intensity_signal": "steady",
+      "intensity_caveat": "47 postings captured via SerpAPI Google Jobs. Atlanta Public Schools operates 87+ schools across Atlanta and likely posts far more positions than captured here — the majority of instructional and support postings likely flow through the district's own applicant tracking system (Applitrack/NEOGOV) and are not fully indexed by Google Jobs. The 47 captured postings are directionally useful but should not be treated as a complete picture of district hiring volume. The heavy skew toward instructional and paraprofessional roles (39 of 47 in 'other') reflects Google Jobs indexing bias toward aggregator-listed postings rather than comprehensive district hiring.",
+      "confidence": "medium",
+      "source_quality": "secondary",
+      "source_caveat": null,
+      "source": {
+        "url": "https://www.ziprecruiter.com/c/Atlanta-Public-Schools/Job/",
+        "title": "Atlanta Public Schools — Google Jobs via SerpAPI (47 postings captured across ZipRecruiter, LinkedIn, Indeed, Lensa, k12jobspot aggregators)",
+        "retrieved_at": "2026-05-10T08:17:38.520436+00:00"
+      }
+    },
+    "security_team_signals": [
+      {
+        "role_title": "Senior Security Systems Specialist",
+        "category": "physical",
+        "location": "Atlanta, GA",
+        "seniority": "mid",
+        "salary_range": null,
+        "evidence": "Posting description: 'The Senior Security Systems Specialist assists the Coordinator (Security Systems) in overseeing all safety/life support systems of Atlanta Public Schools... Facilitates Life Safety System installations with construction department and with in-house technical team... Performs server and client upgrades, backups and archival plans and/or SQL database administration for all Life Safety Systems throughout the District... Installs, configures, programs, tests and implements and coordinates software and hardware for all life safety systems.' Role explicitly oversees district-wide physical security and life safety systems infrastructure, coordinates external security vendors, and manages server/software for security systems. Posted 3 days ago on LinkedIn.",
+        "confidence": "high",
+        "source_quality": "secondary",
+        "source_caveat": null,
+        "source": {
+          "url": "https://www.linkedin.com/jobs/view/senior-security-systems-specialist-at-atlanta-public-schools-4411415440",
+          "title": "Senior Security Systems Specialist — Atlanta Public Schools via LinkedIn",
+          "retrieved_at": "2026-05-10T08:17:38.520436+00:00"
+        }
+      },
+      {
+        "role_title": "SCHOOL RESOURCE OFFICER - ELEMENTARY SCHOOL 202-DAY (GEORGIA POST CERTIFIED PEACE OFFICER CANDIDA...)",
+        "category": "physical",
+        "location": "Atlanta, GA",
+        "seniority": "frontline",
+        "salary_range": null,
+        "evidence": "Posting description: 'Position Type: SAFETY... The School Resource Officer supports and facilitates the educational process within the Atlanta Public School System by providing a safe and secure environment... patrol district property to protect students, staff, and visitors from physical harm and prevent loss to district property resulting from criminal activity.' Categorized under Operations: Police. Georgia POST certified peace officer requirement. Originally posted 10/23/2025 — indicates an ongoing open requisition for frontline campus law enforcement.",
+        "confidence": "high",
+        "source_quality": "secondary",
+        "source_caveat": null,
+        "source": {
+          "url": "https://www.ziprecruiter.com/c/Atlanta-Public-Schools/Job/SCHOOL-RESOURCE-OFFICER-ELEMENTARY-SCHOOL-202-DAY-(GEORGIA-POST-CERTIFIED-PEACE-OFFICER-CANDIDA.../-in-Atlanta,GA?jid=4e5b2f7b4d014efa",
+          "title": "School Resource Officer - Elementary School 202-Day — Atlanta Public Schools via ZipRecruiter",
+          "retrieved_at": "2026-05-10T08:17:38.520436+00:00"
+        }
+      },
+      {
+        "role_title": "SCHOOL RESOURCE OFFICER 261-DAY (EVENING PATROL 4:00 PM - 12:00 AM)",
+        "category": "physical",
+        "location": "Atlanta, GA",
+        "seniority": "frontline",
+        "salary_range": null,
+        "evidence": "Title explicitly designates evening patrol shift (4:00 PM–12:00 AM), 261-day calendar — a longer contract year than standard 202-day SRO. Two distinct SRO postings (202-day elementary + 261-day evening patrol) indicate APS is actively building out its school police staffing across shift coverage, not just backfilling a single vacancy.",
+        "confidence": "high",
+        "source_quality": "secondary",
+        "source_caveat": null,
+        "source": {
+          "url": "https://www.ziprecruiter.com/c/Atlanta-Public-Schools/Job/SCHOOL-RESOURCE-OFFICER-261-DAY-(EVENING-PATROL-4:00-PM-12:00-AM)/-in-Atlanta,GA?jid=3fa02e1ea099ad22",
+          "title": "School Resource Officer 261-Day (Evening Patrol) — Atlanta Public Schools via ZipRecruiter",
+          "retrieved_at": "2026-05-10T08:17:38.520436+00:00"
+        }
+      }
+    ],
+    "security_team_absence": null,
+    "trigger_evidence": [
+      {
+        "trigger_id": "hiring_security_intensity",
+        "evidence": "Senior Security Systems Specialist posting (LinkedIn, posted 3 days ago) describes district-wide oversight of life safety systems, security system vendor coordination, server/software administration for security systems across all APS facilities. Two additional SRO postings (202-day elementary, 261-day evening patrol) confirm active security personnel expansion.",
+        "matched_titles": ["Security Systems Engineer"],
+        "confidence": "medium",
+        "source_quality": "secondary",
+        "source_caveat": "Exact title match to persona's 'Security Systems Engineer' detect_signal is not present — matched to 'Senior Security Systems Specialist' which is functionally equivalent but not verbatim.",
+        "source": {
+          "url": "https://www.linkedin.com/jobs/view/senior-security-systems-specialist-at-atlanta-public-schools-4411415440",
+          "title": "Senior Security Systems Specialist — Atlanta Public Schools via LinkedIn",
+          "retrieved_at": "2026-05-10T08:17:38.520436+00:00"
+        }
+      },
+      {
+        "trigger_id": "ndaa_compliance_pressure",
+        "evidence": "HOURLY PARENT LIAISON posting confirms APS operates Title I, Part A schools: 'They provide support to Atlanta Public Schools Title I, Part A schools by implementing policies & coordinating programs to build capacity for parental involvement and ensure compliance with federal Title I, Part A regulatory guidelines.' This confirms APS receives federal Title I funding, making NDAA hardware compliance applicable.",
+        "matched_titles": [],
+        "confidence": "high",
+        "source_quality": "weak",
+        "source_caveat": "Posting sourced via Lensa aggregator. The Title I reference is corroborating evidence for federal funding status.",
+        "source": {
+          "url": "https://lensa.com/job-v1/atlanta-public-schools/atlanta-ga/parent-partner/84ad0b3fb1fb48b797eb2dfedbdb03d5",
+          "title": "Hourly Parent Liaison — Atlanta Public Schools via Lensa",
+          "retrieved_at": "2026-05-10T08:17:38.520436+00:00"
+        }
+      },
+      {
+        "trigger_id": "campus_safety_compliance",
+        "evidence": "Two active SRO postings (elementary 202-day and evening patrol 261-day) under 'Operations: Police' categorization confirm APS maintains a district police function. Senior Security Systems Specialist posting confirms active management of life safety systems across district facilities.",
+        "matched_titles": [],
+        "confidence": "medium",
+        "source_quality": "secondary",
+        "source_caveat": null,
+        "source": {
+          "url": "https://www.ziprecruiter.com/c/Atlanta-Public-Schools/Job/SCHOOL-RESOURCE-OFFICER-ELEMENTARY-SCHOOL-202-DAY-(GEORGIA-POST-CERTIFIED-PEACE-OFFICER-CANDIDA.../-in-Atlanta,GA?jid=4e5b2f7b4d014efa",
+          "title": "School Resource Officer - Elementary School 202-Day — Atlanta Public Schools via ZipRecruiter",
+          "retrieved_at": "2026-05-10T08:17:38.520436+00:00"
+        }
+      },
+      {
+        "trigger_id": "multi_site_sprawl",
+        "evidence": "Senior Security Systems Specialist JD states the role oversees 'all Life Safety Systems throughout the District' — 'throughout the District' in the context of APS (86 schools) directly signals multi-site security infrastructure management from a centralized function.",
+        "matched_titles": [],
+        "confidence": "medium",
+        "source_quality": "secondary",
+        "source_caveat": "Multi-site inference drawn from JD language combined with known APS school count.",
+        "source": {
+          "url": "https://www.linkedin.com/jobs/view/senior-security-systems-specialist-at-atlanta-public-schools-4411415440",
+          "title": "Senior Security Systems Specialist — Atlanta Public Schools via LinkedIn",
+          "retrieved_at": "2026-05-10T08:17:38.520436+00:00"
+        }
+      }
+    ],
+    "geographic_expansion_signal": [
+      {
+        "location": "Atlanta, GA",
+        "role_count": 47,
+        "interpretation": "Existing hub — all 47 captured postings are in Atlanta, GA, consistent with APS being a single-city school district. No geographic expansion signal; APS does not expand geographically.",
+        "confidence": "high",
+        "source_quality": "secondary",
+        "source_caveat": null,
+        "source": {
+          "url": "https://www.ziprecruiter.com/c/Atlanta-Public-Schools/Job/",
+          "title": "Atlanta Public Schools — Google Jobs via SerpAPI (all postings, Atlanta, GA)",
+          "retrieved_at": "2026-05-10T08:17:38.520436+00:00"
+        }
+      }
+    ]
+  },
+  "cooperative_purchasing": {
+    "available_vehicles": [
+      {
+        "vehicle": "Sourcewell",
+        "relevant_solicitations": [
+          {
+            "title": "Law Enforcement Equipment",
+            "id": "11326",
+            "date": "June 16, 2026",
+            "url": "https://www.sourcewell-mn.gov/solicitations/11326",
+            "relevance": "Open solicitation for law enforcement equipment — APS operates its own police department (APS Police) and could procure cameras, access control, and intercoms under this vehicle."
+          },
+          {
+            "title": "Catalog Solutions for Public Safety and Emergency Management Equipment, Tools, and Supplies",
+            "id": "11335",
+            "date": "May 12, 2026",
+            "url": "https://www.sourcewell-mn.gov/solicitations/11335",
+            "relevance": "Open solicitation for public safety equipment — directly applicable to APS's Office of Safety & Security for surveillance, alarms, and emergency communication infrastructure."
+          }
+        ],
+        "verkada_contract_status": "Verkada holds Sourcewell contract #041524-VRK for video surveillance and physical security. Georgia K-12 districts can purchase through Sourcewell without a full RFP.",
+        "verkada_products": null,
+        "competitor_landscape": null,
+        "confidence": "high",
+        "source_quality": "primary",
+        "source": {"url": "https://www.sourcewell-mn.gov/solicitations", "title": "Sourcewell Solicitations Portal", "retrieved_at": "2026-05-10T08:17:50.761378+00:00"}
+      },
+      {
+        "vehicle": "OMNIA Partners",
+        "relevant_solicitations": [
+          {
+            "title": "Weapons and Threat Detection Equipment, Services, and Other Solutions (Verkada — R250206)",
+            "id": "2137",
+            "date": "April 2025 – March 2028 (two 1-year renewals through March 2030)",
+            "url": "https://www.omniapartners.com/suppliers/verkada/request-information?hsCtaAttrib=188278113051",
+            "relevance": "Verkada's own OMNIA contract — APS can purchase cameras, access control, alarms, and threat detection equipment directly without full RFP. Contract active through at least March 2028."
+          },
+          {
+            "title": "Facility Technology Integration & Security System Services (Convergint — R220702)",
+            "id": "687",
+            "

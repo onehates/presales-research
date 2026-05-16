@@ -15,6 +15,7 @@ TEMPLATE_DIR = PROJECT_ROOT / "templates"
 BRIEFS_DIR = PROJECT_ROOT / "briefs"
 PERSONA_PATH = PROJECT_ROOT / "persona" / "verkada-se.yml"
 GLOSSARY_PATH = PROJECT_ROOT / "data" / "glossary.yml"
+PRODUCTS_PATH = PROJECT_ROOT / "persona" / "verkada-products.yml"
 APP_VERSION = "1.3.0"
 
 
@@ -257,6 +258,54 @@ class _SilentUndefined(Undefined):
         return self
 
 
+_KNOWN_DOMAINS = {
+    "home-depot": "homedepot.com",
+    "walmart": "walmart.com",
+    "target-corporation": "target.com",
+    "target-corp": "target.com",
+    "grady-memorial-hospital": "gradymem.org",
+    "atlanta-public-schools": "atlantapublicschools.us",
+    "fulton-county-schools": "fultonschools.org",
+    "city-of-atlanta": "atlantaga.gov",
+    "georgia-institute-of-technology": "gatech.edu",
+    "pasadena-city-college": "pasadena.edu",
+    "motorola-solutions": "motorolasolutions.com",
+}
+
+
+def _resolve_company_domain(slug: str, data: dict, json_path: Path = None) -> str:
+    """Multi-strategy domain resolution. Returns domain string or empty string."""
+    # Strategy 1: brief JSON snapshot field
+    snap = data.get("snapshot", {}) if isinstance(data, dict) else {}
+    for field in ("company_domain", "website", "url", "homepage", "domain"):
+        v = snap.get(field) or data.get(field)
+        if v and isinstance(v, str) and "." in v:
+            cleaned = v.replace("https://", "").replace("http://", "").rstrip("/").split("/")[0]
+            if "." in cleaned:
+                return cleaned.lower()
+
+    # Strategy 2: cached sources/{slug}/website.json
+    if json_path:
+        sources_dir = json_path.parent.parent / "sources" / slug
+    else:
+        sources_dir = Path("sources") / slug
+    website_cache = sources_dir / "website.json"
+    if website_cache.exists():
+        try:
+            ws = json.load(open(website_cache))
+            domain = ws.get("domain", "")
+            if domain and "." in domain:
+                return domain.strip().lower()
+        except Exception:
+            pass
+
+    # Strategy 3: known account overrides
+    if slug in _KNOWN_DOMAINS:
+        return _KNOWN_DOMAINS[slug]
+
+    return ""
+
+
 def render_battlecard(brief_data: dict, slug: str = "", date: str = "") -> str:
     """Render a battlecard HTML string from brief data."""
     brief_data = _sanitize_data(brief_data)
@@ -269,6 +318,19 @@ def render_battlecard(brief_data: dict, slug: str = "", date: str = "") -> str:
     env.globals["APP_VERSION"] = APP_VERSION
     template = env.get_template("battlecard.html")
     return template.render(data=brief_data, slug=slug, date=date)
+
+
+def render_discovery(brief_data: dict, slug: str = "", date: str = "", brief_subtitle: str = "") -> str:
+    """Render a discovery prep HTML string from brief data."""
+    brief_data = _sanitize_data(brief_data)
+    env = Environment(
+        loader=FileSystemLoader(str(TEMPLATE_DIR)),
+        autoescape=False,
+        undefined=_SilentUndefined,
+    )
+    env.filters["humanize_id"] = humanize_id
+    template = env.get_template("discovery.html")
+    return template.render(data=brief_data, slug=slug, date=date, brief_subtitle=brief_subtitle)
 
 
 def render_brief(json_path: Path) -> Path:
@@ -302,8 +364,37 @@ def render_brief(json_path: Path) -> Path:
             glossary_data = yaml.safe_load(gf)
             glossary_terms = glossary_data.get("terms", [])
 
+    # Load full product catalog
+    full_product_catalog = []
+    if PRODUCTS_PATH.exists():
+        with open(PRODUCTS_PATH) as pcf:
+            pcat = yaml.safe_load(pcf)
+            full_product_catalog = pcat.get("products", [])
+
+    # Resolve company_domain with multi-strategy fallback
+    slug = data.get("metadata", {}).get("company_slug", "")
+    company_domain = _resolve_company_domain(slug, data, json_path)
+
+    # Build medium-detail subtitle: vertical · city, state · ticker
+    snap = data.get("snapshot", {})
+    subtitle_parts = []
+    vertical = snap.get("vertical", "")
+    if vertical:
+        subtitle_parts.append(vertical)
+    hq_city = snap.get("headquarters_city", "")
+    hq_state = snap.get("headquarters_state", "")
+    if hq_city and hq_state:
+        subtitle_parts.append(f"{hq_city}, {hq_state}")
+    elif hq_state:
+        subtitle_parts.append(hq_state)
+    ticker = snap.get("ticker")
+    if ticker and ticker != "None" and ticker.lower() != "null":
+        exchange = snap.get("ticker_exchange") or "NYSE"
+        subtitle_parts.append(f"{exchange}: {ticker}")
+    brief_subtitle = " · ".join(subtitle_parts)
+
     template = env.get_template("brief.html")
-    html = template.render(data=data, chat_starter_prompts=chat_starter_prompts, glossary_terms=glossary_terms)
+    html = template.render(data=data, chat_starter_prompts=chat_starter_prompts, glossary_terms=glossary_terms, company_domain=company_domain, brief_subtitle=brief_subtitle, full_product_catalog=full_product_catalog)
 
     out_path = json_path.with_suffix(".html")
     out_path.write_text(html)

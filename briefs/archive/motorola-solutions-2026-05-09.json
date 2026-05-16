@@ -1,0 +1,56 @@
+{
+  "status": "insufficient_data",
+  "reason": "company-bg subagent failed \u2014 cannot generate brief without company snapshot",
+  "subagent_outputs": {
+    "company-bg": {
+      "status": "insufficient_data",
+      "reason": "rate_limited_after_3_retries"
+    },
+    "tech-and-pain": {
+      "status": "insufficient_data",
+      "reason": "rate_limited_after_3_retries"
+    },
+    "hiring-signals": {
+      "status": "insufficient_data",
+      "reason": "rate_limited_after_3_retries"
+    }
+  },
+  "metadata": {
+    "company_slug": "motorola-solutions",
+    "company_name": "Motorola Solutions",
+    "vertical": "unknown",
+    "generated_at": "2026-05-09T10:50:01.269509+00:00",
+    "agents_used": [
+      "company-bg",
+      "tech-and-pain",
+      "hiring-signals"
+    ],
+    "models_used": {
+      "subagents": "sonnet",
+      "synthesizer": "opus"
+    },
+    "runtime_seconds": 173.1,
+    "phase1_status": {
+      "nces": "insufficient_data",
+      "clery": "insufficient_data",
+      "sam": "ok",
+      "sourcewell": "ok (4 keywords)",
+      "tips": "ok (4 keywords)",
+      "github": "ok",
+      "hhs": "no_matches",
+      "ga_procurement": "ok (4 keywords)",
+      "atlanta_procurement": "ok (4 keywords)",
+      "sled_procurement": "insufficient_data",
+      "omnia": "ok (4 keywords)",
+      "costars": "ok (4 keywords)",
+      "hgac": "ok (4 keywords)",
+      "sec": "ok",
+      "indeed": "ok",
+      "news": "ok",
+      "reddit": "ok",
+      "crtsh": "insufficient_data",
+      "leadership": "insufficient_data",
+      "champion_signals": "insufficient_data"
+    }
+  }
+}

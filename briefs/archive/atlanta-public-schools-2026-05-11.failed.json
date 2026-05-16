@@ -1,0 +1,42 @@
+{
+  "status": "insufficient_data",
+  "reason": "ANTHROPIC_API_KEY not set",
+  "metadata": {
+    "company_slug": "atlanta-public-schools",
+    "company_name": "Atlanta Public Schools",
+    "vertical": "unknown",
+    "generated_at": "2026-05-11T14:02:00.180965+00:00",
+    "agents_used": [
+      "company-bg",
+      "tech-and-pain",
+      "hiring-signals"
+    ],
+    "models_used": {
+      "subagents": "sonnet",
+      "synthesizer": "opus"
+    },
+    "runtime_seconds": 234.6,
+    "phase1_status": {
+      "indeed": "insufficient_data",
+      "news": "insufficient_data",
+      "sam": "insufficient_data",
+      "sec": "No SEC-registered company found matching 'Atlanta Public Schools'. Try using the",
+      "tips": "insufficient_data",
+      "github": "ok",
+      "hhs": "no_matches",
+      "sourcewell": "ok (4 keywords)",
+      "atlanta_procurement": "insufficient_data",
+      "clery": "insufficient_data",
+      "ga_procurement": "insufficient_data",
+      "sled_procurement": "insufficient_data",
+      "omnia": "ok (4 keywords)",
+      "hgac": "ok (4 keywords)",
+      "costars": "ok (4 keywords)",
+      "crtsh": "ok",
+      "nces": "ok",
+      "reddit": "ok",
+      "leadership": "timeout (>60s)",
+      "champion_signals": "cached (leadership <24h)"
+    }
+  }
+}

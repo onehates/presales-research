@@ -1,0 +1,56 @@
+{
+  "status": "insufficient_data",
+  "reason": "company-bg subagent failed \u2014 cannot generate brief without company snapshot",
+  "subagent_outputs": {
+    "company-bg": {
+      "status": "insufficient_data",
+      "reason": "rate_limited_after_3_retries"
+    },
+    "tech-and-pain": {
+      "status": "insufficient_data",
+      "reason": "rate_limited_after_3_retries"
+    },
+    "hiring-signals": {
+      "status": "insufficient_data",
+      "reason": "rate_limited_after_3_retries"
+    }
+  },
+  "metadata": {
+    "company_slug": "pasadena-city-college",
+    "company_name": "Pasadena City College",
+    "vertical": "unknown",
+    "generated_at": "2026-05-09T10:51:50.320229+00:00",
+    "agents_used": [
+      "company-bg",
+      "tech-and-pain",
+      "hiring-signals"
+    ],
+    "models_used": {
+      "subagents": "sonnet",
+      "synthesizer": "opus"
+    },
+    "runtime_seconds": 108.5,
+    "phase1_status": {
+      "sec": "No SEC-registered company found matching 'Pasadena City College'. Try using the ",
+      "clery": "insufficient_data",
+      "nces": "ok",
+      "sourcewell": "ok (4 keywords)",
+      "tips": "ok (4 keywords)",
+      "sam": "ok",
+      "hhs": "no_matches",
+      "ga_procurement": "ok (4 keywords)",
+      "atlanta_procurement": "ok (4 keywords)",
+      "sled_procurement": "insufficient_data",
+      "omnia": "ok (4 keywords)",
+      "costars": "ok (4 keywords)",
+      "hgac": "ok (4 keywords)",
+      "github": "insufficient_data",
+      "leadership": "insufficient_data",
+      "indeed": "ok",
+      "news": "ok",
+      "reddit": "ok",
+      "crtsh": "insufficient_data",
+      "champion_signals": "insufficient_data"
+    }
+  }
+}

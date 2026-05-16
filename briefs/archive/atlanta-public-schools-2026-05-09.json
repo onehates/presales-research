@@ -1,0 +1,501 @@
+{
+  "status": "error",
+  "reason": "Expecting ',' delimiter: line 728 column 4 (char 42373)",
+  "subagent_outputs": {
+    "company-bg": {
+      "entity_type": "k12_district",
+      "snapshot": {
+        "name": "Atlanta Public Schools",
+        "vertical": "K-12",
+        "ticker": null,
+        "sic_code": "8211",
+        "sic_description": "Elementary & Secondary Schools",
+        "headquarters_state": "GA",
+        "size_indicator": "50,325 students across 86 schools; 3,979 FTE teachers; 8,963 FTE staff",
+        "confidence": "high",
+        "source_quality": "primary",
+        "sources": [
+          {
+            "url": "https://educationdata.urban.org/api/v1/school-districts/ccd/directory/2022/?leaid=1300120",
+            "title": "NCES CCD \u2014 Atlanta Public Schools (LEAID 1300120)",
+            "retrieved_at": "2026-05-09T06:13:11Z"
+          }
+        ]
+      },
+      "federal_funding_profile": {
+        "has_federal_funding": true,
+        "title_i_status": "86 of 86 schools (100%) Title I eligible",
+        "frpl_percentage": 71.3,
+        "frpl_detail": "35,896 of 50,325 students (71.3%)",
+        "ndaa_exposure": "Federal funding recipient \u2014 must comply with NDAA Section 889. Existing security hardware from Hikvision/Dahua must be identified and replaced to maintain federal funding eligibility.",
+        "funding_programs": [
+          "Title I",
+          "Free/Reduced Price Lunch"
+        ],
+        "confidence": "high",
+        "source_quality": "primary",
+        "source": {
+          "url": "https://educationdata.urban.org/api/v1/school-districts/ccd/directory/2022/?leaid=1300120",
+          "title": "NCES CCD \u2014 Atlanta Public Schools funding indicators",
+          "retrieved_at": "2026-05-09T06:13:11Z"
+        }
+      },
+      "leadership": "insufficient_data",
+      "recent_material_events": [
+        {
+          "date": "2025-12-04",
+          "description": "Atlanta Public Schools Board of Education voted unanimously to approve APS Forward 2040 plan closing or repurposing 16 schools district-wide beginning in 2027, expected to save $25 million annually addressing a $135 million budget deficit.",
+          "category": "restructuring",
+          "verkada_relevant": true,
+          "confidence": "high",
+          "source_quality": "secondary",
+          "source_caveat": null,
+          "source": {
+            "url": "https://roughdraftatlanta.com/2025/12/04/atlanta-board-of-education-approves-consolidation-plan/",
+            "title": "Atlanta Board of Education approves consolidation plan - Rough Draft Atlanta",
+            "retrieved_at": "2026-05-09T06:20:54Z"
+          }
+        },
+        {
+          "date": "2026-04-16",
+          "description": "Atlanta Public Schools converting 7 closing schools into community hubs with the first operational at former Oglethorpe Elementary School, serving several thousand families in first 18 months.",
+          "category": "capital_project",
+          "verkada_relevant": true,
+          "confidence": "high",
+          "source_quality": "secondary",
+          "source_caveat": null,
+          "source": {
+            "url": "https://www.atlantanewsfirst.com/2026/04/16/atlanta-public-schools-add-7-new-community-hubs/",
+            "title": "Atlanta Public Schools to convert 7 closing schools into community hubs",
+            "retrieved_at": "2026-05-09T06:20:54Z"
+          }
+        },
+        {
+          "date": "2024-09-12",
+          "description": "Atlanta Public Schools heightened security and patrols at all 86 district schools following social media threats of violence, coordinated by school police force.",
+          "category": "safety_incident",
+          "verkada_relevant": true,
+          "confidence": "high",
+          "source_quality": "secondary",
+          "source_caveat": null,
+          "source": {
+            "url": "https://www.atlantanewsfirst.com/2024/09/11/police-increase-security-atlanta-public-schools-thursday-over-online-threats/",
+            "title": "Police increase security at Atlanta Public Schools over online threats",
+            "retrieved_at": "2026-05-09T06:20:54Z"
+          }
+        },
+        {
+          "date": "2026-05-07",
+          "description": "Cybercriminal group ShinyHunters breached Canvas learning management system, potentially exposing student and staff information including names, student ID numbers, messages and email addresses across APS and thousands of other districts nationwide.",
+          "category": "regulatory",
+          "verkada_relevant": false,
+          "confidence": "high",
+          "source_quality": "secondary",
+          "source_caveat": null,
+          "source": {
+            "url": "https://www.atlantanewsfirst.com/2026/05/07/cybercriminal-group-reportedly-breaches-canvas-exposing-student-information/",
+            "title": "Cybercriminal group reportedly breaches Canvas, exposing student information",
+            "retrieved_at": "2026-05-09T06:20:54Z"
+          }
+        }
+      ],
+      "vertical_match": {
+        "matched_vertical": "K-12",
+        "match_confidence": "high",
+        "match_reasoning": "NCES CCD identifies Atlanta Public Schools as a K-12 LEA (LEAID 1300120) serving 50,325 students across 86 schools in Fulton County, GA with 100% Title I participation.",
+        "key_drivers_present": [
+          "school_safety",
+          "federal_funding_NDAA",
+          "FERPA",
+          "parent_communication_during_incidents"
+        ],
+        "typical_pain_present": [
+          "fragmented_systems_across_school_sites",
+          "no_centralized_security_operations"
+        ]
+      }
+    },
+    "tech-and-pain": {
+      "tech_footprint": {
+        "cloud_native_indicators": [
+          {
+            "signal": "Limited subdomain footprint suggesting minimal cloud-native adoption",
+            "evidence": "Only 3 unique subdomains detected: atlantapublicschools.com, www.atlantapublicschools.com, www6.atlantapublicschools.com \u2014 no cloud/API subdomains like typical cloud-first districts",
+            "confidence": "medium",
+            "source_quality": "primary",
+            "source_caveat": null,
+            "source": {
+              "url": "https://crt.sh/?q=%25.atlantapublicschools.com&output=json",
+              "title": "crt.sh certificate transparency \u2014 atlantapublicschools.com",
+              "retrieved_at": "2026-05-09T06:13:28.590437+00:00"
+            }
+          }
+        ],
+        "saas_stack_inferred": [
+          {
+            "vendor": "Insufficient data",
+            "evidence": "Only 3 subdomains total with no vendor-specific naming patterns detected",
+            "confidence": "inference",
+            "source_quality": "primary",
+            "source_caveat": null,
+            "source": {
+              "url": "https://crt.sh/?q=%25.atlantapublicschools.com&output=json",
+              "title": "crt.sh certificate transparency \u2014 atlantapublicschools.com",
+              "retrieved_at": "2026-05-09T06:13:28.590437+00:00"
+            }
+          }
+        ],
+        "security_engineering_signals": [],
+        "physical_security_indicators": [],
+        "scale_indicators": {
+          "public_repos": 0,
+          "subdomain_count": 3,
+          "language_diversity": null
+        }
+      },
+      "displacement_vendor_hits": [],
+      "displacement_vendor_absence": "0 vendor-branded subdomains (Avigilon, Genetec, Milestone, Lenel, Hikvision, Dahua, March Networks, Brivo) across 3 unique subdomains. Atlanta Public Schools has minimal subdomain footprint with no physical security vendor fingerprints exposed. This could indicate either legacy on-premise security infrastructure not exposed on their domain, integrator-managed systems, or very basic security deployment. Direct discovery required to identify incumbent systems.",
+      "pain_hypotheses": [
+        {
+          "hypothesis": "Atlanta Public Schools' APS Forward 2040 plan to close 16 schools beginning in 2027 while converting 7 buildings to community hubs creates a deprovisioning challenge for legacy surveillance/access control systems in closed facilities and integration needs for unified security management across consolidated campuses serving 600 staff across remaining schools.",
+          "evidence_basis": [
+            "Board approved closure/repurposing of 16 schools beginning in 2027 as part of APS Forward 2040 plan to save $25 million annually (news.json)",
+            "7 closed schools being converted to community hubs with public access requiring new civilian-oriented security infrastructure versus traditional school access controls (news.json)"
+          ],
+          "linked_persona_pain": "inconsistent_systems_across_stores",
+          "confidence": "high",
+          "source_quality": "secondary",
+          "source_caveat": null,
+          "sources": [
+            {
+              "url": "https://roughdraftatlanta.com/2025/12/04/atlanta-board-of-education-approves-consolidation-plan/",
+              "title": "Atlanta Board of Education approves consolidation plan",
+              "retrieved_at": "2026-05-09T06:20:54.838472+00:00"
+            },
+            {
+              "url": "https://www.atlantanewsfirst.com/2026/04/16/atlanta-public-schools-add-7-new-community-hubs/",
+              "title": "Atlanta Public Schools to convert 7 closing schools into community hubs",
+              "retrieved_at": "2026-05-09T06:20:54.838472+00:00"
+            }
+          ]
+        },
+        {
+          "hypothesis": "Atlanta Public Schools' recent security incidents (social media threats requiring districtwide heightened security in September 2024, Canvas breach affecting student data in May 2026) combined with a $135 million budget deficit suggests existing physical security infrastructure lacks the real-time threat detection and response capabilities needed for modern school safety requirements while consuming disproportionate operational resources.",
+          "evidence_basis": [
+            "District implemented heightened security and patrols across all schools on September 12, 2024 following social media threats of violence, coordinated by school police force (news.json)",
+            "District affected by Canvas learning platform cyberattack exposing student information in May 2026, part of nationwide breach (news.json)"
+          ],
+          "linked_persona_pain": "no_centralized_security_operations",
+          "confidence": "medium",
+          "source_quality": "secondary",
+          "source_caveat": null,
+          "sources": [
+            {
+              "url": "https://www.atlantanewsfirst.com/2024/09/11/police-increase-security-atlanta-public-schools-thursday-over-online-threats/",
+              "title": "Police increase security at Atlanta Public Schools over online threats",
+              "retrieved_at": "2026-05-09T06:20:54.838472+00:00"
+            },
+            {
+              "url": "https://www.atlantanewsfirst.com/2026/05/07/cybercriminal-group-reportedly-breaches-canvas-exposing-student-information/",
+              "title": "Cybercriminal group reportedly breaches Canvas, exposing student information",
+              "retrieved_at": "2026-05-09T06:20:54.838472+00:00"
+            }
+          ]
+        }
+      ],
+      "practitioner_sentiment": {
+        "source_subreddits": [
+          "r/k12sysadmin",
+          "r/sysadmin"
+        ],
+        "total_posts_analyzed": 25,
+        "top_pain_themes": [
+          {
+            "theme": "Camera system compliance and legal concerns with audio recording",
+            "post_count": 1,
+            "representative_quote": "I messed up and told a school admin our cameras can record audio if we enabled it. Well, it became a topic of conversation. Now we have a few school officials who are demanding it gets enabled. I was told to turn the audio on. I reached out to our super intendant and said I'm not enabling this until we get confirmation from the school board and lawyers. I know there are laws around recording audio with our security cameras.",
+            "linked_persona_pain": "manual_door_propping_detection",
+            "confidence": "medium",
+            "source_quality": "weak",
+            "source_caveat": "Reddit posts from practitioner communities; reflects individual opinions not organizational policy",
+            "source": {
+              "url": "https://www.reddit.com/r/k12sysadmin/comments/1r9yah0/cameras_with_audio_enabled/",
+              "title": "Cameras with Audio Enabled",
+              "retrieved_at": "2026-05-09T06:13:23.519525+00:00"
+            }
+          },
+          {
+            "theme": "K12 IT staff burnout and career transitions due to mental stress",
+            "post_count": 1,
+            "representative_quote": "Hey K12ers.. I'm on the verge of walking away from my 20 years serving public sector K12 schools over to a private sector vendor. It was a difficult choice, but one I had to do for my own mental sanity.",
+            "linked_persona_pain": null,
+            "confidence": "inference",
+            "source_quality": "weak",
+            "source_caveat": "Reddit posts from practitioner communities; reflects individual opinions not organizational policy",
+            "source": {
+              "url": "https://www.reddit.com/r/k12sysadmin/comments/1mmzcvi/walking_away/",
+              "title": "Walking away...",
+              "retrieved_at": "2026-05-09T06:13:23.519525+00:00"
+            }
+          },
+          {
+            "theme": "Single-person IT departments struggling with infrastructure management",
+            "post_count": 1,
+            "representative_quote": "Context: Minnesota, USA. Public Charter with approximately 450 in-person students and 450 online/hybrid students across all programs. In person staff of 150, with roughly 50 online staff. The school board just re-signed a 3 year contract with a local MSP who sends 1 on-site technician once a week for 4 hours. Otherwise, they mostly take care of network, firewall, and leave everything else to me in person. This is my second year as 'IT Manager' when in reality, I am a Help Desk, SysAdmin, Instructor",
+            "linked_persona_pain": null,
+            "confidence": "inference",
+            "source_quality": "weak",
+            "source_caveat": "Reddit posts from practitioner communities; reflects individual opinions not organizational policy",
+            "source": {
+              "url": "https://www.reddit.com/r/k12sysadmin/comments/1numz3b/advice_deleting_ecell_from_the_1_person/",
+              "title": "Advice: Deleting \"E-Cell\" from the 1 Person Department Culture",
+              "retrieved_at": "2026-05-09T06:13:23.519525+00:00"
+            }
+          }
+        ],
+        "vendor_mentions": [],
+        "trigger_evidence": [
+          {
+            "trigger_id": "ndaa_compliance_pressure",
+            "evidence": "Multiple K12 sysadmin posts discussing compliance requirements including ADA/WCAG 2.2 compliance concerns and legal compliance around camera audio recording in schools",
+            "confidence": "inference",
+            "source_quality": "weak",
+            "source_caveat": "Reddit practitioner post; cannot confirm organizational adoption",
+            "source": {
+              "url": "https://www.reddit.com/r/k12sysadmin/comments/1qur7ka/what_is_your_district_doing_to_prepare_for_ada/",
+              "title": "What is your district doing to prepare for ADA Compliance / WCAG 2.2?",
+              "retrieved_at": "2026-05-09T06:13:23.519525+00:00"
+            }
+          }
+        ]
+      },
+      "incident_history": {
+        "source": {
+          "url": "https://ocrportal.hhs.gov/ocr/breach/breach_report.jsf",
+          "title": "HHS OCR Breach Portal",
+          "retrieved_at": "2026-05-09T06:13:12.525186+00:00"
+        },
+        "total_breaches": 0,
+        "total_individuals_affected": 0,
+        "largest_breach": {
+          "date": null,
+          "individuals_affected": 0,
+          "breach_type": null,
+          "description": null
+        },
+        "type_distribution": {
+          "Hacking/IT Incident": 0,
+          "Unauthorized Access/Disclosure": 0,
+          "Theft": 0,
+          "Loss": 0,
+          "Other": 0
+        },
+        "regulatory_exposure": "No HIPAA breaches affecting 500+ individuals found in HHS OCR records. However, district affected by Canvas learning platform cyberattack in May 2026 exposing student information, indicating cybersecurity incident exposure outside healthcare regulatory scope.",
+        "confidence": "high",
+        "source_quality": "primary"
+      },
+      "triggers_fired": [
+        {
+          "trigger_id": "capital_project_signal",
+          "evidence": "APS Forward 2040 plan involves closing 16 schools, converting 7 to community hubs, facility consolidations, boundary realignments, and construction projects including $25 million in facility changes beginning in 2027",
+          "confidence": "high",
+          "source_quality": "secondary",
+          "source_caveat": null,
+          "source": {
+            "url": "https://roughdraftatlanta.com/2025/12/04/atlanta-board-of-education-approves-consolidation-plan/",
+            "title": "Atlanta Board of Education approves consolidation plan",
+            "retrieved_at": "2026-05-09T06:20:54.838472+00:00"
+          }
+        },
+        {
+          "trigger_id": "incident_recent_12mo",
+          "evidence": "Multiple security incidents: social media violence threats requiring heightened security across all schools in September 2024, Canvas cyberattack breach exposing student information in May 2026, 'serious safety incident' at metro Atlanta high school requiring hard lockdown",
+          "confidence": "high",
+          "source_quality": "secondary",
+          "source_caveat": null,
+          "source": {
+            "url": "https://www.atlantanewsfirst.com/2024/09/11/police-increase-security-atlanta-public-schools-thursday-over-online-threats/",
+            "title": "Police increase security at Atlanta Public Schools over online threats",
+            "retrieved_at": "2026-05-09T06:20:54.838472+00:00"
+          }
+        },
+        {
+          "trigger_id": "multi_site_sprawl",
+          "evidence": "District operates multiple campuses across Atlanta with dual-campus schools (Sarah Smith Elementary, Jackson Elementary, Brandon Elementary, Sutton Middle) and complex facility consolidation affecting multiple school clusters",
+          "confidence": "medium",
+          "source_quality": "secondary",
+          "source_caveat": null,
+          "source": {
+            "url": "https://www.buckhead.com/atlanta-public-schools-consolidation-plan-concerns-buckhead-parents/",
+            "title": "Atlanta Public Schools Consolidation Plan Concerns Buckhead Parents",
+            "retrieved_at": "2026-05-09T06:20:54.838472+00:00"
+          }
+        }
+      ]
+    },
+    "hiring-signals": {
+      "hiring_intensity": {
+        "total_active_reqs": 47,
+        "category_distribution": {
+          "engineering": 0,
+          "security_safety": 3,
+          "operations_logistics": 2,
+          "facilities_maintenance": 0,
+          "sales_marketing": 0,
+          "IT_infrastructure": 0,
+          "executive_leadership": 2,
+          "hr_finance_legal": 0,
+          "other": 40
+        },
+        "intensity_signal": "steady",
+        "intensity_caveat": null,
+        "confidence": "medium",
+        "source_quality": "secondary",
+        "source_caveat": null,
+        "source": {
+          "url": "https://www.ziprecruiter.com/c/Atlanta-Public-Schools",
+          "title": "Atlanta Public Schools \u2014 Google Jobs via SerpAPI (47 postings captured)",
+          "retrieved_at": "2026-05-09T06:20:52.824893+00:00"
+        }
+      },
+      "security_team_signals": [
+        {
+          "role_title": "Senior Security Systems Specialist",
+          "category": "physical",
+          "location": "Atlanta, GA",
+          "seniority": "senior",
+          "salary_range": null,
+          "evidence": "JD states: 'assists the Coordinator (Security Systems) in overseeing all safety/life support systems of Atlanta Public Schools... Performs server and client upgrades, backups and archival plans and/or SQL database administration for all Life Safety Systems throughout the District... Installs, configures, programs, tests and implements and coordinates software and hardware for all life safety systems.' Explicitly focused on physical security infrastructure, not cybersecurity.",
+          "confidence": "high",
+          "source_quality": "primary",
+          "source_caveat": null,
+          "source": {
+            "url": "https://www.linkedin.com/jobs/view/senior-security-systems-specialist-at-atlanta-public-schools-4411415440",
+            "title": "Senior Security Systems Specialist \u2014 Atlanta Public Schools",
+            "retrieved_at": "2026-05-09"
+          }
+        },
+        {
+          "role_title": "SECURITY SYSTEMS SPECIALIST",
+          "category": "physical",
+          "location": "Atlanta, GA",
+          "seniority": "mid",
+          "salary_range": null,
+          "evidence": "Title references 'Security Systems' and the trigger_matches show it matched 'vms' keyword, indicating video management system involvement. Paired with Senior Security Systems Specialist role, suggests physical security systems focus.",
+          "confidence": "medium",
+          "source_quality": "secondary",
+          "source_caveat": null,
+          "source": {
+            "url": "https://www.ziprecruiter.com/c/Atlanta-Public-Schools/Job/SECURITY-SYSTEMS-SPECIALIST/-in-Atlanta,GA?jid=01679c1b6bfe8a87",
+            "title": "SECURITY SYSTEMS SPECIALIST \u2014 Atlanta Public Schools via ZipRecruiter",
+            "retrieved_at": "2026-05-09"
+          }
+        },
+        {
+          "role_title": "SCHOOL RESOURCE OFFICER - ELEMENTARY SCHOOL 202-DAY (GEORGIA POST CERTIFIED PEACE OFFICER CANDIDA...",
+          "category": "physical",
+          "location": "Atlanta, GA",
+          "seniority": "frontline",
+          "salary_range": null,
+          "evidence": "JD states: 'provides a safe and secure environment through building and establishing meaningful relationships with students and staff... enforcement of city and state laws, preservation of public order, protection of life and the prevention, detection, or investigation of crime.' Physical security role focused on school safety.",
+          "confidence": "high",
+          "source_quality": "secondary",
+          "source_caveat": null,
+          "source": {
+            "url": "https://www.ziprecruiter.com/c/Atlanta-Public-Schools/Job/SCHOOL-RESOURCE-OFFICER-ELEMENTARY-SCHOOL-202-DAY-(GEORGIA-POST-CERTIFIED-PEACE-OFFICER-CANDIDA.../-in-Atlanta,GA?jid=4e5b2f7b4d014efa",
+            "title": "SCHOOL RESOURCE OFFICER - ELEMENTARY SCHOOL 202-DAY \u2014 Atlanta Public Schools via ZipRecruiter",
+            "retrieved_at": "2026-05-09"
+          }
+        },
+        {
+          "role_title": "SCHOOL RESOURCE OFFICER 261-DAY (EVENING PATROL 4:00 PM - 12:00 AM)",
+          "category": "physical",
+          "location": "Atlanta, GA",
+          "seniority": "frontline",
+          "salary_range": null,
+          "evidence": "JD states: 'supports and facilitates the educational process within the Atlanta Public School System by providing a safe and secure environment... patrol district property to protect students, staff, and visitors from physical harm and prevent loss to district property resulting from criminal activity.' Physical security role with evening patrol duties.",
+          "confidence": "high",
+          "source_quality": "secondary",
+          "source_caveat": null,
+          "source": {
+            "url": "https://www.ziprecruiter.com/c/Atlanta-Public-Schools/Job/SCHOOL-RESOURCE-OFFICER-261-DAY-(EVENING-PATROL-4:00-PM-12:00-AM)/-in-Atlanta,GA?jid=3fa02e1ea099ad22",
+            "title": "SCHOOL RESOURCE OFFICER 261-DAY (EVENING PATROL 4:00 PM - 12:00 AM) \u2014 Atlanta Public Schools via ZipRecruiter",
+            "retrieved_at": "2026-05-09"
+          }
+        }
+      ],
+      "security_team_absence": null,
+      "tech_stack_mentions": [],
+      "trigger_evidence": [
+        {
+          "trigger_id": "legacy_nvr_dvr_refresh",
+          "evidence": "SECURITY SYSTEMS SPECIALIST posting matched 'vms' keyword. The Senior Security Systems Specialist JD explicitly mentions 'server and client upgrades, backups and archival plans and/or SQL database administration for all Life Safety Systems' \u2014 indicating legacy on-premises infrastructure management typical of NVR/VMS environments.",
+          "matched_titles": [
+            "Security Systems Specialist"
+          ],
+          "confidence": "medium",
+          "source_quality": "secondary",
+          "source_caveat": null,
+          "source": {
+            "url": "https://www.ziprecruiter.com/c/Atlanta-Public-Schools/Job/SECURITY-SYSTEMS-SPECIALIST/-in-Atlanta,GA?jid=01679c1b6bfe8a87",
+            "title": "SECURITY SYSTEMS SPECIALIST \u2014 Atlanta Public Schools via ZipRecruiter",
+            "retrieved_at": "2026-05-09"
+          }
+        }
+      ],
+      "geographic_expansion_signal": [
+        {
+          "location": "Atlanta, GA",
+          "role_count": 47,
+          "interpretation": "existing hub \u2014 all 47 captured postings are Atlanta, GA locations. For a major urban school district serving Atlanta metro, this concentration confirms Atlanta as the operational center, not expansion into new markets. The district operates within established geographic boundaries.",
+          "confidence": "high",
+          "source_quality": "secondary",
+          "source_caveat": null,
+          "source": {
+            "url": "https://www.ziprecruiter.com/c/Atlanta-Public-Schools",
+            "title": "Atlanta Public Schools \u2014 Google Jobs via SerpAPI",
+            "retrieved_at": "2026-05-09T06:20:52.824893+00:00"
+          }
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "company_slug": "atlanta-public-schools",
+    "company_name": "Atlanta Public Schools",
+    "vertical": "unknown",
+    "generated_at": "2026-05-09T21:23:06.433271+00:00",
+    "agents_used": [
+      "company-bg",
+      "tech-and-pain",
+      "hiring-signals"
+    ],
+    "models_used": {
+      "subagents": "sonnet",
+      "synthesizer": "opus"
+    },
+    "runtime_seconds": 485.9,
+    "phase1_status": {
+      "crtsh": "cached",
+      "news": "cached",
+      "github": "cached",
+      "indeed": "cached",
+      "nces": "cached",
+      "sam": "cached",
+      "clery": "insufficient_data",
+      "hhs": "no_matches",
+      "reddit": "cached",
+      "sourcewell": "ok (4 keywords)",
+      "tips": "ok (4 keywords)",
+      "sled_procurement": "insufficient_data",
+      "atlanta_procurement": "ok (4 keywords)",
+      "ga_procurement": "ok (4 keywords)",
+      "costars": "ok (4 keywords)",
+      "omnia": "ok (4 keywords)",
+      "hgac": "ok (4 keywords)",
+      "leadership": "cached",
+      "sec": "No SEC-registered company found matching 'Atlanta Public Schools'. Try using the",
+      "champion_signals": "cached"
+    }
+  }
+}

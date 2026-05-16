@@ -1,0 +1,56 @@
+{
+  "status": "insufficient_data",
+  "reason": "company-bg subagent failed \u2014 cannot generate brief without company snapshot",
+  "subagent_outputs": {
+    "company-bg": {
+      "status": "insufficient_data",
+      "reason": "rate_limited_after_3_retries"
+    },
+    "tech-and-pain": {
+      "status": "insufficient_data",
+      "reason": "rate_limited_after_3_retries"
+    },
+    "hiring-signals": {
+      "status": "insufficient_data",
+      "reason": "rate_limited_after_3_retries"
+    }
+  },
+  "metadata": {
+    "company_slug": "georgia-institute-of-technology",
+    "company_name": "Georgia Institute of Technology",
+    "vertical": "unknown",
+    "generated_at": "2026-05-09T10:52:04.010565+00:00",
+    "agents_used": [
+      "company-bg",
+      "tech-and-pain",
+      "hiring-signals"
+    ],
+    "models_used": {
+      "subagents": "sonnet",
+      "synthesizer": "opus"
+    },
+    "runtime_seconds": 7.7,
+    "phase1_status": {
+      "nces": "cached",
+      "news": "cached",
+      "github": "cached",
+      "crtsh": "insufficient_data",
+      "clery": "cached",
+      "sam": "cached",
+      "hhs": "no_matches",
+      "sourcewell": "ok (4 keywords)",
+      "tips": "ok (4 keywords)",
+      "reddit": "cached",
+      "sled_procurement": "cached",
+      "ga_procurement": "ok (4 keywords)",
+      "atlanta_procurement": "ok (4 keywords)",
+      "omnia": "ok (4 keywords)",
+      "costars": "ok (4 keywords)",
+      "leadership": "cached",
+      "hgac": "ok (4 keywords)",
+      "sec": "No SEC-registered company found matching 'Georgia Institute of Technology'. Try ",
+      "indeed": "insufficient_data",
+      "champion_signals": "cached"
+    }
+  }
+}
